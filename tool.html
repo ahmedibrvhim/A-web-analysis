@@ -8,6 +8,31 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
+/* ── MOBILE NAV (same pattern as home.html) ── */
+.hamburger {
+  display: none; flex-direction: column; justify-content: center;
+  gap: 5px; background: none; border: 1px solid var(--blood);
+  padding: 8px 10px; cursor: pointer; margin-left: auto; flex-shrink: 0;
+}
+.hamburger span { display: block; width: 22px; height: 2px; background: var(--blood); transition: all .3s; }
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+@media (max-width: 768px) {
+  nav { flex-wrap: wrap; padding: 0 14px; gap: 0; height: auto; min-height: 58px; }
+  .nav-logo { padding: 10px 0; flex: 1; }
+  .hamburger { display: flex; }
+  .nav-links { display: none; flex-direction: column; width: 100%; order: 3; border-top: 1px solid var(--border); padding: 8px 0; gap: 0; }
+  .nav-links.mobile-open { display: flex; }
+  .nav-links li { width: 100%; }
+  .nav-links a { display: block; padding: 12px 4px; border-bottom: 1px solid rgba(255,255,255,.04); font-size: 10px; letter-spacing: 3px; }
+  .nav-right { display: none; flex-direction: column; width: 100%; order: 4; padding: 10px 0 14px; gap: 8px; border-top: 1px solid var(--border); }
+  .nav-right.mobile-open { display: flex; }
+  .nav-right .btn-ghost { width: 100%; text-align: center; justify-content: center; }
+  .user-pill { flex-wrap: wrap; width: 100%; gap: 8px; }
+}
+
 /* ══ TOOL LAYOUT ══ */
 #toolWrap { max-width:720px; margin:0 auto; padding:0 20px 100px; }
 
@@ -317,13 +342,51 @@
 </div>
 
 <script type="module">
-import { auth, db, onAuthStateChanged, addDoc, collection, serverTimestamp } from './firebase-config.js';
+import { auth, db, onAuthStateChanged, signOut, addDoc, collection, serverTimestamp } from './firebase-config.js';
 import { getLang, applyDocumentDirection, applyTranslations, wireLangToggle, t } from './i18n.js';
 
 /* ══════════════════════════════════════
    AUTH GUARD — this page requires a signed-in user
 ══════════════════════════════════════ */
 let currentUser = null;
+
+function renderUserPill(user) {
+  const nr = document.getElementById('navRight');
+  const avatarSrc = (user.photoURL && user.photoURL.startsWith('http')) ? user.photoURL : 'Skull.png';
+  const storedUser = JSON.parse(localStorage.getItem('brandA_user') || '{}');
+  const displayName = user.displayName || storedUser.name?.trim() || (user.email ? user.email.split('@')[0] : '');
+
+  nr.innerHTML = '<button class="nav-lang" id="navLang" type="button">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>' +
+      '<span><span class="lang-cur" id="langCur">EN</span> <span class="lang-sep">/</span> <span id="langOther">AR</span></span>' +
+    '</button>' +
+    '<div class="user-pill">' +
+      '<img class="user-avatar" id="navAvatarImg">' +
+      '<span class="user-name">' + displayName + '</span>' +
+      '<button class="btn-logout" id="logoutBtn">' + t('sign_out', currentLang) + '</button>' +
+    '</div>';
+
+  const avatarEl = document.getElementById('navAvatarImg');
+  avatarEl.src = avatarSrc;
+  avatarEl.onerror = function () { this.onerror = null; this.src = 'Skull.png'; };
+
+  document.getElementById('logoutBtn').onclick = () => {
+    signOut(auth).then(() => {
+      localStorage.removeItem('brandA_user');
+      window.location.href = 'home.html';
+    });
+  };
+
+  wireLangToggle(document.getElementById('navLang'), currentLang, (next) => {
+    currentLang = next;
+    applyDocumentDirection(next);
+    applyTranslations(next);
+    renderUploaderCtas();
+    const el = document.getElementById('logoutBtn');
+    if (el) el.textContent = t('sign_out', currentLang);
+  });
+}
+
 onAuthStateChanged(auth, user => {
   if (!user) {
     sessionStorage.setItem('authRequired', '1');
@@ -331,6 +394,7 @@ onAuthStateChanged(auth, user => {
     return;
   }
   currentUser = user;
+  renderUserPill(user);
 });
 
 /* ══════════════════════════════════════

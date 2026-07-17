@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A | Welcome</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+body { overflow:hidden; }
+#introOverlay {
+  position:fixed; inset:0; z-index:10;
+  background:radial-gradient(ellipse at center, #150000 0%, #000 70%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:40px 24px;
+  transition:opacity .6s ease, visibility .6s ease;
+}
+#introOverlay.closing { opacity:0; visibility:hidden; pointer-events:none; }
+.intro-grid {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(139,0,0,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(139,0,0,.05) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+.intro-glow {
+  position:absolute; width:520px; height:520px;
+  background:radial-gradient(circle, rgba(139,0,0,.18) 0%, transparent 70%);
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  animation:gPulse 5s ease-in-out infinite;
+}
+@keyframes gPulse {
+  0%,100%{opacity:.6;transform:translate(-50%,-50%) scale(1)}
+  50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
+}
+
+/* ── TOP CORNER CONTROLS ── */
+.intro-topbar {
+  position:absolute; top:26px; left:26px; right:26px; z-index:2;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.intro-lang {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(139,0,0,.08); border:1px solid var(--smoke);
+  color:var(--text); padding:8px 16px 8px 12px;
+  font-family:'Cinzel',serif; font-size:9px;
+  letter-spacing:2px; text-transform:uppercase;
+  cursor:pointer; transition:all .3s;
+}
+.intro-lang:hover { border-color:var(--blood); color:var(--white); background:rgba(139,0,0,.15); box-shadow:0 0 12px rgba(139,0,0,.3); }
+.intro-lang svg { width:13px; height:13px; flex-shrink:0; }
+.intro-lang .lang-cur { color:var(--crimson); font-weight:700; }
+.intro-lang .lang-sep { color:var(--smoke); }
+
+.intro-body {
+  position:relative; z-index:2; max-width:560px;
+}
+.intro-icon {
+  width:76px; height:76px; margin:0 auto 26px;
+  border-radius:50%; border:2px solid var(--blood);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 40px rgba(139,0,0,.4), inset 0 0 30px rgba(0,0,0,.7);
+  animation:skullFloat 6s ease-in-out infinite;
+}
+@keyframes skullFloat {
+  0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)}
+}
+.intro-icon svg { width:34px; height:34px; }
+.intro-eyebrow {
+  font-size:9px; letter-spacing:6px; color:var(--blood);
+  text-transform:uppercase; margin-bottom:14px;
+  transition:opacity .2s ease;
+}
+.intro-title {
+  font-family:'Cinzel Decorative',cursive;
+  font-size:clamp(22px,4vw,32px); color:var(--white);
+  letter-spacing:4px; text-transform:uppercase;
+  margin-bottom:18px; line-height:1.4;
+  text-shadow:0 0 30px rgba(139,0,0,.5);
+}
+.intro-text {
+  font-size:12px; color:var(--text); line-height:2;
+  letter-spacing:.5px; margin-bottom:38px;
+}
+.intro-step-anim { animation:introIn .5s ease; }
+@keyframes introIn { from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none} }
+
+/* ── ARABIC MODE ── */
+body.lang-ar .intro-eyebrow { letter-spacing:2px; }
+body.lang-ar .intro-title {
+  font-family:'Tajawal',sans-serif; font-weight:900;
+  letter-spacing:0; text-transform:none;
+}
+body.lang-ar .intro-text {
+  font-family:'Tajawal',sans-serif; font-weight:400;
+  letter-spacing:0; line-height:2.1;
+}
+body.lang-ar .intro-nav .btn-ghost,
+body.lang-ar .intro-nav .btn-solid,
+body.lang-ar .intro-skip,
+body.lang-ar .intro-lang { font-family:'Tajawal',sans-serif; letter-spacing:0; }
+
+.intro-dots { display:flex; gap:9px; justify-content:center; margin-bottom:30px; position:relative; z-index:2; }
+.intro-dot {
+  width:7px; height:7px; border-radius:50%;
+  background:var(--smoke); cursor:pointer; transition:all .3s;
+  border:none; padding:0;
+}
+.intro-dot.active { background:var(--crimson); box-shadow:0 0 10px var(--crimson); width:22px; border-radius:4px; }
+
+.intro-nav { display:flex; gap:14px; justify-content:center; position:relative; z-index:2; }
+.intro-nav .btn-ghost,
+.intro-nav .btn-solid {
+  min-width:112px; justify-content:center;
+  transition:opacity .25s ease, background .3s, box-shadow .3s, color .3s;
+}
+.intro-nav .btn-ghost.hidden { opacity:0; pointer-events:none; }
+
+/* ══ RESPONSIVE ══ */
+@media (max-width:768px){
+  .intro-body { max-width:440px; }
+  .intro-glow { width:400px; height:400px; }
+}
+@media (max-width:480px){
+  #introOverlay { padding:84px 18px 28px; }
+  .intro-topbar { top:16px; left:14px; right:14px; }
+  .intro-skip { font-size:8px; padding:7px 12px; }
+  .intro-lang { font-size:8px; padding:7px 10px 7px 8px; gap:6px; }
+  .intro-lang svg { width:11px; height:11px; }
+  .intro-body { max-width:100%; }
+  .intro-icon { width:60px; height:60px; margin-bottom:20px; }
+  .intro-icon svg { width:28px; height:28px; }
+  .intro-eyebrow { font-size:8px; letter-spacing:4px; margin-bottom:10px; }
+  .intro-title { font-size:20px; letter-spacing:2px; margin-bottom:14px; }
+  .intro-text { font-size:11px; line-height:1.8; margin-bottom:28px; }
+  .intro-glow { width:320px; height:320px; }
+  .intro-dots { margin-bottom:24px; }
+  .intro-nav { gap:10px; }
+  .intro-nav .btn-ghost,
+  .intro-nav .btn-solid { min-width:0; flex:1; padding:10px 12px; font-size:9px; }
+}
+@media (max-height:640px){
+  .intro-icon { width:52px; height:52px; margin-bottom:14px; animation:none; }
+  .intro-eyebrow { margin-bottom:8px; }
+  .intro-title { margin-bottom:10px; }
+  .intro-text { margin-bottom:20px; }
+}
+</style>
+</head>
+<body>
+
+<div id="introOverlay">
+  <div class="intro-grid"></div>
+  <div class="intro-glow"></div>
+  <div class="intro-topbar">
+    <button class="intro-lang" id="introLang" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      <span><span class="lang-cur" id="langCur">EN</span> <span class="lang-sep">/</span> <span id="langOther">AR</span></span>
+    </button>
+    <a class="btn-ghost intro-skip" id="introSkip">Skip Intro ✕</a>
+  </div>
+  <div class="intro-body">
+    <div class="intro-icon" id="introIcon"></div>
+    <div class="intro-eyebrow" id="introEyebrow">Step 1 / 4</div>
+    <div class="intro-title intro-step-anim" id="introTitle"></div>
+    <div class="intro-text intro-step-anim" id="introText"></div>
+    <div class="intro-dots" id="introDots"></div>
+    <div class="intro-nav">
+      <button class="btn-ghost hidden" id="introPrev">← Back</button>
+      <button class="btn-solid" id="introNext">Next →</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { auth, onAuthStateChanged } from './firebase-config.js';
+
+const introSteps = [
+  {
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#dc143c" stroke-width="1.6"><path d="M12 2l2.5 5 5.5.8-4 3.9.9 5.5L12 14.7 7.1 17.2l.9-5.5-4-3.9L9.5 7z"/></svg>',
+    en: {
+      eyebrow: "Step 1 / 4",
+      title: "Welcome To A",
+      text: "This tool measures the vertical balance of your lower face using a classical proportion formula. Let's walk through how it works before you begin."
+    },
+    ar: {
+      eyebrow: "الخطوة ١ / ٤",
+      title: "مرحباً بك في A",
+      text: "تقيس هذه الأداة التوازن العمودي للجزء السفلي من وجهك باستخدام معادلة تناسب كلاسيكية. دعنا نستعرض آلية عملها قبل أن تبدأ."
+    }
+  },
+  {
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#dc143c" stroke-width="1.6"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="14" r="3.5"/></svg>',
+    en: {
+      eyebrow: "Step 2 / 4",
+      title: "Upload Your Photo",
+      text: "Add a clear, well-lit front-view photo. A side-view photo is optional but improves tilt correction and accuracy."
+    },
+    ar: {
+      eyebrow: "الخطوة ٢ / ٤",
+      title: "ارفع صورتك",
+      text: "أضف صورة أمامية واضحة وبإضاءة جيدة. الصورة الجانبية اختيارية، لكنها تحسّن دقة تصحيح الميل."
+    }
+  },
+  {
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#dc143c" stroke-width="1.6"><path d="M13 3l7 7-8.5 8.5-4.5 1 1-4.5L16 6z"/><path d="M13 3l-1.5-1.5M6 18l-2 2"/></svg>',
+    en: {
+      eyebrow: "Step 3 / 4",
+      title: "Adjust The Landmarks",
+      text: "The AI places four points on your photo automatically. Drag any point to correct it — you always have the final say."
+    },
+    ar: {
+      eyebrow: "الخطوة ٣ / ٤",
+      title: "اضبط النقاط المرجعية",
+      text: "يضع الذكاء الاصطناعي أربع نقاط على صورتك تلقائياً. اسحب أي نقطة لتصحيحها — القرار النهائي دائماً بيدك."
+    }
+  },
+  {
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#dc143c" stroke-width="1.6"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+    en: {
+      eyebrow: "Step 4 / 4",
+      title: "Get Your Ratio",
+      text: "Head tilt is corrected automatically and your lower-third ratio is shown as a clean percentage, ready to save to your account."
+    },
+    ar: {
+      eyebrow: "الخطوة ٤ / ٤",
+      title: "احصل على نسبتك",
+      text: "يتم تصحيح ميل الرأس تلقائياً، وتظهر نسبة الثلث السفلي كنسبة مئوية واضحة جاهزة للحفظ في حسابك."
+    }
+  }
+];
+
+const uiStrings = {
+  en: { skip: "Skip Intro ✕", back: "← Back", next: "Next →", enter: "Enter Site ☠" },
+  ar: { skip: "تخطي المقدمة ✕", back: "→ رجوع", next: "التالي ←", enter: "دخول الموقع ☠" }
+};
+
+let introIndex = 0;
+let lang = 'en';
+
+/* ── real Firebase auth check (don't rely on localStorage alone) ── */
+let authReady = false;
+let currentUser = null;
+const authReadyPromise = new Promise(resolve => {
+  onAuthStateChanged(auth, user => {
+    currentUser = user;
+    authReady = true;
+    resolve(user);
+  });
+});
+
+const htmlRoot    = document.getElementById('htmlRoot');
+const introTitle   = document.getElementById('introTitle');
+const introText    = document.getElementById('introText');
+const introEyebrow = document.getElementById('introEyebrow');
+const introIcon    = document.getElementById('introIcon');
+const introDots    = document.getElementById('introDots');
+const introPrev    = document.getElementById('introPrev');
+const introNext    = document.getElementById('introNext');
+const introSkip    = document.getElementById('introSkip');
+const introLang    = document.getElementById('introLang');
+const langCur      = document.getElementById('langCur');
+const langOther    = document.getElementById('langOther');
+const introOverlay = document.getElementById('introOverlay');
+
+function renderIntroDots() {
+  introDots.innerHTML = introSteps.map((_, i) =>
+    '<button class="intro-dot' + (i === introIndex ? ' active' : '') + '" data-i="' + i + '"></button>'
+  ).join('');
+  introDots.querySelectorAll('.intro-dot').forEach(dot => {
+    dot.addEventListener('click', () => { introIndex = parseInt(dot.dataset.i); renderIntro(); });
+  });
+}
+
+function renderIntro() {
+  const step = introSteps[introIndex][lang];
+  const ui = uiStrings[lang];
+  introEyebrow.textContent = step.eyebrow;
+  introIcon.innerHTML = introSteps[introIndex].icon;
+  introTitle.textContent = step.title;
+  introText.textContent = step.text;
+  [introTitle, introText].forEach(el => {
+    el.classList.remove('intro-step-anim');
+    void el.offsetWidth;
+    el.classList.add('intro-step-anim');
+  });
+  introPrev.classList.toggle('hidden', introIndex === 0);
+  introPrev.textContent = ui.back;
+  introNext.textContent = introIndex === introSteps.length - 1 ? ui.enter : ui.next;
+  introSkip.textContent = ui.skip;
+  renderIntroDots();
+}
+
+function setLang(next) {
+  lang = next;
+  htmlRoot.setAttribute('lang', lang);
+  htmlRoot.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+  document.body.classList.toggle('lang-ar', lang === 'ar');
+  langCur.textContent = lang.toUpperCase();
+  langOther.textContent = lang === 'en' ? 'AR' : 'EN';
+  renderIntro();
+}
+
+async function goToHome() {
+  introOverlay.classList.add('closing');
+
+  // Wait for Firebase to report the real auth state (usually instant,
+  // but persistence lookup can take a tick on first load).
+  const user = authReady ? currentUser : await authReadyPromise;
+
+  if (user) {
+    localStorage.setItem('brandA_user', JSON.stringify({
+      uid:   user.uid,
+      name:  user.displayName || (user.email ? user.email.split('@')[0] : ''),
+      email: user.email,
+      photo: user.photoURL || ''
+    }));
+    setTimeout(() => { window.location.href = 'home.html'; }, 600);
+  } else {
+    localStorage.removeItem('brandA_user');
+    sessionStorage.setItem('authRequired', '1');
+    setTimeout(() => { window.location.href = 'login.html'; }, 600);
+  }
+}
+
+introNext.addEventListener('click', () => {
+  if (introIndex === introSteps.length - 1) { goToHome(); }
+  else { introIndex++; renderIntro(); }
+});
+introPrev.addEventListener('click', () => {
+  if (introIndex > 0) { introIndex--; renderIntro(); }
+});
+introSkip.addEventListener('click', goToHome);
+introLang.addEventListener('click', () => { setLang(lang === 'en' ? 'ar' : 'en'); });
+
+renderIntro();
+</script>
+</body>
+</html>

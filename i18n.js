@@ -31,6 +31,8 @@ export const dict = {
     feat4_text: 'Get a clean percentage, benchmarked against the classical ideal — ready to save.',
     about_cta: '☠ \u00A0 Enter The Tool',
     ratio_caption: 'Classical Lower-Third Ideal',
+    hero_cta_text: 'Enter The Tool',
+    scroll_cue_text: 'Scroll To Learn More',
 
     /* ── login.html ── */
     portal_sub: '☠ Client Portal ☠',
@@ -119,6 +121,8 @@ export const dict = {
     feat4_text: 'احصل على نسبة مئوية واضحة، مقارنةً بالنسبة الكلاسيكية المثالية — جاهزة للحفظ.',
     about_cta: '☠ \u00A0 ادخل إلى الأداة',
     ratio_caption: 'النسبة الكلاسيكية المثالية للثلث السفلي',
+    hero_cta_text: 'ادخل إلى الأداة',
+    scroll_cue_text: 'مرّر للمزيد',
 
     /* ── login.html ── */
     portal_sub: '☠ بوابة العملاء ☠',

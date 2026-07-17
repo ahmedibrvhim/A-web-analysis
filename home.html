@@ -10,12 +10,12 @@
 <style>
 /* ── HERO (logo only) ── */
 #hero {
-  min-height:calc(100vh - var(--nav-h) - 3px);
+  min-height:calc(78vh - var(--nav-h) - 3px);
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
   position:relative; overflow:hidden;
   background:radial-gradient(ellipse at center, #150000 0%, #000 65%);
-  text-align:center; padding:40px 20px;
+  text-align:center; padding:40px 20px 30px;
   animation:heroFadeIn .8s ease;
 }
 @keyframes heroFadeIn { from{opacity:0} to{opacity:1} }
@@ -42,7 +42,7 @@
   border:2px solid var(--blood);
   box-shadow:0 0 60px rgba(139,0,0,.45), 0 0 120px rgba(139,0,0,.15),
              inset 0 0 60px rgba(0,0,0,.7);
-  overflow:hidden; margin-bottom:34px;
+  overflow:hidden; margin-bottom:38px;
   animation:skullFloat 6s ease-in-out infinite;
 }
 @keyframes skullFloat {
@@ -70,6 +70,51 @@
   margin:14px 0 0; text-align:center;
 }
 
+/* ── HERO CTA BUTTON ── */
+.hero-cta {
+  position:relative; z-index:2;
+  display:inline-flex; align-items:center; gap:10px;
+  padding:16px 44px;
+  font-family:'Cinzel',serif; font-size:11px; font-weight:600;
+  letter-spacing:4px; text-transform:uppercase; text-decoration:none;
+  color:var(--white);
+  background:linear-gradient(135deg, var(--blood) 0%, #5a0000 100%);
+  border:1px solid var(--crimson);
+  clip-path:polygon(14px 0%, 100% 0%, calc(100% - 14px) 100%, 0% 100%);
+  box-shadow:0 0 0 rgba(220,20,60,0);
+  transition:transform .3s ease, box-shadow .3s ease, background .3s ease;
+  animation:ctaGlow 3s ease-in-out infinite;
+}
+.hero-cta svg { width:15px; height:15px; flex-shrink:0; }
+.hero-cta:hover {
+  transform:translateY(-3px);
+  background:linear-gradient(135deg, var(--crimson) 0%, var(--blood) 100%);
+  box-shadow:0 8px 34px rgba(220,20,60,.55);
+}
+@keyframes ctaGlow {
+  0%,100% { box-shadow:0 0 14px rgba(139,0,0,.35); }
+  50%     { box-shadow:0 0 28px rgba(220,20,60,.55); }
+}
+
+/* ── SCROLL CUE ── */
+.scroll-cue {
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  margin-top:38px; background:none; border:none; cursor:pointer;
+  color:var(--muted); font-family:'Cinzel',serif;
+  font-size:8px; letter-spacing:3px; text-transform:uppercase;
+  transition:color .25s;
+}
+.scroll-cue:hover { color:var(--crimson); }
+.scroll-cue svg {
+  width:16px; height:16px;
+  animation:scrollBounce 1.8s ease-in-out infinite;
+}
+@keyframes scrollBounce {
+  0%,100% { transform:translateY(0); opacity:.5; }
+  50%     { transform:translateY(8px); opacity:1; }
+}
+
 /* ── MOBILE NAV ── */
 .hamburger {
   display: none; flex-direction: column; justify-content: center;
@@ -95,11 +140,13 @@
   .user-pill { flex-wrap: wrap; width: 100%; gap: 8px; }
   .hero-title { letter-spacing: 10px; }
   .hero-skull-ring { width: 160px; height: 160px; }
+  .hero-cta { padding: 14px 30px; font-size: 10px; letter-spacing: 3px; }
+  .scroll-cue { margin-top: 28px; }
 }
 
 /* ── ABOUT / TOOL DESCRIPTION ── */
 #about {
-  position:relative; padding:110px 40px 130px;
+  position:relative; padding:60px 40px 130px;
   background:#000; overflow:hidden;
 }
 .about-grid-bg {
@@ -173,7 +220,7 @@
   .ratio-card { max-width:260px; margin:0 auto; }
 }
 @media (max-width:480px) {
-  #about { padding:70px 20px 90px; }
+  #about { padding:40px 20px 90px; }
   .about-features { grid-template-columns:1fr; }
 }
 </style>
@@ -210,6 +257,16 @@
   <div class="hero-skull-ring">
     <img src="Skull.png" alt="Skull">
   </div>
+
+  <a class="hero-cta" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    <span data-i18n="hero_cta_text">Enter The Tool</span>
+  </a>
+
+  <button class="scroll-cue" id="scrollCue" type="button">
+    <span data-i18n="scroll_cue_text">Scroll To Learn More</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v14M6 13l6 6 6-6"/></svg>
+  </button>
 </section>
 
 <!-- ABOUT / TOOL DESCRIPTION -->
@@ -251,8 +308,6 @@
           <div class="feature-text" data-i18n="feat4_text">Get a clean percentage, benchmarked against the classical ideal — ready to save.</div>
         </div>
       </div>
-
-      <a class="btn-solid about-cta" href="#" data-i18n="about_cta">☠ &nbsp; Enter The Tool</a>
     </div>
 
     <div class="about-visual">
@@ -317,6 +372,10 @@ document.getElementById('navLinks').addEventListener('click', e => {
     document.getElementById('navLinks').classList.remove('mobile-open');
     document.getElementById('navRight').classList.remove('mobile-open');
   }
+});
+
+document.getElementById('scrollCue').addEventListener('click', () => {
+  document.getElementById('about').scrollIntoView({ behavior: 'smooth' });
 });
 </script>
 

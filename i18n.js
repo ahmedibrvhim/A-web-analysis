@@ -18,6 +18,19 @@ export const dict = {
 
     /* ── home.html ── */
     hero_sub: '☠ Lower-Third Ratio Calculator ☠',
+    about_eyebrow: '☠ The Method ☠',
+    about_title: 'A Precise Reading Of Your Lower Third',
+    about_lead: "Upload a photo and the engine places four classical landmarks — trichion, nasion, subnasale and menton — the instant it loads. Drag any point to refine it, add a side profile so head tilt is corrected automatically, and receive your lower-third ratio as a clean percentage measured against the classical ideal.",
+    feat1_title: 'AI Landmark Detection',
+    feat1_text: "Four key points are placed on your photo automatically the moment it's uploaded.",
+    feat2_title: 'Manual Precision',
+    feat2_text: 'Drag any point to correct it — the final measurement is always in your hands.',
+    feat3_title: 'Automatic Tilt Correction',
+    feat3_text: 'A side-view photo lets the engine straighten a tilted head before measuring a single pixel.',
+    feat4_title: 'Your Ratio, Instantly',
+    feat4_text: 'Get a clean percentage, benchmarked against the classical ideal — ready to save.',
+    about_cta: '☠ \u00A0 Enter The Tool',
+    ratio_caption: 'Classical Lower-Third Ideal',
 
     /* ── login.html ── */
     portal_sub: '☠ Client Portal ☠',
@@ -93,6 +106,19 @@ export const dict = {
 
     /* ── home.html ── */
     hero_sub: '☠ حاسبة نسبة الثلث السفلي ☠',
+    about_eyebrow: '☠ الطريقة ☠',
+    about_title: 'قراءة دقيقة لنسبة الثلث السفلي من وجهك',
+    about_lead: 'ارفع صورة، ويقوم المحرك بوضع أربع نقاط مرجعية كلاسيكية — منبت الشعر، جذر الأنف، قاعدة الأنف، وأسفل الذقن — فور تحميلها. اسحب أي نقطة لتعديلها، أضف صورة جانبية ليتم تصحيح ميل الرأس تلقائياً، واحصل على نسبة الثلث السفلي كنسبة مئوية واضحة مقارنةً بالنسبة الكلاسيكية المثالية.',
+    feat1_title: 'كشف النقاط بالذكاء الاصطناعي',
+    feat1_text: 'توضع أربع نقاط رئيسية على صورتك تلقائياً فور رفعها.',
+    feat2_title: 'دقة يدوية',
+    feat2_text: 'اسحب أي نقطة لتصحيحها — القرار النهائي للقياس دائماً بيدك.',
+    feat3_title: 'تصحيح الميل تلقائياً',
+    feat3_text: 'الصورة الجانبية تتيح للمحرك تقويم ميل الرأس قبل قياس أي بكسل.',
+    feat4_title: 'نسبتك فوراً',
+    feat4_text: 'احصل على نسبة مئوية واضحة، مقارنةً بالنسبة الكلاسيكية المثالية — جاهزة للحفظ.',
+    about_cta: '☠ \u00A0 ادخل إلى الأداة',
+    ratio_caption: 'النسبة الكلاسيكية المثالية للثلث السفلي',
 
     /* ── login.html ── */
     portal_sub: '☠ بوابة العملاء ☠',

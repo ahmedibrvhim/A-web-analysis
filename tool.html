@@ -46,6 +46,7 @@
 @keyframes stepIn { from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none} }
 
 .tool-eyebrow { font-size:9px; letter-spacing:5px; color:var(--blood); text-transform:uppercase; text-align:center; margin-bottom:10px; }
+.req-badge { display:inline-block; font-size:8px; letter-spacing:1.5px; color:#5ecb96; border:1px solid #0a5; background:rgba(0,160,90,.08); padding:2px 8px; border-radius:2px; vertical-align:middle; margin-left:6px; }
 .tool-title { font-family:'Cinzel Decorative',cursive; font-size:clamp(20px,3.6vw,28px); color:var(--white); letter-spacing:3px; text-transform:uppercase; text-align:center; margin-bottom:14px; }
 .tool-text { font-size:12px; color:var(--text); line-height:1.9; text-align:center; max-width:480px; margin:0 auto 34px; }
 
@@ -111,7 +112,7 @@
 
 .legend { display:flex; flex-wrap:wrap; gap:10px 20px; justify-content:center; margin-top:18px; }
 .legend-item { display:flex; align-items:center; gap:7px; font-size:9px; letter-spacing:1px; color:var(--muted); text-transform:uppercase; }
-.legend-dot { width:9px; height:9px; border-radius:50%; border:1.5px solid var(--white); }
+.legend-dot { width:13px; height:13px; border-radius:50%; border:2px solid var(--white); }
 
 .tool-hint { text-align:center; font-size:10px; letter-spacing:1px; color:var(--ash); margin-top:16px; }
 .tool-hint.warn { color:var(--crimson); }
@@ -146,6 +147,22 @@
 .tilt-flag { font-size:10px; letter-spacing:1px; margin-bottom:26px; }
 .tilt-flag.on { color:var(--bone); }
 .tilt-flag.off { color:var(--ash); }
+
+.result-extra { display:flex; gap:14px; justify-content:center; margin-bottom:26px; flex-wrap:wrap; }
+.result-extra-block { background:var(--panel); border:1px solid var(--border); padding:14px 22px; min-width:170px; }
+.result-extra-lbl { font-size:8px; letter-spacing:2px; color:var(--ash); text-transform:uppercase; margin-bottom:8px; }
+.result-extra-val { font-family:'Cinzel',serif; font-size:12px; color:var(--white); letter-spacing:.5px; line-height:1.5; }
+.rating-badge {
+  display:inline-block; font-family:'Cinzel Decorative',cursive; font-size:16px;
+  letter-spacing:1px; text-transform:uppercase; padding:4px 16px;
+  border:1.5px solid var(--blood); color:var(--white);
+  text-shadow:0 0 14px rgba(220,20,60,.5);
+}
+.rating-badge.tier-chad { border-color:#ffd700; color:#ffd700; text-shadow:0 0 16px rgba(255,215,0,.6); }
+.rating-badge.tier-above { border-color:#5ecb96; color:#5ecb96; text-shadow:0 0 14px rgba(94,203,150,.5); }
+.rating-badge.tier-average { border-color:var(--bone); color:var(--bone); }
+.rating-badge.tier-below { border-color:var(--smoke); color:var(--muted); }
+.rating-badge.tier-sub5 { border-color:var(--ash); color:var(--ash); }
 
 .msg-bar { padding:11px 16px; font-size:10px; letter-spacing:1px; text-align:center; margin-bottom:18px; border:1px solid transparent; display:none; }
 .msg-bar.error { display:block; background:rgba(220,20,60,.08); border-color:var(--blood); color:#ff8080; }
@@ -233,13 +250,13 @@
 
   <!-- STEP 2: UPLOAD SIDE -->
   <section class="tool-step" id="stepSide">
-    <div class="tool-eyebrow">☠ Step 2 / 4 ☠</div>
+    <div class="tool-eyebrow">☠ Step 2 / 4 ☠ <span class="req-badge" data-i18n="tool_side_required_badge">Required</span></div>
     <h1 class="tool-title" data-i18n="tool_step_upload_side_title">Upload A Side Photo</h1>
-    <p class="tool-text" data-i18n="tool_step_upload_side_text">Optional, but it lets the engine detect head tilt and correct your ratio automatically. Turn your head 90° so your ear is visible.</p>
+    <p class="tool-text" data-i18n="tool_step_upload_side_text">Required for lab-grade accuracy. It lets the engine detect head tilt using the Frankfort plane and correct your ratio automatically. Turn your head 90° so your ear is visible.</p>
 
     <div class="instr-card">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg>
-      <p data-i18n="tool_step_upload_side_text">Optional, but it lets the engine detect head tilt and correct your ratio automatically. Turn your head 90° so your ear is visible.</p>
+      <p data-i18n="tool_side_instr_text">Turn your head 90° so your ear is fully visible and the tragion (front of the ear) and lower eye socket aren't blocked by hair.</p>
     </div>
 
     <div id="sideUploaderZone">
@@ -266,8 +283,7 @@
 
     <div class="tool-nav">
       <button class="btn-ghost" id="sideBackBtn" data-i18n="tool_back">← Back</button>
-      <button class="btn-ghost" id="sideSkipBtn" data-i18n="tool_skip_side">Skip This Step →</button>
-      <button class="btn-solid hidden" id="sideContinueBtn" data-i18n="tool_use_side">Use This Photo →</button>
+      <button class="btn-solid" id="sideContinueBtn" disabled data-i18n="tool_use_side">Continue →</button>
     </div>
   </section>
 
@@ -279,7 +295,7 @@
 
     <div class="adjust-tabs">
       <button class="adjust-tab active" id="tabFront" data-i18n="tool_view_front">Front</button>
-      <button class="adjust-tab hidden-tab" id="tabSide" data-i18n="tool_view_side">Side</button>
+      <button class="adjust-tab" id="tabSide" data-i18n="tool_view_side">Side</button>
     </div>
 
     <div id="adjustLoading" class="tool-loading" style="display:none;">
@@ -300,8 +316,12 @@
       <div class="legend-item"><span class="legend-dot" style="background:#4cc9f0"></span><span data-i18n="tool_pt_sn">Sn — Subnasale (nose base)</span></div>
       <div class="legend-item"><span class="legend-dot" style="background:#7bd389"></span><span data-i18n="tool_pt_me">Me — Menton (chin)</span></div>
     </div>
+    <div class="legend" id="sideLegend" style="display:none;">
+      <div class="legend-item"><span class="legend-dot" style="background:#dc143c"></span><span data-i18n="tool_pt_tragion">Tragion — front of ear</span></div>
+      <div class="legend-item"><span class="legend-dot" style="background:#4cc9f0"></span><span data-i18n="tool_pt_orbit">Orbitale — lower eye socket</span></div>
+    </div>
 
-    <p class="tool-hint" id="adjustHint" data-i18n="tool_manual_hint">Detection unavailable — place the four points manually by clicking on the photo.</p>
+    <p class="tool-hint" id="adjustHint" data-i18n="tool_manual_hint">Detection unavailable — place the points manually by clicking on the photo.</p>
 
     <div class="tool-nav">
       <button class="btn-ghost" id="adjustBackBtn" data-i18n="tool_back">← Back</button>
@@ -330,6 +350,17 @@
         </div>
       </div>
       <div class="tilt-flag" id="tiltFlag"></div>
+
+      <div class="result-extra">
+        <div class="result-extra-block">
+          <div class="result-extra-lbl" data-i18n="tool_archetype_title">Your Archetype</div>
+          <div class="result-extra-val" id="resultArchetype">--</div>
+        </div>
+        <div class="result-extra-block">
+          <div class="result-extra-lbl" data-i18n="tool_rating_title">Rating</div>
+          <div class="rating-badge" id="resultRating">--</div>
+        </div>
+      </div>
 
       <div class="tool-nav">
         <button class="btn-ghost" id="startOverBtn" data-i18n="tool_start_over">Start Over</button>
@@ -576,18 +607,14 @@ wireUploader({
   onLoaded: (img) => {
     state.sideImg = img;
     state.sidePts = null;
-    document.getElementById('sideContinueBtn').classList.toggle('hidden', !img);
+    document.getElementById('sideContinueBtn').disabled = !img;
   }
 });
 
 document.getElementById('sideBackBtn').addEventListener('click', () => goToStep(0));
-document.getElementById('sideSkipBtn').addEventListener('click', () => {
-  state.sideImg = null;
-  state.hasSide = false;
-  enterAdjustStep();
-});
 document.getElementById('sideContinueBtn').addEventListener('click', () => {
-  state.hasSide = !!state.sideImg;
+  if (!state.sideImg) return; // side photo is required
+  state.hasSide = true;
   enterAdjustStep();
 });
 
@@ -695,16 +722,24 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors) {
     ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
     ctx.drawImage(img, 0, 0);
     if (!points) return;
-    const r = Math.max(6, 9 / scale);
+    const r = Math.max(11, 16 / scale);
     pointKeys.forEach(key => {
       const p = points[key];
       if (!p) return;
+      // outer glow ring so the dot stays visible on busy/dark photos
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r + Math.max(3, 4 / scale), 0, Math.PI * 2);
+      ctx.strokeStyle = colors[key];
+      ctx.globalAlpha = 0.35;
+      ctx.lineWidth = Math.max(2, 3 / scale);
+      ctx.stroke();
+      // main dot
       ctx.beginPath();
       ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
       ctx.fillStyle = colors[key];
-      ctx.globalAlpha = 0.85;
+      ctx.globalAlpha = 0.9;
       ctx.fill();
-      ctx.lineWidth = Math.max(1.5, 2 / scale);
+      ctx.lineWidth = Math.max(2, 3 / scale);
       ctx.strokeStyle = '#fff';
       ctx.globalAlpha = 1;
       ctx.stroke();
@@ -720,7 +755,7 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors) {
 
   function nearestPoint(pos) {
     if (!points) return null;
-    const r = Math.max(14, 20 / scale);
+    const r = Math.max(20, 28 / scale);
     let best = null, bestD = Infinity;
     pointKeys.forEach(key => {
       const p = points[key];
@@ -764,9 +799,10 @@ let sideEditor = null;
 
 async function enterAdjustStep() {
   goToStep(2);
-  document.getElementById('tabSide').classList.toggle('hidden-tab', !state.hasSide);
   document.getElementById('canvasWrapSide').style.display = 'none';
   document.getElementById('canvasWrapFront').style.display = 'block';
+  document.getElementById('frontLegend').style.display = 'flex';
+  document.getElementById('sideLegend').style.display = 'none';
   document.getElementById('tabFront').classList.add('active');
   document.getElementById('tabSide').classList.remove('active');
 
@@ -805,19 +841,18 @@ async function enterAdjustStep() {
   state.frontPts = detected;
   frontEditor.setPoints(detected);
 
-  if (state.hasSide) {
-    const canvasSide = document.getElementById('canvasSide');
-    sideEditor = makeCanvasEditor(canvasSide, state.sideImg, ['tragion', 'orbit'], SIDE_COLORS);
-    sideEditor.resize();
-    let sidePts = null;
-    try { sidePts = await detectSidePoints(state.sideImg); } catch (e) { console.error(e); }
-    if (!sidePts) {
-      const w = state.sideImg.naturalWidth, h = state.sideImg.naturalHeight;
-      sidePts = { tragion: { x: w * 0.75, y: h * 0.45 }, orbit: { x: w * 0.55, y: h * 0.4 } };
-    }
-    state.sidePts = sidePts;
-    sideEditor.setPoints(sidePts);
+  // side photo is required — always detect + editable dots for it too
+  const canvasSide = document.getElementById('canvasSide');
+  sideEditor = makeCanvasEditor(canvasSide, state.sideImg, ['tragion', 'orbit'], SIDE_COLORS);
+  sideEditor.resize();
+  let sidePts = null;
+  try { sidePts = await detectSidePoints(state.sideImg); } catch (e) { console.error(e); }
+  if (!sidePts) {
+    const w = state.sideImg.naturalWidth, h = state.sideImg.naturalHeight;
+    sidePts = { tragion: { x: w * 0.75, y: h * 0.45 }, orbit: { x: w * 0.55, y: h * 0.4 } };
   }
+  state.sidePts = sidePts;
+  sideEditor.setPoints(sidePts);
 }
 
 document.getElementById('tabFront').addEventListener('click', () => {
@@ -826,6 +861,7 @@ document.getElementById('tabFront').addEventListener('click', () => {
   document.getElementById('canvasWrapFront').style.display = 'block';
   document.getElementById('canvasWrapSide').style.display = 'none';
   document.getElementById('frontLegend').style.display = 'flex';
+  document.getElementById('sideLegend').style.display = 'none';
   frontEditor && frontEditor.resize();
 });
 document.getElementById('tabSide').addEventListener('click', () => {
@@ -834,11 +870,12 @@ document.getElementById('tabSide').addEventListener('click', () => {
   document.getElementById('canvasWrapSide').style.display = 'block';
   document.getElementById('canvasWrapFront').style.display = 'none';
   document.getElementById('frontLegend').style.display = 'none';
+  document.getElementById('sideLegend').style.display = 'flex';
   sideEditor && sideEditor.resize();
 });
 
 document.getElementById('adjustBackBtn').addEventListener('click', () => {
-  goToStep(state.hasSide || state.sideImg ? 1 : 0);
+  goToStep(1);
 });
 
 /* ══════════════════════════════════════
@@ -848,27 +885,25 @@ function computeRatio() {
   const p = frontEditor.getPoints();
   let tilted = false;
 
-  // Front-view points are already what we measure vertically.
-  // If we have a side photo, use the Frankfort plane (tragion → infraorbital)
+  // Front-view points are already what we measure vertically. Side data is
+  // required, so we always use the Frankfort plane (tragion → infraorbital)
   // to find the head's tilt angle and rotate the front points to compensate
   // for any camera-level mismatch reflected in posture.
   let pts = { tr: { ...p.tr }, n: { ...p.n }, sn: { ...p.sn }, me: { ...p.me } };
 
-  if (state.hasSide && state.sidePts) {
-    const { tragion, orbit } = state.sidePts;
-    const angle = Math.atan2(tragion.y - orbit.y, tragion.x - orbit.x);
-    // ideally this angle is 0 (a level Frankfort plane); rotate front
-    // points around their own centroid by the residual tilt
-    const cx = (pts.tr.x + pts.n.x + pts.sn.x + pts.me.x) / 4;
-    const cy = (pts.tr.y + pts.n.y + pts.sn.y + pts.me.y) / 4;
-    const theta = -angle;
-    if (Math.abs(theta) > 0.01) tilted = true;
-    const cos = Math.cos(theta), sin = Math.sin(theta);
-    ['tr', 'n', 'sn', 'me'].forEach(k => {
-      const dx = pts[k].x - cx, dy = pts[k].y - cy;
-      pts[k] = { x: cx + dx * cos - dy * sin, y: cy + dx * sin + dy * cos };
-    });
-  }
+  const { tragion, orbit } = state.sidePts;
+  const angle = Math.atan2(tragion.y - orbit.y, tragion.x - orbit.x);
+  // ideally this angle is 0 (a level Frankfort plane); rotate front
+  // points around their own centroid by the residual tilt
+  const cx = (pts.tr.x + pts.n.x + pts.sn.x + pts.me.x) / 4;
+  const cy = (pts.tr.y + pts.n.y + pts.sn.y + pts.me.y) / 4;
+  const theta = -angle;
+  if (Math.abs(theta) > 0.01) tilted = true;
+  const cos = Math.cos(theta), sin = Math.sin(theta);
+  ['tr', 'n', 'sn', 'me'].forEach(k => {
+    const dx = pts[k].x - cx, dy = pts[k].y - cy;
+    pts[k] = { x: cx + dx * cos - dy * sin, y: cy + dx * sin + dy * cos };
+  });
 
   const totalHeight = pts.me.y - pts.tr.y;
   const lowerThird = pts.me.y - pts.sn.y;
@@ -881,8 +916,16 @@ document.getElementById('calculateBtn').addEventListener('click', () => {
   const p = frontEditor.getPoints();
   if (!p || !p.tr || !p.n || !p.sn || !p.me) {
     showMsg(tr('tool_err_no_face'), 'error');
+    document.getElementById('tabFront').click();
     return;
   }
+  const sp = sideEditor ? sideEditor.getPoints() : null;
+  if (!sp || !sp.tragion || !sp.orbit) {
+    showMsg(tr('tool_err_no_side_pts'), 'error');
+    document.getElementById('tabSide').click();
+    return;
+  }
+  state.sidePts = sp;
   const { ratio, tilted } = computeRatio();
   showResult(ratio, tilted);
 });
@@ -892,6 +935,27 @@ document.getElementById('calculateBtn').addEventListener('click', () => {
 ══════════════════════════════════════ */
 const IDEAL = 33.3;
 let lastRatio = null;
+let lastArchetype = null;
+let lastRating = null;
+
+// Archetype: which side of the classical ideal the lower-third falls on.
+function getArchetype(ratio) {
+  if (ratio < 30)   return { key: 'archetype_short',          label: tr('archetype_short') };
+  if (ratio < 32)   return { key: 'archetype_balanced_short', label: tr('archetype_balanced_short') };
+  if (ratio <= 34.6) return { key: 'archetype_golden',         label: tr('archetype_golden') };
+  if (ratio <= 38)  return { key: 'archetype_elongated',      label: tr('archetype_elongated') };
+  return { key: 'archetype_long', label: tr('archetype_long') };
+}
+
+// Rating: distance from the 33.3% classical ideal, Sub5 → Chad.
+function getRating(ratio) {
+  const delta = Math.abs(ratio - IDEAL);
+  if (delta <= 1.2) return { key: 'rating_chad',      label: tr('rating_chad'),      tier: 'tier-chad',    score: 10 };
+  if (delta <= 2.5) return { key: 'rating_above_avg', label: tr('rating_above_avg'), tier: 'tier-above',   score: 8  };
+  if (delta <= 4.5) return { key: 'rating_average',   label: tr('rating_average'),   tier: 'tier-average', score: 6  };
+  if (delta <= 7)   return { key: 'rating_below_avg', label: tr('rating_below_avg'), tier: 'tier-below',   score: 4  };
+  return { key: 'rating_sub5', label: tr('rating_sub5'), tier: 'tier-sub5', score: 2 };
+}
 
 function showResult(ratio, tilted) {
   lastRatio = ratio;
@@ -902,14 +966,20 @@ function showResult(ratio, tilted) {
   deltaEl.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%';
   deltaEl.style.color = Math.abs(delta) <= 2 ? '#5ecb96' : 'var(--crimson)';
 
+  // side photo is always used now, so the ratio is always tilt-corrected
   const flag = document.getElementById('tiltFlag');
-  if (state.hasSide) {
-    flag.textContent = tr('tool_result_tilt_corrected');
-    flag.className = 'tilt-flag on';
-  } else {
-    flag.textContent = tr('tool_result_no_side');
-    flag.className = 'tilt-flag off';
-  }
+  flag.textContent = tr('tool_result_tilt_corrected');
+  flag.className = 'tilt-flag on';
+
+  const archetype = getArchetype(ratio);
+  const rating = getRating(ratio);
+  lastArchetype = archetype;
+  lastRating = rating;
+
+  document.getElementById('resultArchetype').textContent = archetype.label;
+  const ratingEl = document.getElementById('resultRating');
+  ratingEl.textContent = rating.label;
+  ratingEl.className = 'rating-badge ' + rating.tier;
 }
 
 document.getElementById('startOverBtn').addEventListener('click', () => {
@@ -924,7 +994,10 @@ document.getElementById('saveResultBtn').addEventListener('click', async () => {
     await addDoc(collection(db, 'users', currentUser.uid, 'results'), {
       ratio: Number(lastRatio.toFixed(2)),
       idealRatio: IDEAL,
-      tiltCorrected: !!state.hasSide,
+      tiltCorrected: true,
+      archetype: lastArchetype ? lastArchetype.key : null,
+      rating: lastRating ? lastRating.key : null,
+      ratingScore: lastRating ? lastRating.score : null,
       createdAt: serverTimestamp()
     });
     showMsg(tr('tool_saved'), 'success');

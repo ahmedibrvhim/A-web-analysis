@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>A | Lower Third Calculator</title>
 <link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 /* ── HERO (logo only) ── */
 #hero {
@@ -107,13 +109,17 @@
     </div>
   </a>
   <ul class="nav-links" id="navLinks">
-    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="index.html" class="active" data-i18n="nav_home">Home</a></li>
   </ul>
   <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
   <div class="nav-right" id="navRight">
-    <a class="btn-ghost" href="login.html">Login / Register</a>
+    <button class="nav-lang" id="navLang" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      <span><span class="lang-cur" id="langCur">EN</span> <span class="lang-sep">/</span> <span id="langOther">AR</span></span>
+    </button>
+    <a class="btn-ghost" href="login.html" id="navLoginLink" data-i18n="nav_login">Login / Register</a>
   </div>
 </nav>
 
@@ -125,7 +131,26 @@
     <img src="Skull.png" alt="Skull">
   </div>
   <div class="hero-title">A</div>
+  <div class="hero-sub" data-i18n="hero_sub">☠ Lower-Third Ratio Calculator ☠</div>
 </section>
+
+<script type="module">
+import { getLang, applyDocumentDirection, applyTranslations, wireLangToggle, t } from './i18n.js';
+
+let currentLang = getLang();
+applyDocumentDirection(currentLang);
+applyTranslations(currentLang);
+
+wireLangToggle(document.getElementById('navLang'), currentLang, (next) => {
+  currentLang = next;
+  applyDocumentDirection(next);
+  applyTranslations(next);
+  window.dispatchEvent(new CustomEvent('brandA:langchange', { detail: { lang: next } }));
+});
+
+window.brandALang = () => currentLang;
+window.brandAT = (key) => t(key, currentLang);
+</script>
 
 <script>
 function toggleMobileNav() {
@@ -151,8 +176,44 @@ import {
   auth, db, onAuthStateChanged, signOut, doc, getDoc
 } from './firebase-config.js';
 
-onAuthStateChanged(auth, async user => {
+function renderUserPill(user, displayName) {
   const nr = document.getElementById('navRight');
+  const avatarSrc = (user.photoURL && user.photoURL.startsWith('http')) ? user.photoURL : 'Skull.png';
+
+  nr.innerHTML = '<button class="nav-lang" id="navLang" type="button">'+
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>'+
+      '<span><span class="lang-cur" id="langCur">EN</span> <span class="lang-sep">/</span> <span id="langOther">AR</span></span>'+
+    '</button>'+
+    '<div class="user-pill">'+
+      '<img class="user-avatar" id="navAvatarImg">'+
+      '<span class="user-name">'+displayName+'</span>'+
+      '<button class="btn-logout" id="logoutBtn">'+window.brandAT('sign_out')+'</button>'+
+    '</div>';
+
+  const avatarEl = document.getElementById('navAvatarImg');
+  avatarEl.src = avatarSrc;
+  avatarEl.onerror = function() { this.onerror = null; this.src = 'Skull.png'; };
+
+  document.getElementById('logoutBtn').onclick = () => {
+    signOut(auth).then(() => {
+      localStorage.removeItem('brandA_user');
+      location.reload();
+    });
+  };
+
+  // Re-wire the language toggle since we just replaced its markup
+  import('./i18n.js').then(({ getLang, wireLangToggle, applyDocumentDirection, applyTranslations }) => {
+    wireLangToggle(document.getElementById('navLang'), getLang(), (next) => {
+      applyDocumentDirection(next);
+      applyTranslations(next);
+      const el = document.getElementById('logoutBtn');
+      if (el) el.textContent = window.brandAT ? window.brandAT('sign_out') : el.textContent;
+      window.dispatchEvent(new CustomEvent('brandA:langchange', { detail: { lang: next } }));
+    });
+  });
+}
+
+onAuthStateChanged(auth, async user => {
   if (user) {
     try {
       const userSnap = await getDoc(doc(db, 'users', user.uid));
@@ -171,24 +232,7 @@ onAuthStateChanged(auth, async user => {
       displayName = storedUser.name?.trim() || user.email.split('@')[0];
     }
 
-    const avatarSrc = (user.photoURL && user.photoURL.startsWith('http')) ? user.photoURL : 'Skull.png';
-
-    nr.innerHTML = '<div class="user-pill">'+
-      '<img class="user-avatar" id="navAvatarImg">'+
-      '<span class="user-name">'+displayName+'</span>'+
-      '<button class="btn-logout" id="logoutBtn">Sign out</button>'+
-      '</div>';
-
-    const avatarEl = document.getElementById('navAvatarImg');
-    avatarEl.src = avatarSrc;
-    avatarEl.onerror = function() { this.onerror = null; this.src = 'Skull.png'; };
-
-    document.getElementById('logoutBtn').onclick = () => {
-      signOut(auth).then(() => {
-        localStorage.removeItem('brandA_user');
-        location.reload();
-      });
-    };
+    renderUserPill(user, displayName);
   } else {
     // No signed-in user — this page requires auth, so bounce to login.
     sessionStorage.setItem('authRequired', '1');

@@ -181,6 +181,7 @@ body.lang-ar .intro-lang { font-family:'Tajawal',sans-serif; letter-spacing:0; }
 
 <script type="module">
 import { auth, onAuthStateChanged } from './firebase-config.js';
+import { getLang, saveLang, applyDocumentDirection } from './i18n.js';
 
 const introSteps = [
   {
@@ -243,7 +244,7 @@ const uiStrings = {
 };
 
 let introIndex = 0;
-let lang = 'en';
+let lang = getLang(); // pick up any language already chosen on another page
 
 /* ── real Firebase auth check (don't rely on localStorage alone) ── */
 let authReady = false;
@@ -299,9 +300,8 @@ function renderIntro() {
 
 function setLang(next) {
   lang = next;
-  htmlRoot.setAttribute('lang', lang);
-  htmlRoot.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-  document.body.classList.toggle('lang-ar', lang === 'ar');
+  saveLang(lang); // persist so login.html / home.html open in the same language
+  applyDocumentDirection(lang);
   langCur.textContent = lang.toUpperCase();
   langOther.textContent = lang === 'en' ? 'AR' : 'EN';
   renderIntro();
@@ -339,7 +339,7 @@ introPrev.addEventListener('click', () => {
 introSkip.addEventListener('click', goToHome);
 introLang.addEventListener('click', () => { setLang(lang === 'en' ? 'ar' : 'en'); });
 
-renderIntro();
+setLang(lang); // apply the initial language (saved or default) to html attrs + render
 </script>
 </body>
 </html>

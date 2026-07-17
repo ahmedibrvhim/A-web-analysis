@@ -47,6 +47,72 @@ body::before {
 ::-webkit-scrollbar-track { background:var(--black); }
 ::-webkit-scrollbar-thumb { background:var(--blood); border-radius:0; }
 
+/* ══ LANGUAGE / RTL SUPPORT ══
+   Applied whenever <body class="lang-ar"> is set by i18n.js.
+   Uses the same Tajawal font + rules index.html already defines
+   for its intro overlay, extended to every page. */
+body.lang-ar {
+  font-family: 'Tajawal', sans-serif;
+}
+body.lang-ar .logo-mark,
+body.lang-ar .hero-title,
+body.lang-ar .auth-head-logo {
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+body.lang-ar .hero-sub,
+body.lang-ar .logo-tag,
+body.lang-ar .auth-head-sub,
+body.lang-ar .nav-links a,
+body.lang-ar .btn-ghost,
+body.lang-ar .btn-solid,
+body.lang-ar .cart-pill,
+body.lang-ar .user-name,
+body.lang-ar .btn-logout,
+body.lang-ar .auth-tab,
+body.lang-ar .form-lbl,
+body.lang-ar .form-inp,
+body.lang-ar .auth-submit,
+body.lang-ar .btn-google,
+body.lang-ar .forgot-link,
+body.lang-ar .msg-bar,
+body.lang-ar .reset-intro,
+body.lang-ar .strength-label,
+body.lang-ar .match-hint,
+body.lang-ar .back-home,
+body.lang-ar .intro-lang {
+  font-family: 'Tajawal', sans-serif;
+  letter-spacing: 0;
+}
+
+/* Mirror layout for RTL reading direction */
+html[dir="rtl"] .nav-links { padding-right: 0; }
+html[dir="rtl"] .forgot-link { text-align: left; }
+html[dir="rtl"] .g-icon { order: 1; }
+
+/* Nav-bar language toggle button (compact version of the intro one) */
+.nav-lang {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px solid var(--blood);
+  color: var(--text); padding: 8px 14px 8px 10px;
+  font-family: 'Cinzel', serif; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase;
+  cursor: pointer; transition: all .3s;
+}
+.nav-lang:hover {
+  border-color: var(--crimson); color: var(--white);
+  background: rgba(139,0,0,.15); box-shadow: 0 0 12px rgba(139,0,0,.3);
+}
+.nav-lang svg { width: 12px; height: 12px; flex-shrink: 0; }
+.nav-lang .lang-cur { color: var(--crimson); font-weight: 700; }
+.nav-lang .lang-sep { color: var(--smoke); }
+body.lang-ar .nav-lang { font-family: 'Tajawal', sans-serif; letter-spacing: 0; }
+
+@media (max-width: 768px) {
+  .nav-lang { font-size: 8px; padding: 7px 10px 7px 8px; }
+}
+
 /* ══ NAV ══ */
 nav {
   position: fixed; top:3px; left:0; right:0;

@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>A — Login / Register</title>
 <link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 /* ── AUTH PAGE SPECIFIC ── */
 .auth-wrap {
@@ -232,9 +234,15 @@
     <div class="auth-head">
       <div>
         <div class="auth-head-logo">A</div>
-        <div class="auth-head-sub">☠ Client Portal ☠</div>
+        <div class="auth-head-sub" data-i18n="portal_sub">☠ Client Portal ☠</div>
       </div>
-      <img class="auth-skull-img" src="Skull.png" alt="skull">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="nav-lang" id="navLang" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+          <span><span class="lang-cur" id="langCur">EN</span> <span class="lang-sep">/</span> <span id="langOther">AR</span></span>
+        </button>
+        <img class="auth-skull-img" src="Skull.png" alt="skull">
+      </div>
     </div>
 
     <!-- body -->
@@ -242,8 +250,8 @@
 
       <!-- tabs -->
       <div class="auth-tabs">
-        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
-        <button class="auth-tab" id="tabReg" onclick="switchTab('register')">Register</button>
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')" data-i18n="tab_signin">Sign In</button>
+        <button class="auth-tab" id="tabReg" onclick="switchTab('register')" data-i18n="tab_register">Register</button>
       </div>
 
       <!-- messages -->
@@ -252,30 +260,30 @@
       <!-- ══ LOGIN FORM ══ -->
       <div id="loginForm">
         <div class="form-field">
-          <label class="form-lbl">Email Address</label>
-          <input class="form-inp" type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+          <label class="form-lbl" data-i18n="lbl_email">Email Address</label>
+          <input class="form-inp" type="email" id="loginEmail" placeholder="your@email.com" data-i18n-placeholder="placeholder_email" autocomplete="email">
         </div>
         <div class="form-field">
-          <label class="form-lbl">Password</label>
-          <input class="form-inp" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+          <label class="form-lbl" data-i18n="lbl_password">Password</label>
+          <input class="form-inp" type="password" id="loginPass" placeholder="••••••••" data-i18n-placeholder="placeholder_password" autocomplete="current-password">
         </div>
-        <a class="forgot-link" href="#" onclick="handleForgotPassword(event)">Forgot password?</a>
-        <button class="auth-submit" id="loginBtn" onclick="handleLogin()">☠ &nbsp; Sign In</button>
+        <a class="forgot-link" href="#" onclick="handleForgotPassword(event)" data-i18n="forgot_password">Forgot password?</a>
+        <button class="auth-submit" id="loginBtn" onclick="handleLogin()" data-i18n="btn_signin">☠ &nbsp; Sign In</button>
       </div>
 
       <!-- ══ REGISTER FORM ══ -->
       <div id="registerForm" style="display:none">
         <div class="form-field">
-          <label class="form-lbl">Full Name</label>
-          <input class="form-inp" type="text" id="regName" placeholder="Your name" autocomplete="name">
+          <label class="form-lbl" data-i18n="lbl_fullname">Full Name</label>
+          <input class="form-inp" type="text" id="regName" placeholder="Your name" data-i18n-placeholder="placeholder_name" autocomplete="name">
         </div>
         <div class="form-field">
-          <label class="form-lbl">Email Address</label>
-          <input class="form-inp" type="email" id="regEmail" placeholder="your@email.com" autocomplete="email">
+          <label class="form-lbl" data-i18n="lbl_email">Email Address</label>
+          <input class="form-inp" type="email" id="regEmail" placeholder="your@email.com" data-i18n-placeholder="placeholder_email" autocomplete="email">
         </div>
         <div class="form-field">
-          <label class="form-lbl">Password (min 6 characters)</label>
-          <input class="form-inp" type="password" id="regPass" placeholder="••••••••" autocomplete="new-password">
+          <label class="form-lbl" data-i18n="lbl_password_min">Password (min 6 characters)</label>
+          <input class="form-inp" type="password" id="regPass" placeholder="••••••••" data-i18n-placeholder="placeholder_password" autocomplete="new-password">
           <div class="strength-wrap">
             <div class="strength-bar-bg">
               <div class="strength-bar-fill" id="strengthBar"></div>
@@ -284,30 +292,30 @@
           </div>
         </div>
         <div class="form-field">
-          <label class="form-lbl">Confirm Password</label>
-          <input class="form-inp" type="password" id="regConfirm" placeholder="••••••••" autocomplete="new-password">
+          <label class="form-lbl" data-i18n="lbl_confirm_password">Confirm Password</label>
+          <input class="form-inp" type="password" id="regConfirm" placeholder="••••••••" data-i18n-placeholder="placeholder_password" autocomplete="new-password">
           <span class="match-hint" id="matchHint"></span>
         </div>
-        <button class="auth-submit" id="regBtn" onclick="handleRegister()">☠ &nbsp; Create Account</button>
+        <button class="auth-submit" id="regBtn" onclick="handleRegister()" data-i18n="btn_register">☠ &nbsp; Create Account</button>
       </div>
 
       <!-- ══ RESET PASSWORD FORM (shown when arriving via the emailed reset link) ══ -->
       <div id="resetForm" style="display:none">
-        <p class="reset-intro">Enter a new password for <strong id="resetEmailLabel"></strong></p>
+        <p class="reset-intro"><span data-i18n="reset_intro_prefix">Enter a new password for </span><strong id="resetEmailLabel"></strong></p>
         <div class="form-field">
-          <label class="form-lbl">New Password (min 6 characters)</label>
-          <input class="form-inp" type="password" id="resetPass" placeholder="••••••••" autocomplete="new-password">
+          <label class="form-lbl" data-i18n="lbl_new_password">New Password (min 6 characters)</label>
+          <input class="form-inp" type="password" id="resetPass" placeholder="••••••••" data-i18n-placeholder="placeholder_password" autocomplete="new-password">
         </div>
         <div class="form-field">
-          <label class="form-lbl">Confirm New Password</label>
-          <input class="form-inp" type="password" id="resetConfirm" placeholder="••••••••" autocomplete="new-password">
+          <label class="form-lbl" data-i18n="lbl_confirm_new_password">Confirm New Password</label>
+          <input class="form-inp" type="password" id="resetConfirm" placeholder="••••••••" data-i18n-placeholder="placeholder_password" autocomplete="new-password">
         </div>
-        <button class="auth-submit" id="resetBtn" onclick="handleResetPassword()">☠ &nbsp; Set New Password</button>
+        <button class="auth-submit" id="resetBtn" onclick="handleResetPassword()" data-i18n="btn_reset">☠ &nbsp; Set New Password</button>
       </div>
 
       <div class="or-divider" id="orDivider">
         <div class="or-line"></div>
-        <span class="or-text">Or</span>
+        <span class="or-text" data-i18n="or_text">Or</span>
         <div class="or-line"></div>
       </div>
 
@@ -318,7 +326,7 @@
           <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"/>
           <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
         </svg>
-        Continue with Google
+        <span data-i18n="btn_google">Continue with Google</span>
       </button>
 
     </div>
@@ -343,6 +351,17 @@ import {
 // also import password-reset helpers separately
 import { sendPasswordResetEmail, verifyPasswordResetCode, confirmPasswordReset }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+import { getLang, saveLang, applyDocumentDirection, applyTranslations, wireLangToggle, t } from './i18n.js';
+
+let currentLang = getLang();
+applyDocumentDirection(currentLang);
+applyTranslations(currentLang);
+wireLangToggle(document.getElementById('navLang'), currentLang, (next) => {
+  currentLang = next;
+  applyDocumentDirection(next);
+  applyTranslations(next);
+});
 
 /* ─────────── detect an incoming password-reset link ─────────── */
 /* Firebase appends ?mode=resetPassword&oobCode=... to the URL we
@@ -393,10 +412,10 @@ onAuthStateChanged(auth, async user => {
     // Show message only if forced sign-out came from page-load check above
     if (sessionStorage.getItem('accountRemoved')) {
       sessionStorage.removeItem('accountRemoved');
-      showMsg('Your account was removed. Please sign in again to restore access.', 'error');
+      showMsg(t('msg_account_removed', currentLang), 'error');
     } else if (sessionStorage.getItem('authRequired')) {
       sessionStorage.removeItem('authRequired');
-      showMsg('Sign in or register to unlock the Tool. ☠', 'info');
+      showMsg(t('msg_auth_required', currentLang), 'info');
     }
   }
 });
@@ -417,7 +436,7 @@ function setLoading(id, on) {
   const b = document.getElementById(id);
   if (!b._orig) b._orig = b.innerHTML;
   b.disabled   = on;
-  b.innerHTML  = on ? '<span class="spinner"></span> Please wait...' : b._orig;
+  b.innerHTML  = on ? '<span class="spinner"></span> ' + t('please_wait', currentLang) : b._orig;
 }
 
 function isValidEmail(e) {
@@ -453,16 +472,16 @@ async function saveUser(user, extraName = '') {
 /* ─────────── Firebase error → readable ─────────── */
 function errMsg(code) {
   const map = {
-    'auth/user-not-found':       'No account found with this email. Please register.',
-    'auth/wrong-password':       'Incorrect password. Try again or reset it.',
-    'auth/invalid-credential':   'Invalid email or password.',
-    'auth/email-already-in-use': 'This email is already registered.',
-    'auth/weak-password':        'Password must be at least 6 characters.',
-    'auth/invalid-email':        'Please enter a valid email address.',
-    'auth/too-many-requests':    'Too many attempts. Please wait a few minutes.',
-    'auth/network-request-failed':'Network error. Check your connection.',
+    'auth/user-not-found':       'err_user_not_found',
+    'auth/wrong-password':       'err_wrong_password',
+    'auth/invalid-credential':   'err_invalid_credential',
+    'auth/email-already-in-use': 'err_email_in_use',
+    'auth/weak-password':        'err_weak_password',
+    'auth/invalid-email':        'err_invalid_email',
+    'auth/too-many-requests':    'err_too_many_requests',
+    'auth/network-request-failed':'err_network',
   };
-  return map[code] || 'Something went wrong. Please try again.';
+  return t(map[code] || 'err_generic', currentLang);
 }
 
 /* ─────────── LOGIN ─────────── */
@@ -471,8 +490,8 @@ window.handleLogin = async () => {
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
 
-  if (!isValidEmail(email)) { showMsg('Please enter a valid email.'); return; }
-  if (!pass)                 { showMsg('Please enter your password.'); return; }
+  if (!isValidEmail(email)) { showMsg(t('msg_invalid_email', currentLang)); return; }
+  if (!pass)                 { showMsg(t('msg_enter_password', currentLang)); return; }
 
   setLoading('loginBtn', true);
   _savingUser = true; // set BEFORE signIn so onAuthStateChanged is blocked during entire login
@@ -486,7 +505,7 @@ window.handleLogin = async () => {
       photo: cred.user.photoURL || ''
     }));
     _savingUser = false;
-    showToastMsg('💀 Welcome back!');
+    showToastMsg(t('msg_welcome_back', currentLang));
     window.location.href = 'home.html';
   } catch (e) {
     _savingUser = false;
@@ -504,10 +523,10 @@ window.handleRegister = async () => {
   const pass    = document.getElementById('regPass').value;
   const confirm = document.getElementById('regConfirm').value;
 
-  if (!name)                 { showMsg('Please enter your name.'); return; }
-  if (!isValidEmail(email))  { showMsg('Please enter a valid email.'); return; }
-  if (pass.length < 6)       { showMsg('Password must be at least 6 characters.'); return; }
-  if (pass !== confirm)      { showMsg('Passwords do not match.'); return; }
+  if (!name)                 { showMsg(t('msg_enter_name', currentLang)); return; }
+  if (!isValidEmail(email))  { showMsg(t('msg_invalid_email', currentLang)); return; }
+  if (pass.length < 6)       { showMsg(t('msg_password_min', currentLang)); return; }
+  if (pass !== confirm)      { showMsg(t('msg_passwords_no_match', currentLang)); return; }
 
   setLoading('regBtn', true);
   _savingUser = true; // block onAuthStateChanged redirect until Firestore write finishes
@@ -521,8 +540,8 @@ window.handleRegister = async () => {
       email: cred.user.email,
       photo: cred.user.photoURL || ''
     }));
-    showMsg('Account created! Redirecting...', 'success');
-    showToastMsg('💀 Welcome to Brand A!');
+    showMsg(t('msg_account_created', currentLang), 'success');
+    showToastMsg(t('msg_welcome_new', currentLang));
     _savingUser = false;
     window.location.href = 'home.html';
   } catch (e) {
@@ -548,7 +567,7 @@ window.handleGoogleSignIn = async () => {
       photo: cred.user.photoURL || ''
     }));
     _savingUser = false;
-    showToastMsg('💀 Welcome!');
+    showToastMsg(t('msg_welcome_google', currentLang));
     window.location.href = 'home.html';
   } catch (e) {
     _savingUser = false;
@@ -568,28 +587,25 @@ window.handleForgotPassword = async (e) => {
 
   const email = document.getElementById('loginEmail').value.trim();
   if (!isValidEmail(email)) {
-    showMsg('Enter your email address in the field above first, then click "Forgot password?".');
+    showMsg(t('msg_forgot_prompt', currentLang));
     return;
   }
 
-  showMsg('Sending reset email...', 'info');
+  showMsg(t('msg_sending_reset', currentLang), 'info');
   try {
     const actionCodeSettings = {
       url: window.location.origin + window.location.pathname,
       handleCodeInApp: true
     };
     await sendPasswordResetEmail(auth, email, actionCodeSettings);
-    showMsg(
-      '✓ Password reset email sent to ' + email + '. Check your inbox (and spam folder).',
-      'success'
-    );
+    showMsg(t('msg_reset_sent', currentLang).replace('{email}', email), 'success');
   } catch (e) {
     const map = {
-      'auth/user-not-found': 'No account found with this email address.',
-      'auth/invalid-email':  'Please enter a valid email address.',
-      'auth/too-many-requests': 'Too many requests. Please wait before trying again.',
+      'auth/user-not-found': 'err_reset_user_not_found',
+      'auth/invalid-email':  'err_reset_invalid_email',
+      'auth/too-many-requests': 'err_reset_too_many',
     };
-    showMsg(map[e.code] || 'Could not send reset email. Please try again.');
+    showMsg(t(map[e.code] || 'err_reset_generic', currentLang));
   }
 };
 
@@ -613,7 +629,7 @@ async function initPasswordReset() {
     handlingPasswordReset = false;
     showResetUI(false);
     switchTab('login');
-    showMsg('This password reset link is invalid or has expired. Please request a new one.');
+    showMsg(t('msg_reset_invalid_link', currentLang));
   }
 }
 
@@ -622,8 +638,8 @@ window.handleResetPassword = async () => {
   const pass    = document.getElementById('resetPass').value;
   const confirm = document.getElementById('resetConfirm').value;
 
-  if (!pass || pass.length < 6) { showMsg('Password must be at least 6 characters.'); return; }
-  if (pass !== confirm)         { showMsg('Passwords do not match.'); return; }
+  if (!pass || pass.length < 6) { showMsg(t('msg_password_min', currentLang)); return; }
+  if (pass !== confirm)         { showMsg(t('msg_passwords_no_match', currentLang)); return; }
 
   setLoading('resetBtn', true);
   try {
@@ -632,15 +648,15 @@ window.handleResetPassword = async () => {
     window.history.replaceState({}, document.title, window.location.pathname); // strip ?mode&oobCode
     showResetUI(false);
     switchTab('login');
-    showMsg('✓ Password updated. Please sign in with your new password.', 'success');
-    showToastMsg('💀 Password updated!');
+    showMsg(t('msg_password_updated', currentLang), 'success');
+    showToastMsg(t('msg_password_updated_toast', currentLang));
   } catch (e) {
     const map = {
-      'auth/expired-action-code': 'This reset link has expired. Please request a new one.',
-      'auth/invalid-action-code': 'This reset link is invalid or has already been used.',
-      'auth/weak-password':       'Password must be at least 6 characters.',
+      'auth/expired-action-code': 'err_reset_expired',
+      'auth/invalid-action-code': 'err_reset_invalid_code',
+      'auth/weak-password':       'err_weak_password',
     };
-    showMsg(map[e.code] || 'Could not reset password. Please try again.');
+    showMsg(t(map[e.code] || 'err_reset_generic', currentLang));
   } finally {
     setLoading('resetBtn', false);
   }
@@ -661,11 +677,11 @@ document.getElementById('regPass').addEventListener('input', function () {
   if (/[0-9]/.test(val))        score++;
   if (/[^A-Za-z0-9]/.test(val)) score++;
   const levels = [
-    { w:'20%', c:'#8b0000', l:'Very Weak' },
-    { w:'40%', c:'#cc3300', l:'Weak' },
-    { w:'60%', c:'#cc7700', l:'Fair' },
-    { w:'80%', c:'#4caf50', l:'Strong' },
-    { w:'100%',c:'#2e7d32', l:'Very Strong' },
+    { w:'20%', c:'#8b0000', l:t('strength_very_weak', currentLang) },
+    { w:'40%', c:'#cc3300', l:t('strength_weak', currentLang) },
+    { w:'60%', c:'#cc7700', l:t('strength_fair', currentLang) },
+    { w:'80%', c:'#4caf50', l:t('strength_strong', currentLang) },
+    { w:'100%',c:'#2e7d32', l:t('strength_very_strong', currentLang) },
   ];
   const lv = levels[Math.max(0, score - 1)];
   bar.style.width      = lv.w;
@@ -679,9 +695,9 @@ document.getElementById('regConfirm').addEventListener('input', function () {
   const hint = document.getElementById('matchHint');
   if (!this.value) { hint.className = 'match-hint'; return; }
   if (this.value === pass) {
-    hint.className = 'match-hint ok'; hint.textContent = '✓ Passwords match';
+    hint.className = 'match-hint ok'; hint.textContent = t('match_ok', currentLang);
   } else {
-    hint.className = 'match-hint bad'; hint.textContent = '✗ Passwords do not match';
+    hint.className = 'match-hint bad'; hint.textContent = t('match_bad', currentLang);
   }
 });
 

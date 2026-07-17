@@ -27,18 +27,40 @@
 /* ── uploader ── */
 .uploader {
   border:1.5px dashed var(--smoke); background:var(--panel);
-  padding:50px 24px; text-align:center; cursor:pointer;
+  padding:54px 24px; text-align:center; cursor:pointer;
   transition:all .3s; position:relative;
+  display:flex; flex-direction:column; align-items:center;
 }
-.uploader:hover, .uploader.drag { border-color:var(--blood); background:rgba(139,0,0,.06); }
-.uploader svg { width:40px; height:40px; color:var(--blood); margin-bottom:16px; }
-.uploader p { font-size:10px; letter-spacing:1px; color:var(--muted); }
+.uploader:hover, .uploader.drag { border-color:var(--blood); background:rgba(139,0,0,.07); }
+.uploader.drag { box-shadow:0 0 0 1px var(--blood), 0 0 24px rgba(139,0,0,.25) inset; }
+.uploader-icon {
+  width:64px; height:64px; border-radius:50%; margin-bottom:18px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(139,0,0,.1); border:1px solid var(--smoke);
+  transition:all .3s;
+}
+.uploader:hover .uploader-icon, .uploader.drag .uploader-icon { border-color:var(--blood); background:rgba(139,0,0,.18); }
+.uploader-icon svg { width:26px; height:26px; color:var(--crimson); }
+.uploader-cta { font-size:11px; letter-spacing:1px; color:var(--text); line-height:1.7; margin-bottom:6px; }
+.uploader-cta .browse-word { color:var(--crimson); text-decoration:underline; text-underline-offset:3px; }
+.uploader-sub { font-size:8px; letter-spacing:2px; color:var(--ash); text-transform:uppercase; }
 .uploader input { display:none; }
 
 .upload-preview { position:relative; border:1px solid var(--border); background:var(--panel); overflow:hidden; }
-.upload-preview img { display:block; width:100%; max-height:420px; object-fit:contain; background:var(--black); }
-.upload-preview-bar { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-top:1px solid var(--border); }
-.upload-preview-bar span { font-size:9px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; }
+.upload-preview-img-wrap { background:repeating-conic-gradient(var(--dark) 0% 25%, var(--black) 0% 50%) 50% / 16px 16px; }
+.upload-preview img { display:block; width:100%; max-height:420px; object-fit:contain; margin:0 auto; }
+.upload-preview-bar { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 16px; border-top:1px solid var(--border); }
+.upload-preview-info { display:flex; align-items:center; gap:8px; min-width:0; }
+.upload-preview-info svg { width:15px; height:15px; color:var(--crimson); flex-shrink:0; }
+.upload-preview-name { font-size:9px; letter-spacing:.5px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
+.upload-preview-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.upload-remove-btn {
+  background:none; border:1px solid var(--smoke); color:var(--ash);
+  width:26px; height:26px; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .3s; flex-shrink:0;
+}
+.upload-remove-btn:hover { border-color:var(--blood); color:var(--crimson); }
+.upload-remove-btn svg { width:12px; height:12px; }
 
 .tool-nav { display:flex; gap:14px; justify-content:center; margin-top:28px; }
 .tool-nav .hidden { display:none; }
@@ -107,7 +129,11 @@
 
 @media (max-width:480px) {
   .tool-progress { padding:24px 0 4px; }
-  .uploader { padding:36px 16px; }
+  .uploader { padding:38px 16px; }
+  .uploader-icon { width:54px; height:54px; margin-bottom:14px; }
+  .uploader-icon svg { width:22px; height:22px; }
+  .upload-preview img { max-height:280px; }
+  .upload-preview-name { max-width:110px; }
   .result-ring { width:160px; height:160px; }
   .result-ring .pct { font-size:30px; }
   .result-compare { gap:24px; }
@@ -155,15 +181,22 @@
 
     <div id="frontUploaderZone">
       <label class="uploader" id="frontUploader">
-        <input type="file" accept="image/png,image/jpeg" id="frontInput">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="14" r="3.5"/></svg>
-        <p data-i18n="tool_drop_cta">Drag &amp; drop a photo here, or click to browse</p>
+        <input type="file" accept="image/*" id="frontInput">
+        <span class="uploader-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span>
+        <p class="uploader-cta" id="frontUploaderCta"></p>
+        <p class="uploader-sub">JPG · PNG · HEIC</p>
       </label>
       <div class="upload-preview" id="frontPreviewBox" style="display:none;">
-        <img id="frontPreviewImg" alt="Front photo preview">
+        <div class="upload-preview-img-wrap"><img id="frontPreviewImg" alt="Front photo preview"></div>
         <div class="upload-preview-bar">
-          <span data-i18n="tool_change_photo">Change Photo</span>
-          <button class="btn-ghost" id="frontChangeBtn" type="button" data-i18n="tool_change_photo">Change Photo</button>
+          <div class="upload-preview-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="14" r="3.5"/></svg>
+            <span class="upload-preview-name" id="frontFileName"></span>
+          </div>
+          <div class="upload-preview-actions">
+            <button class="btn-ghost" id="frontChangeBtn" type="button" data-i18n="tool_change_photo">Change Photo</button>
+            <button class="upload-remove-btn" id="frontRemoveBtn" type="button" aria-label="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          </div>
         </div>
       </div>
     </div>
@@ -186,15 +219,22 @@
 
     <div id="sideUploaderZone">
       <label class="uploader" id="sideUploader">
-        <input type="file" accept="image/png,image/jpeg" id="sideInput">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="14" r="3.5"/></svg>
-        <p data-i18n="tool_drop_cta">Drag &amp; drop a photo here, or click to browse</p>
+        <input type="file" accept="image/*" id="sideInput">
+        <span class="uploader-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span>
+        <p class="uploader-cta" id="sideUploaderCta"></p>
+        <p class="uploader-sub">JPG · PNG · HEIC</p>
       </label>
       <div class="upload-preview" id="sidePreviewBox" style="display:none;">
-        <img id="sidePreviewImg" alt="Side photo preview">
+        <div class="upload-preview-img-wrap"><img id="sidePreviewImg" alt="Side photo preview"></div>
         <div class="upload-preview-bar">
-          <span data-i18n="tool_change_photo">Change Photo</span>
-          <button class="btn-ghost" id="sideChangeBtn" type="button" data-i18n="tool_change_photo">Change Photo</button>
+          <div class="upload-preview-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="14" r="3.5"/></svg>
+            <span class="upload-preview-name" id="sideFileName"></span>
+          </div>
+          <div class="upload-preview-actions">
+            <button class="btn-ghost" id="sideChangeBtn" type="button" data-i18n="tool_change_photo">Change Photo</button>
+            <button class="upload-remove-btn" id="sideRemoveBtn" type="button" aria-label="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          </div>
         </div>
       </div>
     </div>
@@ -299,12 +339,21 @@ onAuthStateChanged(auth, user => {
 let currentLang = getLang();
 applyDocumentDirection(currentLang);
 applyTranslations(currentLang);
+function tr(key) { return t(key, currentLang); }
+
+function renderUploaderCtas() {
+  const html = `${tr('tool_drop_prefix')} <span class="browse-word">${tr('tool_drop_browse')}</span>`;
+  document.getElementById('frontUploaderCta').innerHTML = html;
+  document.getElementById('sideUploaderCta').innerHTML = html;
+}
+renderUploaderCtas();
+
 wireLangToggle(document.getElementById('navLang'), currentLang, (next) => {
   currentLang = next;
   applyDocumentDirection(next);
   applyTranslations(next);
+  renderUploaderCtas();
 });
-function tr(key) { return t(key, currentLang); }
 
 function toggleMobileNav() {
   document.getElementById('hamburger').classList.toggle('open');
@@ -363,17 +412,40 @@ const state = {
 /* ══════════════════════════════════════
    STEP 1 — FRONT UPLOAD
 ══════════════════════════════════════ */
-function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId, onLoaded }) {
+function formatFileSize(bytes) {
+  if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+const MAX_FILE_BYTES = 15 * 1024 * 1024; // 15MB
+
+function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId, removeBtnId, fileNameId, onLoaded }) {
   const input = document.getElementById(inputId);
   const zone = document.getElementById(zoneId);
   const uploaderLabel = zone.querySelector('.uploader');
   const previewBox = document.getElementById(previewBoxId);
   const previewImg = document.getElementById(previewImgId);
   const changeBtn = document.getElementById(changeBtnId);
+  const removeBtn = document.getElementById(removeBtnId);
+  const fileNameEl = document.getElementById(fileNameId);
+  let dragDepth = 0;
+
+  function reset() {
+    uploaderLabel.style.display = 'flex';
+    previewBox.style.display = 'none';
+    input.value = '';
+    onLoaded(null);
+  }
 
   function handleFile(file) {
-    if (!file || !/^image\/(png|jpe?g)$/i.test(file.type)) {
+    if (!file) return;
+    clearMsg();
+    if (!file.type.startsWith('image/')) {
       showMsg(tr('tool_err_file_type'), 'error');
+      return;
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      showMsg(tr('tool_err_file_size'), 'error');
       return;
     }
     const reader = new FileReader();
@@ -381,9 +453,16 @@ function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId
       const img = new Image();
       img.onload = () => {
         previewImg.src = e.target.result;
+        fileNameEl.textContent = `${file.name} · ${formatFileSize(file.size)}`;
         uploaderLabel.style.display = 'none';
         previewBox.style.display = 'block';
         onLoaded(img);
+      };
+      img.onerror = () => {
+        // Most non-Safari browsers can't decode HEIC/HEIF via <img>/canvas —
+        // this is the friendliest place to catch that and ask for a re-upload.
+        showMsg(tr('tool_err_file_decode'), 'error');
+        reset();
       };
       img.src = e.target.result;
     };
@@ -391,25 +470,29 @@ function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId
   }
 
   input.addEventListener('change', () => handleFile(input.files[0]));
-  ['dragover', 'dragleave', 'drop'].forEach(evt => {
-    uploaderLabel.addEventListener(evt, (e) => {
-      e.preventDefault();
-      uploaderLabel.classList.toggle('drag', evt === 'dragover');
-      if (evt === 'drop' && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-    });
+
+  uploaderLabel.addEventListener('dragenter', (e) => { e.preventDefault(); dragDepth++; uploaderLabel.classList.add('drag'); });
+  uploaderLabel.addEventListener('dragover', (e) => e.preventDefault());
+  uploaderLabel.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (dragDepth === 0) uploaderLabel.classList.remove('drag');
   });
-  changeBtn.addEventListener('click', () => {
-    uploaderLabel.style.display = 'block';
-    previewBox.style.display = 'none';
-    input.value = '';
-    onLoaded(null);
+  uploaderLabel.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dragDepth = 0;
+    uploaderLabel.classList.remove('drag');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
   });
+
+  changeBtn.addEventListener('click', () => input.click());
+  removeBtn.addEventListener('click', reset);
 }
 
 wireUploader({
   inputId: 'frontInput', zoneId: 'frontUploaderZone',
   previewBoxId: 'frontPreviewBox', previewImgId: 'frontPreviewImg',
-  changeBtnId: 'frontChangeBtn',
+  changeBtnId: 'frontChangeBtn', removeBtnId: 'frontRemoveBtn', fileNameId: 'frontFileName',
   onLoaded: (img) => {
     state.frontImg = img;
     state.frontPts = null;
@@ -425,7 +508,7 @@ document.getElementById('frontContinueBtn').addEventListener('click', () => goTo
 wireUploader({
   inputId: 'sideInput', zoneId: 'sideUploaderZone',
   previewBoxId: 'sidePreviewBox', previewImgId: 'sidePreviewImg',
-  changeBtnId: 'sideChangeBtn',
+  changeBtnId: 'sideChangeBtn', removeBtnId: 'sideRemoveBtn', fileNameId: 'sideFileName',
   onLoaded: (img) => {
     state.sideImg = img;
     state.sidePts = null;

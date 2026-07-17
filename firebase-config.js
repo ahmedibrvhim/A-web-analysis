@@ -8,7 +8,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPas
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, addDoc,
          serverTimestamp, query, where, getDocs, orderBy,
-         updateDoc, onSnapshot, deleteDoc }
+         updateDoc, onSnapshot, deleteDoc, runTransaction }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -34,4 +34,4 @@ export { auth, db, googleProvider,
   signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile,
   doc, setDoc, getDoc, collection, addDoc, serverTimestamp,
   query, where, getDocs, orderBy,
-  updateDoc, onSnapshot, deleteDoc };
+  updateDoc, onSnapshot, deleteDoc, runTransaction };

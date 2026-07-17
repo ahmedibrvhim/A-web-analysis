@@ -15,6 +15,9 @@ export const dict = {
     sign_out: 'Sign out',
     lang_label: 'EN',
     lang_other: 'AR',
+    brand_name: 'Lower Third',
+    brand_tag: 'Calculator',
+    counter_label: 'Souls That Have Entered',
 
     /* ── home.html ── */
     hero_sub: '☠ Lower-Third Ratio Calculator ☠',
@@ -105,6 +108,9 @@ export const dict = {
     sign_out: 'تسجيل الخروج',
     lang_label: 'AR',
     lang_other: 'EN',
+    brand_name: 'الثلث السفلي',
+    brand_tag: 'حاسبة',
+    counter_label: 'أرواح دخلت الموقع',
 
     /* ── home.html ── */
     hero_sub: '☠ حاسبة نسبة الثلث السفلي ☠',

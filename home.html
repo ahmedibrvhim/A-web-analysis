@@ -8,6 +8,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
+/* ── NAV BRANDING (multi-word name instead of single letter) ── */
+.nav-logo .logo-mark {
+  font-size:16px; letter-spacing:1px; white-space:nowrap;
+}
+.nav-logo .logo-tag { display:block; }
+body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weight:700; }
+
 /* ── HERO (logo only) ── */
 #hero {
   min-height:calc(78vh - var(--nav-h) - 3px);
@@ -144,6 +151,41 @@
   .scroll-cue { margin-top: 28px; }
 }
 
+/* ── VISIT COUNTER ── */
+#visitCounter {
+  position:relative; z-index:2;
+  display:flex; justify-content:center;
+  padding:34px 20px 30px;
+  background:#000;
+}
+.counter-box {
+  display:inline-flex; align-items:center; gap:18px;
+  border:1px solid var(--blood);
+  background:radial-gradient(ellipse at center, rgba(139,0,0,.08) 0%, #000 80%);
+  padding:16px 32px;
+  box-shadow:0 0 26px rgba(139,0,0,.18), inset 0 0 20px rgba(0,0,0,.5);
+  animation:counterPulse 4s ease-in-out infinite;
+}
+@keyframes counterPulse {
+  0%,100% { box-shadow:0 0 20px rgba(139,0,0,.15), inset 0 0 20px rgba(0,0,0,.5); }
+  50%     { box-shadow:0 0 34px rgba(220,20,60,.28), inset 0 0 20px rgba(0,0,0,.5); }
+}
+.counter-icon { font-size:20px; color:var(--crimson); line-height:1; }
+.counter-figures { text-align:center; }
+.counter-number {
+  font-family:'Cinzel Decorative',cursive; font-size:30px; color:var(--white);
+  text-shadow:0 0 20px rgba(220,20,60,.5); letter-spacing:1px;
+  min-width:70px; display:inline-block;
+}
+.counter-label {
+  font-size:8.5px; letter-spacing:2.5px; text-transform:uppercase;
+  color:var(--muted); margin-top:4px;
+}
+@media (max-width:480px) {
+  .counter-box { gap:12px; padding:14px 22px; }
+  .counter-number { font-size:24px; min-width:52px; }
+}
+
 /* ── ABOUT / TOOL DESCRIPTION ── */
 #about {
   position:relative; padding:60px 40px 130px;
@@ -230,9 +272,10 @@
 <!-- NAV -->
 <nav>
   <a class="nav-logo" href="index.html">
-    <img src="Skull.png" alt="Brand A">
+    <img src="Skull.png" alt="Lower Third">
     <div>
-      <div class="logo-mark">A</div>
+      <div class="logo-mark" data-i18n="brand_name">Lower Third</div>
+      <div class="logo-tag" data-i18n="brand_tag">Calculator</div>
     </div>
   </a>
   <ul class="nav-links" id="navLinks">
@@ -267,6 +310,17 @@
     <span data-i18n="scroll_cue_text">Scroll To Learn More</span>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v14M6 13l6 6 6-6"/></svg>
   </button>
+</section>
+
+<!-- VISIT COUNTER -->
+<section id="visitCounter">
+  <div class="counter-box">
+    <div class="counter-icon">☠</div>
+    <div class="counter-figures">
+      <div class="counter-number" id="visitCountNum">0</div>
+      <div class="counter-label" data-i18n="counter_label">Souls That Have Entered</div>
+    </div>
+  </div>
 </section>
 
 <!-- ABOUT / TOOL DESCRIPTION -->
@@ -381,8 +435,53 @@ document.getElementById('scrollCue').addEventListener('click', () => {
 
 <script type="module">
 import {
-  auth, db, onAuthStateChanged, signOut, doc, getDoc
+  auth, db, onAuthStateChanged, signOut, doc, getDoc, runTransaction, onSnapshot
 } from './firebase-config.js';
+
+/* ── VISIT COUNTER ──
+   Counts unique browser sessions (not page reloads/views) against a
+   single public Firestore doc: stats/visits { count: number }.
+   Requires a Firestore rule allowing public read + increment-only
+   write on that document (see firestore.rules). */
+const VISIT_DOC = doc(db, 'stats', 'visits');
+let displayedCount = 0;
+
+function animateCounterTo(target) {
+  const el = document.getElementById('visitCountNum');
+  if (!el) return;
+  const start = displayedCount;
+  const diff = target - start;
+  if (diff === 0) return;
+  const duration = 700;
+  const startTime = performance.now();
+  function step(now) {
+    const progress = Math.min(1, (now - startTime) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(start + diff * eased).toLocaleString();
+    if (progress < 1) requestAnimationFrame(step);
+    else displayedCount = target;
+  }
+  requestAnimationFrame(step);
+}
+
+async function countThisSession() {
+  if (sessionStorage.getItem('brandA_counted')) return;
+  sessionStorage.setItem('brandA_counted', '1');
+  try {
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(VISIT_DOC);
+      const current = snap.exists() ? (snap.data().count || 0) : 0;
+      tx.set(VISIT_DOC, { count: current + 1 });
+    });
+  } catch (e) { /* rules not deployed yet, or offline — fail silently */ }
+}
+
+onSnapshot(VISIT_DOC, snap => {
+  const count = snap.exists() ? (snap.data().count || 0) : 0;
+  animateCounterTo(count);
+}, () => { /* ignore permission/offline errors so the page still works */ });
+
+countThisSession();
 
 function renderUserPill(user, displayName) {
   const nr = document.getElementById('navRight');

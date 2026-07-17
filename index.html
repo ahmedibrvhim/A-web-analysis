@@ -57,16 +57,21 @@ body { overflow:hidden; }
   position:relative; z-index:2; max-width:560px;
 }
 .intro-icon {
-  width:76px; height:76px; margin:0 auto 26px;
+  width:104px; height:104px; margin:0 auto 26px;
   border-radius:50%; border:2px solid var(--blood);
   display:flex; align-items:center; justify-content:center;
   box-shadow:0 0 40px rgba(139,0,0,.4), inset 0 0 30px rgba(0,0,0,.7);
   animation:skullFloat 6s ease-in-out infinite;
+  overflow:hidden;
+  background:radial-gradient(circle, rgba(139,0,0,.15) 0%, transparent 70%);
 }
 @keyframes skullFloat {
   0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)}
 }
-.intro-icon svg { width:34px; height:34px; }
+.intro-icon img {
+  width:72%; height:72%; object-fit:contain;
+  filter:drop-shadow(0 0 10px rgba(220,20,60,.55));
+}
 .intro-eyebrow {
   font-size:9px; letter-spacing:6px; color:var(--blood);
   text-transform:uppercase; margin-bottom:14px;
@@ -129,8 +134,7 @@ body.lang-ar .intro-lang { font-family:'Tajawal',sans-serif; letter-spacing:0; }
   .intro-lang { font-size:8px; padding:7px 10px 7px 8px; gap:6px; }
   .intro-lang svg { width:11px; height:11px; }
   .intro-body { max-width:100%; }
-  .intro-icon { width:60px; height:60px; margin-bottom:20px; }
-  .intro-icon svg { width:28px; height:28px; }
+  .intro-icon { width:84px; height:84px; margin-bottom:20px; }
   .intro-eyebrow { font-size:8px; letter-spacing:4px; margin-bottom:10px; }
   .intro-title { font-size:20px; letter-spacing:2px; margin-bottom:14px; }
   .intro-text { font-size:11px; line-height:1.8; margin-bottom:28px; }
@@ -141,7 +145,7 @@ body.lang-ar .intro-lang { font-family:'Tajawal',sans-serif; letter-spacing:0; }
   .intro-nav .btn-solid { min-width:0; flex:1; padding:10px 12px; font-size:9px; }
 }
 @media (max-height:640px){
-  .intro-icon { width:52px; height:52px; margin-bottom:14px; animation:none; }
+  .intro-icon { width:72px; height:72px; margin-bottom:14px; animation:none; }
   .intro-eyebrow { margin-bottom:8px; }
   .intro-title { margin-bottom:10px; }
   .intro-text { margin-bottom:20px; }
@@ -161,7 +165,7 @@ body.lang-ar .intro-lang { font-family:'Tajawal',sans-serif; letter-spacing:0; }
     <a class="btn-ghost intro-skip" id="introSkip">Skip Intro ✕</a>
   </div>
   <div class="intro-body">
-    <div class="intro-icon" id="introIcon"></div>
+    <div class="intro-icon" id="introIcon"><img src="Skull.png" alt="Your guide" id="introHeroImg"></div>
     <div class="intro-eyebrow" id="introEyebrow">Step 1 / 4</div>
     <div class="intro-title intro-step-anim" id="introTitle"></div>
     <div class="intro-text intro-step-anim" id="introText"></div>
@@ -277,7 +281,6 @@ function renderIntro() {
   const step = introSteps[introIndex][lang];
   const ui = uiStrings[lang];
   introEyebrow.textContent = step.eyebrow;
-  introIcon.innerHTML = introSteps[introIndex].icon;
   introTitle.textContent = step.title;
   introText.textContent = step.text;
   [introTitle, introText].forEach(el => {

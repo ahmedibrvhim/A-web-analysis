@@ -123,12 +123,26 @@
 .guide-col-lbl { display:block; font-size:8px; letter-spacing:2px; color:var(--ash); text-transform:uppercase; margin-top:8px; }
 .guide-outline { fill:none; stroke:var(--smoke); stroke-width:2; }
 .guide-feature { fill:none; stroke:var(--smoke); stroke-width:1.3; }
-.guide-dot { stroke:#fff; stroke-width:1.3; transform-box:fill-box; transform-origin:center; animation:guidePulse 2.6s ease-in-out infinite; }
-.guide-label { font-size:8px; font-family:'Cinzel',serif; letter-spacing:.3px; }
+.guide-dot { stroke:#fff; stroke-width:1.3; transform-box:fill-box; transform-origin:center; transition:opacity .35s, r .35s; }
+.guide-dot.gd-idle { animation:guidePulse 2.6s ease-in-out infinite; }
+.guide-dot.gd-dim { opacity:.22; animation:none; }
+.guide-dot.gd-active { opacity:1; animation:guideActivePulse 1.1s ease-in-out infinite; }
+.guide-label { font-size:8px; font-family:'Cinzel',serif; letter-spacing:.3px; transition:opacity .35s; }
+.guide-label.gd-dim { opacity:.22; }
+.guide-col.gd-col-dim .guide-outline, .guide-col.gd-col-dim .guide-feature { opacity:.3; transition:opacity .35s; }
 @keyframes guidePulse {
   0%, 100% { opacity:.5; r:3.4; }
   50% { opacity:1; r:5.4; }
 }
+@keyframes guideActivePulse {
+  0%, 100% { r:5; }
+  50% { r:7; }
+}
+.guide-caption { display:flex; align-items:flex-start; gap:10px; max-width:420px; margin:18px auto 0; padding-top:16px; border-top:1px solid var(--border); text-align:left; }
+body.lang-ar .guide-caption { text-align:right; }
+.guide-caption-dot { width:11px; height:11px; border-radius:50%; margin-top:3px; flex-shrink:0; box-shadow:0 0 0 1px rgba(255,255,255,.5); }
+.guide-caption-body b { display:block; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--white); margin-bottom:4px; }
+.guide-caption-body p { font-size:10.5px; color:var(--muted); line-height:1.7; }
 
 .instr-card { display:flex; gap:16px; background:var(--panel); border:1px solid var(--border); padding:18px 20px; margin-bottom:26px; }
 .instr-card svg { width:26px; height:26px; color:var(--crimson); flex-shrink:0; }
@@ -145,7 +159,54 @@
 .adjust-tab.hidden-tab { display:none; }
 
 .canvas-wrap { position:relative; border:1px solid var(--border); background:var(--black); line-height:0; }
-.canvas-wrap canvas { width:100%; height:auto; display:block; touch-action:none; cursor:crosshair; }
+.canvas-wrap canvas { width:100%; height:auto; display:block; touch-action:pan-y; cursor:crosshair; }
+.canvas-wrap canvas.dragging { touch-action:none; }
+
+/* ── point dashboard (tap-to-select + nudge pad) ── */
+.pt-dashboard { background:var(--panel); border:1px solid var(--border); padding:16px 18px; margin-top:14px; }
+.pt-dash-hint { font-size:9px; letter-spacing:.5px; color:var(--muted); line-height:1.6; text-align:center; margin-bottom:14px; }
+.pt-chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:16px; }
+.pt-chip {
+  display:flex; align-items:center; gap:6px; background:transparent;
+  border:1.5px solid var(--smoke); color:var(--text); cursor:pointer;
+  padding:7px 12px; font-family:'Cinzel',serif; font-size:9px; letter-spacing:1.5px;
+  text-transform:uppercase; transition:all .25s;
+}
+.pt-chip-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 1px rgba(255,255,255,.5); }
+.pt-chip.active { border-color:var(--blood); background:rgba(139,0,0,.1); color:var(--white); box-shadow:0 0 10px rgba(139,0,0,.25); }
+.pt-controls { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:22px; }
+.pt-pad { display:grid; grid-template-columns:38px 38px 38px; grid-template-rows:38px 38px 38px; gap:4px; }
+.pt-pad button {
+  background:transparent; border:1px solid var(--smoke); color:var(--crimson);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all .2s; font-size:14px;
+}
+.pt-pad button:hover, .pt-pad button:active { border-color:var(--blood); background:rgba(139,0,0,.12); }
+.pt-pad button svg { width:15px; height:15px; }
+.pt-pad-up { grid-column:2; grid-row:1; }
+.pt-pad-left { grid-column:1; grid-row:2; }
+.pt-pad-center { grid-column:2; grid-row:2; border-color:transparent !important; background:none !important; cursor:default; }
+.pt-pad-right { grid-column:3; grid-row:2; }
+.pt-pad-down { grid-column:2; grid-row:3; }
+.pt-side-controls { display:flex; flex-direction:column; gap:12px; align-items:center; }
+.pt-place-toggle {
+  background:transparent; border:1px solid var(--smoke); color:var(--muted);
+  padding:8px 16px; font-family:'Cinzel',serif; font-size:9px; letter-spacing:1.5px;
+  text-transform:uppercase; cursor:pointer; transition:all .25s;
+}
+.pt-place-toggle.active { border-color:#5ecb96; color:#5ecb96; background:rgba(0,160,90,.08); box-shadow:0 0 10px rgba(0,160,90,.2); }
+.pt-steps { display:flex; gap:0; }
+.pt-step-btn {
+  background:transparent; border:1px solid var(--smoke); color:var(--ash);
+  padding:6px 10px; font-family:'Cinzel',serif; font-size:8px; letter-spacing:1px;
+  text-transform:uppercase; cursor:pointer; transition:all .2s; margin-left:-1px;
+}
+.pt-step-btn.active { border-color:var(--blood); color:var(--crimson); background:rgba(139,0,0,.1); position:relative; z-index:1; }
+@media (max-width:480px) {
+  .pt-dashboard { padding:14px; }
+  .pt-controls { gap:14px; }
+  .pt-pad { grid-template-columns:34px 34px 34px; grid-template-rows:34px 34px 34px; }
+}
 
 .legend { display:flex; flex-wrap:wrap; gap:10px 20px; justify-content:center; margin-top:18px; }
 .legend-item { display:flex; align-items:center; gap:7px; font-size:9px; letter-spacing:1px; color:var(--muted); text-transform:uppercase; }
@@ -352,7 +413,7 @@
         <p data-i18n="tool_guide_title">Reference guide — where these points go, per standard anthropometric landmarks</p>
       </div>
       <div class="landmark-guide-imgs">
-        <div class="guide-col">
+        <div class="guide-col" id="guideColFront">
           <svg class="guide-svg" viewBox="0 0 132 172" xmlns="http://www.w3.org/2000/svg">
             <path class="guide-outline" d="M66 8c-24 0-34 20-34 46 0 20 5 34 11 46 6 12 13 22 23 22s17-10 23-22c6-12 11-26 11-46 0-26-10-46-34-46z"/>
             <ellipse class="guide-feature" cx="50" cy="70" rx="7" ry="4"/>
@@ -360,33 +421,40 @@
             <path class="guide-feature" d="M66 74v20"/>
             <path class="guide-feature" d="M52 118c6 5 22 5 28 0"/>
             <line x1="10" y1="18" x2="40" y2="18" class="guide-feature"/>
-            <circle class="guide-dot" cx="66" cy="18" r="4" fill="#dc143c" style="animation-delay:0s"/>
-            <text class="guide-label" x="70" y="21" fill="#dc143c">Tr</text>
-            <circle class="guide-dot" cx="66" cy="64" r="4" fill="#ffb703" style="animation-delay:.3s"/>
-            <text class="guide-label" x="70" y="67" fill="#ffb703">N</text>
-            <circle class="guide-dot" cx="66" cy="94" r="4" fill="#4cc9f0" style="animation-delay:.6s"/>
-            <text class="guide-label" x="70" y="97" fill="#4cc9f0">Sn</text>
-            <circle class="guide-dot" cx="66" cy="106" r="4" fill="#ff6fae" style="animation-delay:.9s"/>
-            <text class="guide-label" x="70" y="109" fill="#ff6fae">Ls</text>
-            <circle class="guide-dot" cx="66" cy="122" r="4" fill="#b388ff" style="animation-delay:1.2s"/>
-            <text class="guide-label" x="70" y="125" fill="#b388ff">Li</text>
-            <circle class="guide-dot" cx="66" cy="150" r="4" fill="#7bd389" style="animation-delay:1.5s"/>
-            <text class="guide-label" x="70" y="153" fill="#7bd389">Me</text>
+            <circle class="guide-dot gd-idle" id="gd-front-tr" data-view="front" data-key="tr" cx="66" cy="18" r="4" fill="#dc143c" style="animation-delay:0s"/>
+            <text class="guide-label" id="gl-front-tr" x="70" y="21" fill="#dc143c">Tr</text>
+            <circle class="guide-dot gd-idle" id="gd-front-n" data-view="front" data-key="n" cx="66" cy="64" r="4" fill="#ffb703" style="animation-delay:.3s"/>
+            <text class="guide-label" id="gl-front-n" x="70" y="67" fill="#ffb703">N</text>
+            <circle class="guide-dot gd-idle" id="gd-front-sn" data-view="front" data-key="sn" cx="66" cy="94" r="4" fill="#4cc9f0" style="animation-delay:.6s"/>
+            <text class="guide-label" id="gl-front-sn" x="70" y="97" fill="#4cc9f0">Sn</text>
+            <circle class="guide-dot gd-idle" id="gd-front-ls" data-view="front" data-key="ls" cx="66" cy="106" r="4" fill="#ff6fae" style="animation-delay:.9s"/>
+            <text class="guide-label" id="gl-front-ls" x="70" y="109" fill="#ff6fae">Ls</text>
+            <circle class="guide-dot gd-idle" id="gd-front-li" data-view="front" data-key="li" cx="66" cy="122" r="4" fill="#b388ff" style="animation-delay:1.2s"/>
+            <text class="guide-label" id="gl-front-li" x="70" y="125" fill="#b388ff">Li</text>
+            <circle class="guide-dot gd-idle" id="gd-front-me" data-view="front" data-key="me" cx="66" cy="150" r="4" fill="#7bd389" style="animation-delay:1.5s"/>
+            <text class="guide-label" id="gl-front-me" x="70" y="153" fill="#7bd389">Me</text>
           </svg>
           <span class="guide-col-lbl" data-i18n="tool_view_front">Front</span>
         </div>
-        <div class="guide-col">
+        <div class="guide-col" id="guideColSide">
           <svg class="guide-svg" viewBox="0 0 132 172" xmlns="http://www.w3.org/2000/svg">
             <path class="guide-outline" d="M40 10c-16 4-22 20-22 40 0 4 8 6 8 10s-6 5-6 10c8 6 6 12 12 16 2 8-2 12 4 16 8 6 20 6 30-2 10-8 16-24 16-44 0-26-18-46-42-46z"/>
             <path class="guide-feature" d="M52 62c4-2 8-2 11 0"/>
             <path class="guide-feature" d="M46 96c6 4 14 4 20 1"/>
             <line x1="86" y1="20" x2="112" y2="20" class="guide-feature"/>
-            <circle class="guide-dot" cx="60" cy="66" r="4" fill="#4cc9f0" style="animation-delay:0s"/>
-            <text class="guide-label" x="64" y="63" fill="#4cc9f0">Orbitale</text>
-            <circle class="guide-dot" cx="82" cy="88" r="4" fill="#dc143c" style="animation-delay:.4s"/>
-            <text class="guide-label" x="86" y="92" fill="#dc143c">Tragion</text>
+            <circle class="guide-dot gd-idle" id="gd-side-orbit" data-view="side" data-key="orbit" cx="60" cy="66" r="4" fill="#4cc9f0" style="animation-delay:0s"/>
+            <text class="guide-label" id="gl-side-orbit" x="64" y="63" fill="#4cc9f0">Orbitale</text>
+            <circle class="guide-dot gd-idle" id="gd-side-tragion" data-view="side" data-key="tragion" cx="82" cy="88" r="4" fill="#dc143c" style="animation-delay:.4s"/>
+            <text class="guide-label" id="gl-side-tragion" x="86" y="92" fill="#dc143c">Tragion</text>
           </svg>
           <span class="guide-col-lbl" data-i18n="tool_view_side">Side</span>
+        </div>
+      </div>
+      <div class="guide-caption" id="guideCaption">
+        <span class="guide-caption-dot" id="guideCapDot"></span>
+        <div class="guide-caption-body">
+          <b id="guideCapLabel">Trichion</b>
+          <p id="guideCapDesc">Where the hairline starts, centered above the forehead.</p>
         </div>
       </div>
     </div>
@@ -419,6 +487,26 @@
     <div class="legend" id="sideLegend" style="display:none;">
       <div class="legend-item"><span class="legend-dot" style="background:#dc143c"></span><span data-i18n="tool_pt_tragion">Tragion — front of ear</span></div>
       <div class="legend-item"><span class="legend-dot" style="background:#4cc9f0"></span><span data-i18n="tool_pt_orbit">Orbitale — lower eye socket</span></div>
+    </div>
+
+    <div class="pt-dashboard" id="ptDashboard">
+      <p class="pt-dash-hint" id="ptDashHint" data-i18n="tool_dash_hint">Tap a point, then nudge it with the arrows — or tap the photo to drop it exactly where it belongs.</p>
+      <div class="pt-chips" id="ptChips"></div>
+      <div class="pt-controls">
+        <button class="pt-place-toggle" id="ptPlaceToggle" type="button" data-i18n="tool_dash_place_label">Tap Photo To Place</button>
+        <div class="pt-pad">
+          <button class="pt-pad-up" id="ptUp" type="button" aria-label="Up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+          <button class="pt-pad-left" id="ptLeft" type="button" aria-label="Left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+          <span class="pt-pad-center"></span>
+          <button class="pt-pad-right" id="ptRight" type="button" aria-label="Right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+          <button class="pt-pad-down" id="ptDown" type="button" aria-label="Down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+        </div>
+        <div class="pt-steps" id="ptSteps">
+          <button class="pt-step-btn" data-step="fine" type="button" data-i18n="tool_dash_step_fine">Fine</button>
+          <button class="pt-step-btn active" data-step="normal" type="button" data-i18n="tool_dash_step_normal">Normal</button>
+          <button class="pt-step-btn" data-step="coarse" type="button" data-i18n="tool_dash_step_coarse">Coarse</button>
+        </div>
+      </div>
     </div>
 
     <p class="tool-hint" id="adjustHint" data-i18n="tool_manual_hint">Detection unavailable — place the points manually by clicking on the photo.</p>
@@ -563,6 +651,11 @@ function refreshDynamicText() {
   }
   if (lastRatio !== null) {
     document.getElementById('tiltFlag').textContent = tr('tool_result_tilt_corrected');
+  }
+  if (frontEditor || sideEditor) {
+    refreshDashboard(activeView);
+    const editor = currentEditor();
+    if (editor) setGuidePoint(activeView, editor.getSelected());
   }
 }
 
@@ -949,12 +1042,24 @@ async function detectSidePoints(img) {
 ══════════════════════════════════════ */
 const POINT_COLORS = { tr: '#dc143c', n: '#ffb703', sn: '#4cc9f0', ls: '#ff6fae', li: '#b388ff', me: '#7bd389' };
 const SIDE_COLORS = { tragion: '#dc143c', orbit: '#4cc9f0' };
+const CHIP_SHORT = { tr: 'Tr', n: 'N', sn: 'Sn', ls: 'Ls', li: 'Li', me: 'Me', tragion: 'Tragion', orbit: 'Orbitale' };
+const POINT_LABEL_KEYS = { tr: 'tool_pt_tr', n: 'tool_pt_n', sn: 'tool_pt_sn', ls: 'tool_pt_ls', li: 'tool_pt_li', me: 'tool_pt_me', tragion: 'tool_pt_tragion', orbit: 'tool_pt_orbit' };
+const GUIDE_DESC_KEYS = { tr: 'tool_guide_desc_tr', n: 'tool_guide_desc_n', sn: 'tool_guide_desc_sn', ls: 'tool_guide_desc_ls', li: 'tool_guide_desc_li', me: 'tool_guide_desc_me', tragion: 'tool_guide_desc_tragion', orbit: 'tool_guide_desc_orbit' };
 
-function makeCanvasEditor(canvasEl, img, pointKeys, colors) {
+// A real tap (short, near-motionless touch) vs. a scroll swipe that merely
+// started on the canvas — only a genuine tap should select/place a point,
+// so a finger swiping over the photo to scroll the page is never hijacked.
+const TAP_MOVE_PX = 10;
+const TAP_TIME_MS = 550;
+
+function makeCanvasEditor(canvasEl, img, pointKeys, colors, onSelect) {
   const ctx = canvasEl.getContext('2d');
   let scale = 1;
   let points = null; // in natural-image pixel coords
-  let dragKey = null;
+  let dragKey = null;       // mouse-only continuous drag
+  let selectedKey = pointKeys[0];
+  let placeMode = false;
+  let downInfo = null;      // { hit, x, y, t } for tap detection on touch/pen
 
   function fit() {
     canvasEl.width = img.naturalWidth;
@@ -966,17 +1071,31 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors) {
     ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
     ctx.drawImage(img, 0, 0);
     if (!points) return;
-    const dotR = Math.max(4, 6 / scale);
-    const crossLen = Math.max(10, 14 / scale);
-    const gap = Math.max(3, 4 / scale);
+    const dotR = Math.max(3, 4 / scale);
+    const crossLen = Math.max(8, 11 / scale);
+    const gap = Math.max(2.5, 3.5 / scale);
     pointKeys.forEach(key => {
       const p = points[key];
       if (!p) return;
       const c = colors[key];
+      const isSel = key === selectedKey;
+
+      if (isSel) {
+        // soft glow ring so the selected point is unmistakable, even tiny
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, dotR + 7 / scale, 0, Math.PI * 2);
+        ctx.strokeStyle = c;
+        ctx.globalAlpha = 0.55;
+        ctx.lineWidth = Math.max(1.5, 2 / scale);
+        ctx.setLineDash([Math.max(2, 3 / scale), Math.max(2, 3 / scale)]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
       // thin crosshair for a precise, medically-legible fix point
       ctx.strokeStyle = c;
-      ctx.globalAlpha = 0.95;
-      ctx.lineWidth = Math.max(1, 1.5 / scale);
+      ctx.globalAlpha = isSel ? 1 : 0.85;
+      ctx.lineWidth = Math.max(1, 1.3 / scale);
       ctx.beginPath();
       ctx.moveTo(p.x - crossLen, p.y); ctx.lineTo(p.x - gap, p.y);
       ctx.moveTo(p.x + gap, p.y); ctx.lineTo(p.x + crossLen, p.y);
@@ -987,9 +1106,9 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors) {
       ctx.beginPath();
       ctx.arc(p.x, p.y, dotR, 0, Math.PI * 2);
       ctx.fillStyle = c;
-      ctx.globalAlpha = 0.95;
+      ctx.globalAlpha = isSel ? 1 : 0.85;
       ctx.fill();
-      ctx.lineWidth = Math.max(1, 1.5 / scale);
+      ctx.lineWidth = Math.max(0.8, 1.1 / scale);
       ctx.strokeStyle = '#fff';
       ctx.globalAlpha = 1;
       ctx.stroke();
@@ -1005,7 +1124,7 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors) {
 
   function nearestPoint(pos) {
     if (!points) return null;
-    const r = Math.max(18, 24 / scale);
+    const r = Math.max(22, 30 / scale);
     let best = null, bestD = Infinity;
     pointKeys.forEach(key => {
       const p = points[key];
@@ -1016,33 +1135,200 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors) {
     return best;
   }
 
+  function selectPoint(key) {
+    if (!pointKeys.includes(key)) return;
+    selectedKey = key;
+    draw();
+    if (onSelect) onSelect(key);
+  }
+
   canvasEl.addEventListener('pointerdown', (e) => {
     const pos = toImgCoords(e.clientX, e.clientY);
     const hit = nearestPoint(pos);
-    if (hit) { dragKey = hit; canvasEl.setPointerCapture(e.pointerId); }
-    else if (points && pointKeys.some(k => !points[k])) {
-      // manual placement mode: fill in missing points in order
-      const missing = pointKeys.find(k => !points[k]);
-      points[missing] = pos;
-      draw();
+
+    if (e.pointerType === 'mouse') {
+      // desktop: precise pointer drag, no scroll to worry about
+      if (hit) {
+        selectPoint(hit);
+        dragKey = hit;
+        canvasEl.classList.add('dragging');
+        canvasEl.setPointerCapture(e.pointerId);
+      }
+      return;
     }
+
+    // touch / pen: never start a drag (it would fight the page scroll).
+    // Just remember where the touch landed; the real action happens on
+    // pointerup, once we know it was a tap and not a scroll swipe.
+    if (hit) selectPoint(hit);
+    downInfo = { hit, x: e.clientX, y: e.clientY, t: performance.now(), pos };
   });
+
   canvasEl.addEventListener('pointermove', (e) => {
-    if (!dragKey) return;
+    if (!dragKey) return; // only true for an active mouse drag
     points[dragKey] = toImgCoords(e.clientX, e.clientY);
     draw();
   });
-  ['pointerup', 'pointerleave'].forEach(evt =>
-    canvasEl.addEventListener(evt, () => { dragKey = null; })
-  );
+
+  function endMouseDrag() {
+    if (dragKey) { dragKey = null; canvasEl.classList.remove('dragging'); }
+  }
+  canvasEl.addEventListener('pointerup', (e) => {
+    if (e.pointerType === 'mouse') { endMouseDrag(); return; }
+    if (!downInfo) return;
+    const moved = Math.hypot(e.clientX - downInfo.x, e.clientY - downInfo.y);
+    const elapsed = performance.now() - downInfo.t;
+    const wasTap = moved < TAP_MOVE_PX && elapsed < TAP_TIME_MS;
+    if (wasTap && !downInfo.hit && placeMode && selectedKey) {
+      points[selectedKey] = downInfo.pos;
+      draw();
+      // auto-advance so a run of taps walks through every point in order
+      const idx = pointKeys.indexOf(selectedKey);
+      selectPoint(pointKeys[(idx + 1) % pointKeys.length]);
+    }
+    downInfo = null;
+  });
+  canvasEl.addEventListener('pointerleave', endMouseDrag);
+  canvasEl.addEventListener('pointercancel', () => { endMouseDrag(); downInfo = null; });
 
   return {
     setPoints(p) { points = p; draw(); },
     getPoints() { return points; },
     resize() { fit(); draw(); },
-    redraw: draw
+    redraw: draw,
+    selectPoint,
+    getSelected() { return selectedKey; },
+    setPlaceMode(v) { placeMode = !!v; },
+    getPlaceMode() { return placeMode; },
+    nudge(dxDisplayPx, dyDisplayPx) {
+      if (!points || !points[selectedKey]) return;
+      points[selectedKey].x += dxDisplayPx / scale;
+      points[selectedKey].y += dyDisplayPx / scale;
+      draw();
+    }
   };
 }
+
+/* ── reference guide: animated highlight + caption synced to the point
+   currently being worked on ── */
+const GUIDE_ORDER = [
+  { view: 'front', key: 'tr' }, { view: 'front', key: 'n' }, { view: 'front', key: 'sn' },
+  { view: 'front', key: 'ls' }, { view: 'front', key: 'li' }, { view: 'front', key: 'me' },
+  { view: 'side', key: 'orbit' }, { view: 'side', key: 'tragion' }
+];
+let guideOrderIdx = 0;
+let guideTimer = null;
+
+function setGuidePoint(view, key) {
+  document.querySelectorAll('.guide-dot').forEach(el => {
+    const match = el.dataset.view === view && el.dataset.key === key;
+    el.classList.remove('gd-idle');
+    el.classList.toggle('gd-active', match);
+    el.classList.toggle('gd-dim', !match);
+  });
+  document.querySelectorAll('.guide-label').forEach(el => {
+    el.classList.toggle('gd-dim', el.id !== `gl-${view}-${key}`);
+  });
+  const frontCol = document.getElementById('guideColFront');
+  const sideCol = document.getElementById('guideColSide');
+  if (frontCol) frontCol.classList.toggle('gd-col-dim', view !== 'front');
+  if (sideCol) sideCol.classList.toggle('gd-col-dim', view !== 'side');
+
+  const colorMap = view === 'front' ? POINT_COLORS : SIDE_COLORS;
+  const dotEl = document.getElementById('guideCapDot');
+  if (dotEl) dotEl.style.background = colorMap[key];
+  const lblEl = document.getElementById('guideCapLabel');
+  if (lblEl) lblEl.textContent = tr(POINT_LABEL_KEYS[key]);
+  const descEl = document.getElementById('guideCapDesc');
+  if (descEl) descEl.textContent = tr(GUIDE_DESC_KEYS[key]);
+}
+
+function guideAutoAdvance() {
+  const cur = GUIDE_ORDER[guideOrderIdx];
+  setGuidePoint(cur.view, cur.key);
+  guideOrderIdx = (guideOrderIdx + 1) % GUIDE_ORDER.length;
+}
+
+function startGuideAutoplay() {
+  stopGuideAutoplay();
+  guideOrderIdx = 0;
+  guideAutoAdvance();
+  guideTimer = setInterval(guideAutoAdvance, 3000);
+}
+function stopGuideAutoplay() {
+  if (guideTimer) { clearInterval(guideTimer); guideTimer = null; }
+}
+
+/* ── point dashboard: tap-to-select chips + nudge pad + tap-to-place ── */
+let activeView = 'front';
+let currentStepSize = 'normal';
+const STEP_PX = { fine: 1, normal: 4, coarse: 12 }; // displayed px, editor converts to image px
+
+function currentEditor() { return activeView === 'front' ? frontEditor : sideEditor; }
+function viewKeys(view) { return view === 'front' ? ['tr', 'n', 'sn', 'ls', 'li', 'me'] : ['tragion', 'orbit']; }
+function viewColors(view) { return view === 'front' ? POINT_COLORS : SIDE_COLORS; }
+
+function renderChips(view) {
+  const editor = view === 'front' ? frontEditor : sideEditor;
+  if (!editor) return;
+  const keys = viewKeys(view);
+  const colors = viewColors(view);
+  const sel = editor.getSelected();
+  const chipsEl = document.getElementById('ptChips');
+  chipsEl.innerHTML = keys.map(k =>
+    `<button type="button" class="pt-chip${k === sel ? ' active' : ''}" data-key="${k}">` +
+    `<span class="pt-chip-dot" style="background:${colors[k]}"></span>${CHIP_SHORT[k]}</button>`
+  ).join('');
+  chipsEl.querySelectorAll('.pt-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.key;
+      editor.selectPoint(key);
+      stopGuideAutoplay();
+      setGuidePoint(view, key);
+      renderChips(view);
+    });
+  });
+}
+
+function refreshDashboard(view) {
+  activeView = view;
+  renderChips(view);
+  const editor = view === 'front' ? frontEditor : sideEditor;
+  const placeBtn = document.getElementById('ptPlaceToggle');
+  if (editor) placeBtn.classList.toggle('active', editor.getPlaceMode());
+  placeBtn.textContent = tr('tool_dash_place_label') + (editor && editor.getPlaceMode() ? ' ✓' : '');
+}
+
+document.getElementById('ptPlaceToggle').addEventListener('click', () => {
+  const editor = currentEditor();
+  if (!editor) return;
+  editor.setPlaceMode(!editor.getPlaceMode());
+  refreshDashboard(activeView);
+});
+
+function onEditorSelect(view, key) {
+  stopGuideAutoplay();
+  setGuidePoint(view, key);
+  renderChips(view);
+}
+
+function doNudge(dx, dy) {
+  const editor = currentEditor();
+  if (!editor) return;
+  const px = STEP_PX[currentStepSize];
+  editor.nudge(dx * px, dy * px);
+}
+document.getElementById('ptUp').addEventListener('click', () => doNudge(0, -1));
+document.getElementById('ptDown').addEventListener('click', () => doNudge(0, 1));
+document.getElementById('ptLeft').addEventListener('click', () => doNudge(-1, 0));
+document.getElementById('ptRight').addEventListener('click', () => doNudge(1, 0));
+
+document.querySelectorAll('#ptSteps .pt-step-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentStepSize = btn.dataset.step;
+    document.querySelectorAll('#ptSteps .pt-step-btn').forEach(b => b.classList.toggle('active', b === btn));
+  });
+});
 
 let frontEditor = null;
 let sideEditor = null;
@@ -1055,6 +1341,7 @@ async function enterAdjustStep() {
   document.getElementById('sideLegend').style.display = 'none';
   document.getElementById('tabFront').classList.add('active');
   document.getElementById('tabSide').classList.remove('active');
+  activeView = 'front';
 
   const loadingEl = document.getElementById('adjustLoading');
   const hintEl = document.getElementById('adjustHint');
@@ -1062,7 +1349,8 @@ async function enterAdjustStep() {
   hintEl.style.display = 'none';
 
   const canvasFront = document.getElementById('canvasFront');
-  frontEditor = makeCanvasEditor(canvasFront, state.frontImg, ['tr', 'n', 'sn', 'ls', 'li', 'me'], POINT_COLORS);
+  frontEditor = makeCanvasEditor(canvasFront, state.frontImg, ['tr', 'n', 'sn', 'ls', 'li', 'me'], POINT_COLORS,
+    (key) => onEditorSelect('front', key));
   frontEditor.resize();
 
   let detected = null;
@@ -1079,7 +1367,7 @@ async function enterAdjustStep() {
     hintEl.textContent = modelLoadFailed ? tr('tool_err_load_model') : tr('tool_manual_hint');
     hintEl.classList.add('warn');
     // seed reasonable default points near common face proportions so the
-    // user is dragging into place rather than starting from nothing
+    // user is nudging into place rather than starting from nothing
     const w = state.frontImg.naturalWidth, h = state.frontImg.naturalHeight;
     detected = {
       tr: { x: w * 0.5, y: h * 0.12 },
@@ -1095,7 +1383,8 @@ async function enterAdjustStep() {
 
   // side photo is required — always detect + editable dots for it too
   const canvasSide = document.getElementById('canvasSide');
-  sideEditor = makeCanvasEditor(canvasSide, state.sideImg, ['tragion', 'orbit'], SIDE_COLORS);
+  sideEditor = makeCanvasEditor(canvasSide, state.sideImg, ['tragion', 'orbit'], SIDE_COLORS,
+    (key) => onEditorSelect('side', key));
   sideEditor.resize();
   let sidePts = null;
   try { sidePts = await detectSidePoints(state.sideImg); } catch (e) { console.error(e); }
@@ -1105,6 +1394,9 @@ async function enterAdjustStep() {
   }
   state.sidePts = sidePts;
   sideEditor.setPoints(sidePts);
+
+  refreshDashboard('front');
+  startGuideAutoplay();
 }
 
 document.getElementById('tabFront').addEventListener('click', () => {
@@ -1115,6 +1407,8 @@ document.getElementById('tabFront').addEventListener('click', () => {
   document.getElementById('frontLegend').style.display = 'flex';
   document.getElementById('sideLegend').style.display = 'none';
   frontEditor && frontEditor.resize();
+  refreshDashboard('front');
+  if (frontEditor) setGuidePoint('front', frontEditor.getSelected());
 });
 document.getElementById('tabSide').addEventListener('click', () => {
   document.getElementById('tabSide').classList.add('active');
@@ -1124,9 +1418,12 @@ document.getElementById('tabSide').addEventListener('click', () => {
   document.getElementById('frontLegend').style.display = 'none';
   document.getElementById('sideLegend').style.display = 'flex';
   sideEditor && sideEditor.resize();
+  refreshDashboard('side');
+  if (sideEditor) setGuidePoint('side', sideEditor.getSelected());
 });
 
 document.getElementById('adjustBackBtn').addEventListener('click', () => {
+  stopGuideAutoplay();
   goToStep(1);
 });
 
@@ -1216,6 +1513,7 @@ function getRating(ratio) {
 }
 
 function showResult(ratio, tilted, philtrumRatio, chinRatio) {
+  stopGuideAutoplay();
   lastRatio = ratio;
   goToStep(3);
   document.getElementById('resultPct').textContent = ratio.toFixed(1) + '%';

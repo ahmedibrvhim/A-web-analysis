@@ -117,12 +117,19 @@
 .landmark-guide-hd { display:flex; gap:12px; align-items:flex-start; margin-bottom:16px; }
 .landmark-guide-hd svg.info-ic { width:18px; height:18px; color:var(--crimson); flex-shrink:0; margin-top:1px; }
 .landmark-guide-hd p { font-size:10px; color:var(--muted); line-height:1.7; letter-spacing:.3px; }
-.landmark-guide-imgs { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; }
-.guide-col { text-align:center; }
-.guide-svg { width:132px; height:172px; display:block; }
+.landmark-guide-imgs { display:flex; gap:28px; justify-content:center; flex-wrap:wrap; }
+.guide-col { text-align:center; width:160px; max-width:44vw; }
+.guide-svg { width:100%; height:auto; display:block; }
 .guide-col-lbl { display:block; font-size:8px; letter-spacing:2px; color:var(--ash); text-transform:uppercase; margin-top:8px; }
-.guide-outline { fill:none; stroke:var(--smoke); stroke-width:2; }
-.guide-feature { fill:none; stroke:var(--smoke); stroke-width:1.3; }
+.guide-outline { fill:none; stroke:var(--smoke); stroke-width:1.6; }
+.guide-face { fill:rgba(139,0,0,.05); stroke:var(--smoke); stroke-width:1.6; }
+.guide-feature { fill:none; stroke:var(--smoke); stroke-width:1.1; }
+.guide-iris { fill:var(--smoke); opacity:.55; }
+@media (max-width:480px) {
+  .guide-col { width:150px; max-width:47vw; }
+  .landmark-guide-imgs { gap:14px; }
+  .landmark-guide { padding:16px 12px; }
+}
 .guide-dot { stroke:#fff; stroke-width:1.3; transform-box:fill-box; transform-origin:center; transition:opacity .35s, r .35s; }
 .guide-dot.gd-idle { animation:guidePulse 2.6s ease-in-out infinite; }
 .guide-dot.gd-dim { opacity:.22; animation:none; }
@@ -164,7 +171,6 @@ body.lang-ar .guide-caption { text-align:right; }
 
 /* ── point dashboard (tap-to-select + nudge pad) ── */
 .pt-dashboard { background:var(--panel); border:1px solid var(--border); padding:16px 18px; margin-top:14px; }
-.pt-dash-hint { font-size:9px; letter-spacing:.5px; color:var(--muted); line-height:1.6; text-align:center; margin-bottom:14px; }
 .pt-chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:16px; }
 .pt-chip {
   display:flex; align-items:center; gap:6px; background:transparent;
@@ -175,26 +181,20 @@ body.lang-ar .guide-caption { text-align:right; }
 .pt-chip-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 1px rgba(255,255,255,.5); }
 .pt-chip.active { border-color:var(--blood); background:rgba(139,0,0,.1); color:var(--white); box-shadow:0 0 10px rgba(139,0,0,.25); }
 .pt-controls { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:22px; }
-.pt-pad { display:grid; grid-template-columns:38px 38px 38px; grid-template-rows:38px 38px 38px; gap:4px; }
+.pt-pad { display:grid; grid-template-columns:44px 44px 44px; grid-template-rows:44px 44px 44px; gap:5px; }
 .pt-pad button {
   background:transparent; border:1px solid var(--smoke); color:var(--crimson);
   cursor:pointer; display:flex; align-items:center; justify-content:center;
   transition:all .2s; font-size:14px;
 }
 .pt-pad button:hover, .pt-pad button:active { border-color:var(--blood); background:rgba(139,0,0,.12); }
-.pt-pad button svg { width:15px; height:15px; }
+.pt-pad button svg { width:17px; height:17px; }
 .pt-pad-up { grid-column:2; grid-row:1; }
 .pt-pad-left { grid-column:1; grid-row:2; }
 .pt-pad-center { grid-column:2; grid-row:2; border-color:transparent !important; background:none !important; cursor:default; }
 .pt-pad-right { grid-column:3; grid-row:2; }
 .pt-pad-down { grid-column:2; grid-row:3; }
 .pt-side-controls { display:flex; flex-direction:column; gap:12px; align-items:center; }
-.pt-place-toggle {
-  background:transparent; border:1px solid var(--smoke); color:var(--muted);
-  padding:8px 16px; font-family:'Cinzel',serif; font-size:9px; letter-spacing:1.5px;
-  text-transform:uppercase; cursor:pointer; transition:all .25s;
-}
-.pt-place-toggle.active { border-color:#5ecb96; color:#5ecb96; background:rgba(0,160,90,.08); box-shadow:0 0 10px rgba(0,160,90,.2); }
 .pt-steps { display:flex; gap:0; }
 .pt-step-btn {
   background:transparent; border:1px solid var(--smoke); color:var(--ash);
@@ -205,7 +205,7 @@ body.lang-ar .guide-caption { text-align:right; }
 @media (max-width:480px) {
   .pt-dashboard { padding:14px; }
   .pt-controls { gap:14px; }
-  .pt-pad { grid-template-columns:34px 34px 34px; grid-template-rows:34px 34px 34px; }
+  .pt-pad { grid-template-columns:40px 40px 40px; grid-template-rows:40px 40px 40px; }
 }
 
 .legend { display:flex; flex-wrap:wrap; gap:10px 20px; justify-content:center; margin-top:18px; }
@@ -414,38 +414,66 @@ body.lang-ar .guide-caption { text-align:right; }
       </div>
       <div class="landmark-guide-imgs">
         <div class="guide-col" id="guideColFront">
-          <svg class="guide-svg" viewBox="0 0 132 172" xmlns="http://www.w3.org/2000/svg">
-            <path class="guide-outline" d="M66 8c-24 0-34 20-34 46 0 20 5 34 11 46 6 12 13 22 23 22s17-10 23-22c6-12 11-26 11-46 0-26-10-46-34-46z"/>
-            <ellipse class="guide-feature" cx="50" cy="70" rx="7" ry="4"/>
-            <ellipse class="guide-feature" cx="82" cy="70" rx="7" ry="4"/>
-            <path class="guide-feature" d="M66 74v20"/>
-            <path class="guide-feature" d="M52 118c6 5 22 5 28 0"/>
-            <line x1="10" y1="18" x2="40" y2="18" class="guide-feature"/>
-            <circle class="guide-dot gd-idle" id="gd-front-tr" data-view="front" data-key="tr" cx="66" cy="18" r="4" fill="#dc143c" style="animation-delay:0s"/>
-            <text class="guide-label" id="gl-front-tr" x="70" y="21" fill="#dc143c">Tr</text>
-            <circle class="guide-dot gd-idle" id="gd-front-n" data-view="front" data-key="n" cx="66" cy="64" r="4" fill="#ffb703" style="animation-delay:.3s"/>
-            <text class="guide-label" id="gl-front-n" x="70" y="67" fill="#ffb703">N</text>
-            <circle class="guide-dot gd-idle" id="gd-front-sn" data-view="front" data-key="sn" cx="66" cy="94" r="4" fill="#4cc9f0" style="animation-delay:.6s"/>
-            <text class="guide-label" id="gl-front-sn" x="70" y="97" fill="#4cc9f0">Sn</text>
-            <circle class="guide-dot gd-idle" id="gd-front-ls" data-view="front" data-key="ls" cx="66" cy="106" r="4" fill="#ff6fae" style="animation-delay:.9s"/>
-            <text class="guide-label" id="gl-front-ls" x="70" y="109" fill="#ff6fae">Ls</text>
-            <circle class="guide-dot gd-idle" id="gd-front-li" data-view="front" data-key="li" cx="66" cy="122" r="4" fill="#b388ff" style="animation-delay:1.2s"/>
-            <text class="guide-label" id="gl-front-li" x="70" y="125" fill="#b388ff">Li</text>
-            <circle class="guide-dot gd-idle" id="gd-front-me" data-view="front" data-key="me" cx="66" cy="150" r="4" fill="#7bd389" style="animation-delay:1.5s"/>
-            <text class="guide-label" id="gl-front-me" x="70" y="153" fill="#7bd389">Me</text>
+          <svg class="guide-svg" viewBox="0 0 160 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- hair -->
+            <path class="guide-feature" d="M42,32 C40,20 55,8 80,8 C105,8 120,20 118,32"/>
+            <path class="guide-feature" d="M44,26c4-8 10-13 16-15M100,11c6,2 12,7 16,15"/>
+            <!-- face -->
+            <path class="guide-face" d="M80,16 C60,16 47,32 43,56 C40,76 41,94 46,113 C51,136 64,158 80,161 C96,158 109,136 114,113 C119,94 120,76 117,56 C113,32 100,16 80,16 Z"/>
+            <!-- ears -->
+            <path class="guide-feature" d="M42,84c-7,1 -10,10 -6,19c2,5 6,7 9,5"/>
+            <path class="guide-feature" d="M118,84c7,1 10,10 6,19c-2,5 -6,7 -9,5"/>
+            <!-- brows -->
+            <path class="guide-feature" d="M55,60 Q64,53 73,58"/>
+            <path class="guide-feature" d="M87,58 Q96,53 105,60"/>
+            <!-- eyes -->
+            <ellipse class="guide-feature" cx="63" cy="69" rx="9" ry="4.4"/>
+            <ellipse class="guide-feature" cx="97" cy="69" rx="9" ry="4.4"/>
+            <circle class="guide-iris" cx="63" cy="69" r="2.3"/>
+            <circle class="guide-iris" cx="97" cy="69" r="2.3"/>
+            <!-- nose -->
+            <path class="guide-feature" d="M80,72 C78,85 76,96 77,105"/>
+            <path class="guide-feature" d="M70,107 Q74,113 80,112 Q86,113 90,107"/>
+            <!-- lips -->
+            <path class="guide-feature" d="M62,128 Q71,124 80,127 Q89,124 98,128"/>
+            <path class="guide-feature" d="M64,129 Q80,140 96,129"/>
+            <path class="guide-feature" d="M70,148 Q80,152 90,148" opacity=".5"/>
+
+            <circle class="guide-dot gd-idle" id="gd-front-tr" data-view="front" data-key="tr" cx="80" cy="17" r="5" fill="#dc143c" style="animation-delay:0s"/>
+            <text class="guide-label" id="gl-front-tr" x="86" y="20" fill="#dc143c">Tr</text>
+            <circle class="guide-dot gd-idle" id="gd-front-n" data-view="front" data-key="n" cx="80" cy="68" r="5" fill="#ffb703" style="animation-delay:.3s"/>
+            <text class="guide-label" id="gl-front-n" x="86" y="71" fill="#ffb703">N</text>
+            <circle class="guide-dot gd-idle" id="gd-front-sn" data-view="front" data-key="sn" cx="80" cy="107" r="5" fill="#4cc9f0" style="animation-delay:.6s"/>
+            <text class="guide-label" id="gl-front-sn" x="86" y="110" fill="#4cc9f0">Sn</text>
+            <circle class="guide-dot gd-idle" id="gd-front-ls" data-view="front" data-key="ls" cx="80" cy="127" r="5" fill="#ff6fae" style="animation-delay:.9s"/>
+            <text class="guide-label" id="gl-front-ls" x="86" y="130" fill="#ff6fae">Ls</text>
+            <circle class="guide-dot gd-idle" id="gd-front-li" data-view="front" data-key="li" cx="80" cy="136" r="5" fill="#b388ff" style="animation-delay:1.2s"/>
+            <text class="guide-label" id="gl-front-li" x="86" y="139" fill="#b388ff">Li</text>
+            <circle class="guide-dot gd-idle" id="gd-front-me" data-view="front" data-key="me" cx="80" cy="160" r="5" fill="#7bd389" style="animation-delay:1.5s"/>
+            <text class="guide-label" id="gl-front-me" x="86" y="163" fill="#7bd389">Me</text>
           </svg>
           <span class="guide-col-lbl" data-i18n="tool_view_front">Front</span>
         </div>
         <div class="guide-col" id="guideColSide">
-          <svg class="guide-svg" viewBox="0 0 132 172" xmlns="http://www.w3.org/2000/svg">
-            <path class="guide-outline" d="M40 10c-16 4-22 20-22 40 0 4 8 6 8 10s-6 5-6 10c8 6 6 12 12 16 2 8-2 12 4 16 8 6 20 6 30-2 10-8 16-24 16-44 0-26-18-46-42-46z"/>
-            <path class="guide-feature" d="M52 62c4-2 8-2 11 0"/>
-            <path class="guide-feature" d="M46 96c6 4 14 4 20 1"/>
-            <line x1="86" y1="20" x2="112" y2="20" class="guide-feature"/>
-            <circle class="guide-dot gd-idle" id="gd-side-orbit" data-view="side" data-key="orbit" cx="60" cy="66" r="4" fill="#4cc9f0" style="animation-delay:0s"/>
-            <text class="guide-label" id="gl-side-orbit" x="64" y="63" fill="#4cc9f0">Orbitale</text>
-            <circle class="guide-dot gd-idle" id="gd-side-tragion" data-view="side" data-key="tragion" cx="82" cy="88" r="4" fill="#dc143c" style="animation-delay:.4s"/>
-            <text class="guide-label" id="gl-side-tragion" x="86" y="92" fill="#dc143c">Tragion</text>
+          <svg class="guide-svg" viewBox="0 0 160 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- hair -->
+            <path class="guide-feature" d="M60,18 C78,8 102,8 120,20"/>
+            <path class="guide-feature" d="M66,14c9,-4 20,-4 28,1M96,11c7,3 14,8 19,15"/>
+            <!-- profile silhouette, facing left -->
+            <path class="guide-face" d="M130,25 C110,10 95,8 78,14 C68,17 58,24 50,38 C46,44 44,48 46,54 C40,62 33,72 28,84 C26,90 30,93 36,95 C40,98 40,102 38,106 C36,110 34,114 37,118 C40,122 40,124 38,128 C34,134 34,140 40,146 C52,152 66,154 80,152 C96,150 108,146 116,136 C122,128 124,118 124,108 C124,96 126,84 130,72 C133,60 132,42 130,25 Z"/>
+            <!-- ear -->
+            <path class="guide-feature" d="M120,88c8,-2 15,4 15,13c0,8 -6,14 -14,13"/>
+            <!-- brow + eye -->
+            <path class="guide-feature" d="M50,50 Q58,45 66,49"/>
+            <ellipse class="guide-feature" cx="58" cy="59" rx="6.5" ry="3.2"/>
+            <circle class="guide-iris" cx="57" cy="59" r="1.8"/>
+            <!-- nostril -->
+            <path class="guide-feature" d="M32,92 Q36,95 40,93" opacity=".7"/>
+
+            <circle class="guide-dot gd-idle" id="gd-side-orbit" data-view="side" data-key="orbit" cx="62" cy="70" r="5" fill="#4cc9f0" style="animation-delay:0s"/>
+            <text class="guide-label" id="gl-side-orbit" x="46" y="83" fill="#4cc9f0" text-anchor="middle">Or</text>
+            <circle class="guide-dot gd-idle" id="gd-side-tragion" data-view="side" data-key="tragion" cx="122" cy="105" r="5" fill="#dc143c" style="animation-delay:.4s"/>
+            <text class="guide-label" id="gl-side-tragion" x="132" y="108" fill="#dc143c">Tra</text>
           </svg>
           <span class="guide-col-lbl" data-i18n="tool_view_side">Side</span>
         </div>
@@ -490,10 +518,8 @@ body.lang-ar .guide-caption { text-align:right; }
     </div>
 
     <div class="pt-dashboard" id="ptDashboard">
-      <p class="pt-dash-hint" id="ptDashHint" data-i18n="tool_dash_hint">Tap a point, then nudge it with the arrows — or tap the photo to drop it exactly where it belongs.</p>
       <div class="pt-chips" id="ptChips"></div>
       <div class="pt-controls">
-        <button class="pt-place-toggle" id="ptPlaceToggle" type="button" data-i18n="tool_dash_place_label">Tap Photo To Place</button>
         <div class="pt-pad">
           <button class="pt-pad-up" id="ptUp" type="button" aria-label="Up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
           <button class="pt-pad-left" id="ptLeft" type="button" aria-label="Left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
@@ -1046,19 +1072,12 @@ const CHIP_SHORT = { tr: 'Tr', n: 'N', sn: 'Sn', ls: 'Ls', li: 'Li', me: 'Me', t
 const POINT_LABEL_KEYS = { tr: 'tool_pt_tr', n: 'tool_pt_n', sn: 'tool_pt_sn', ls: 'tool_pt_ls', li: 'tool_pt_li', me: 'tool_pt_me', tragion: 'tool_pt_tragion', orbit: 'tool_pt_orbit' };
 const GUIDE_DESC_KEYS = { tr: 'tool_guide_desc_tr', n: 'tool_guide_desc_n', sn: 'tool_guide_desc_sn', ls: 'tool_guide_desc_ls', li: 'tool_guide_desc_li', me: 'tool_guide_desc_me', tragion: 'tool_guide_desc_tragion', orbit: 'tool_guide_desc_orbit' };
 
-// A real tap (short, near-motionless touch) vs. a scroll swipe that merely
-// started on the canvas — only a genuine tap should select/place a point,
-// so a finger swiping over the photo to scroll the page is never hijacked.
-const TAP_MOVE_PX = 10;
-const TAP_TIME_MS = 550;
-
 function makeCanvasEditor(canvasEl, img, pointKeys, colors, onSelect) {
   const ctx = canvasEl.getContext('2d');
   let scale = 1;
   let points = null; // in natural-image pixel coords
   let dragKey = null;       // mouse-only continuous drag
   let selectedKey = pointKeys[0];
-  let placeMode = false;
   let downInfo = null;      // { hit, x, y, t } for tap detection on touch/pen
 
   function fit() {
@@ -1175,17 +1194,6 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors, onSelect) {
   }
   canvasEl.addEventListener('pointerup', (e) => {
     if (e.pointerType === 'mouse') { endMouseDrag(); return; }
-    if (!downInfo) return;
-    const moved = Math.hypot(e.clientX - downInfo.x, e.clientY - downInfo.y);
-    const elapsed = performance.now() - downInfo.t;
-    const wasTap = moved < TAP_MOVE_PX && elapsed < TAP_TIME_MS;
-    if (wasTap && !downInfo.hit && placeMode && selectedKey) {
-      points[selectedKey] = downInfo.pos;
-      draw();
-      // auto-advance so a run of taps walks through every point in order
-      const idx = pointKeys.indexOf(selectedKey);
-      selectPoint(pointKeys[(idx + 1) % pointKeys.length]);
-    }
     downInfo = null;
   });
   canvasEl.addEventListener('pointerleave', endMouseDrag);
@@ -1198,8 +1206,6 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors, onSelect) {
     redraw: draw,
     selectPoint,
     getSelected() { return selectedKey; },
-    setPlaceMode(v) { placeMode = !!v; },
-    getPlaceMode() { return placeMode; },
     nudge(dxDisplayPx, dyDisplayPx) {
       if (!points || !points[selectedKey]) return;
       points[selectedKey].x += dxDisplayPx / scale;
@@ -1293,18 +1299,7 @@ function renderChips(view) {
 function refreshDashboard(view) {
   activeView = view;
   renderChips(view);
-  const editor = view === 'front' ? frontEditor : sideEditor;
-  const placeBtn = document.getElementById('ptPlaceToggle');
-  if (editor) placeBtn.classList.toggle('active', editor.getPlaceMode());
-  placeBtn.textContent = tr('tool_dash_place_label') + (editor && editor.getPlaceMode() ? ' ✓' : '');
 }
-
-document.getElementById('ptPlaceToggle').addEventListener('click', () => {
-  const editor = currentEditor();
-  if (!editor) return;
-  editor.setPlaceMode(!editor.getPlaceMode());
-  refreshDashboard(activeView);
-});
 
 function onEditorSelect(view, key) {
   stopGuideAutoplay();

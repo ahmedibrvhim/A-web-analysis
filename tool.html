@@ -93,6 +93,24 @@
 .tool-nav button:disabled, #calculateBtn:disabled, #saveResultBtn:disabled { opacity:.35; cursor:not-allowed; pointer-events:none; }
 
 /* ── instructions card (side step) ── */
+/* ── landmark reference guide (front + side diagram) ── */
+.landmark-guide { background:var(--panel); border:1px solid var(--border); padding:20px 18px; margin-bottom:26px; }
+.landmark-guide-hd { display:flex; gap:12px; align-items:flex-start; margin-bottom:16px; }
+.landmark-guide-hd svg.info-ic { width:18px; height:18px; color:var(--crimson); flex-shrink:0; margin-top:1px; }
+.landmark-guide-hd p { font-size:10px; color:var(--muted); line-height:1.7; letter-spacing:.3px; }
+.landmark-guide-imgs { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; }
+.guide-col { text-align:center; }
+.guide-svg { width:132px; height:172px; display:block; }
+.guide-col-lbl { display:block; font-size:8px; letter-spacing:2px; color:var(--ash); text-transform:uppercase; margin-top:8px; }
+.guide-outline { fill:none; stroke:var(--smoke); stroke-width:2; }
+.guide-feature { fill:none; stroke:var(--smoke); stroke-width:1.3; }
+.guide-dot { stroke:#fff; stroke-width:1.3; transform-box:fill-box; transform-origin:center; animation:guidePulse 2.6s ease-in-out infinite; }
+.guide-label { font-size:8px; font-family:'Cinzel',serif; letter-spacing:.3px; }
+@keyframes guidePulse {
+  0%, 100% { opacity:.5; r:3.4; }
+  50% { opacity:1; r:5.4; }
+}
+
 .instr-card { display:flex; gap:16px; background:var(--panel); border:1px solid var(--border); padding:18px 20px; margin-bottom:26px; }
 .instr-card svg { width:26px; height:26px; color:var(--crimson); flex-shrink:0; }
 .instr-card p { font-size:11px; color:var(--text); line-height:1.8; }
@@ -112,7 +130,7 @@
 
 .legend { display:flex; flex-wrap:wrap; gap:10px 20px; justify-content:center; margin-top:18px; }
 .legend-item { display:flex; align-items:center; gap:7px; font-size:9px; letter-spacing:1px; color:var(--muted); text-transform:uppercase; }
-.legend-dot { width:13px; height:13px; border-radius:50%; border:2px solid var(--white); }
+.legend-dot { width:9px; height:9px; border-radius:50%; border:1.5px solid var(--white); }
 
 .tool-hint { text-align:center; font-size:10px; letter-spacing:1px; color:var(--ash); margin-top:16px; }
 .tool-hint.warn { color:var(--crimson); }
@@ -143,6 +161,8 @@
 .result-compare div { text-align:center; }
 .result-compare .val { font-size:20px; color:var(--white); font-weight:700; }
 .result-compare .lbl { font-size:8px; letter-spacing:2px; color:var(--ash); text-transform:uppercase; margin-top:4px; }
+.result-compare-sub { gap:30px; margin-bottom:26px; }
+.result-compare-sub .val { font-size:15px; color:var(--bone); }
 
 .tilt-flag { font-size:10px; letter-spacing:1px; margin-bottom:26px; }
 .tilt-flag.on { color:var(--bone); }
@@ -291,7 +311,52 @@
   <section class="tool-step" id="stepAdjust">
     <div class="tool-eyebrow">☠ Step 3 / 4 ☠</div>
     <h1 class="tool-title" data-i18n="tool_step_adjust_title">Confirm The Landmarks</h1>
-    <p class="tool-text" data-i18n="tool_step_adjust_text">Four points were placed automatically. Drag any of them to correct their position — your measurement is only as accurate as these dots.</p>
+    <p class="tool-text" data-i18n="tool_step_adjust_text">Points were placed automatically on both photos. Drag any of them to correct their position — your measurement is only as accurate as these dots. Both Front and Side must be confirmed.</p>
+
+    <div class="landmark-guide">
+      <div class="landmark-guide-hd">
+        <svg class="info-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+        <p data-i18n="tool_guide_title">Reference guide — where these points go, per standard anthropometric landmarks</p>
+      </div>
+      <div class="landmark-guide-imgs">
+        <div class="guide-col">
+          <svg class="guide-svg" viewBox="0 0 132 172" xmlns="http://www.w3.org/2000/svg">
+            <path class="guide-outline" d="M66 8c-24 0-34 20-34 46 0 20 5 34 11 46 6 12 13 22 23 22s17-10 23-22c6-12 11-26 11-46 0-26-10-46-34-46z"/>
+            <ellipse class="guide-feature" cx="50" cy="70" rx="7" ry="4"/>
+            <ellipse class="guide-feature" cx="82" cy="70" rx="7" ry="4"/>
+            <path class="guide-feature" d="M66 74v20"/>
+            <path class="guide-feature" d="M52 118c6 5 22 5 28 0"/>
+            <line x1="10" y1="18" x2="40" y2="18" class="guide-feature"/>
+            <circle class="guide-dot" cx="66" cy="18" r="4" fill="#dc143c" style="animation-delay:0s"/>
+            <text class="guide-label" x="70" y="21" fill="#dc143c">Tr</text>
+            <circle class="guide-dot" cx="66" cy="64" r="4" fill="#ffb703" style="animation-delay:.3s"/>
+            <text class="guide-label" x="70" y="67" fill="#ffb703">N</text>
+            <circle class="guide-dot" cx="66" cy="94" r="4" fill="#4cc9f0" style="animation-delay:.6s"/>
+            <text class="guide-label" x="70" y="97" fill="#4cc9f0">Sn</text>
+            <circle class="guide-dot" cx="66" cy="106" r="4" fill="#ff6fae" style="animation-delay:.9s"/>
+            <text class="guide-label" x="70" y="109" fill="#ff6fae">Ls</text>
+            <circle class="guide-dot" cx="66" cy="122" r="4" fill="#b388ff" style="animation-delay:1.2s"/>
+            <text class="guide-label" x="70" y="125" fill="#b388ff">Li</text>
+            <circle class="guide-dot" cx="66" cy="150" r="4" fill="#7bd389" style="animation-delay:1.5s"/>
+            <text class="guide-label" x="70" y="153" fill="#7bd389">Me</text>
+          </svg>
+          <span class="guide-col-lbl" data-i18n="tool_view_front">Front</span>
+        </div>
+        <div class="guide-col">
+          <svg class="guide-svg" viewBox="0 0 132 172" xmlns="http://www.w3.org/2000/svg">
+            <path class="guide-outline" d="M40 10c-16 4-22 20-22 40 0 4 8 6 8 10s-6 5-6 10c8 6 6 12 12 16 2 8-2 12 4 16 8 6 20 6 30-2 10-8 16-24 16-44 0-26-18-46-42-46z"/>
+            <path class="guide-feature" d="M52 62c4-2 8-2 11 0"/>
+            <path class="guide-feature" d="M46 96c6 4 14 4 20 1"/>
+            <line x1="86" y1="20" x2="112" y2="20" class="guide-feature"/>
+            <circle class="guide-dot" cx="60" cy="66" r="4" fill="#4cc9f0" style="animation-delay:0s"/>
+            <text class="guide-label" x="64" y="63" fill="#4cc9f0">Orbitale</text>
+            <circle class="guide-dot" cx="82" cy="88" r="4" fill="#dc143c" style="animation-delay:.4s"/>
+            <text class="guide-label" x="86" y="92" fill="#dc143c">Tragion</text>
+          </svg>
+          <span class="guide-col-lbl" data-i18n="tool_view_side">Side</span>
+        </div>
+      </div>
+    </div>
 
     <div class="adjust-tabs">
       <button class="adjust-tab active" id="tabFront" data-i18n="tool_view_front">Front</button>
@@ -314,6 +379,8 @@
       <div class="legend-item"><span class="legend-dot" style="background:#dc143c"></span><span data-i18n="tool_pt_tr">Tr — Trichion (hairline)</span></div>
       <div class="legend-item"><span class="legend-dot" style="background:#ffb703"></span><span data-i18n="tool_pt_n">N — Nasion (between brows)</span></div>
       <div class="legend-item"><span class="legend-dot" style="background:#4cc9f0"></span><span data-i18n="tool_pt_sn">Sn — Subnasale (nose base)</span></div>
+      <div class="legend-item"><span class="legend-dot" style="background:#ff6fae"></span><span data-i18n="tool_pt_ls">Ls — Labrale Superius (lip top)</span></div>
+      <div class="legend-item"><span class="legend-dot" style="background:#b388ff"></span><span data-i18n="tool_pt_li">Li — Labrale Inferius (lip bottom)</span></div>
       <div class="legend-item"><span class="legend-dot" style="background:#7bd389"></span><span data-i18n="tool_pt_me">Me — Menton (chin)</span></div>
     </div>
     <div class="legend" id="sideLegend" style="display:none;">
@@ -347,6 +414,16 @@
         <div>
           <div class="val" id="resultDelta">--</div>
           <div class="lbl">Δ</div>
+        </div>
+      </div>
+      <div class="result-compare result-compare-sub">
+        <div>
+          <div class="val" id="resultPhiltrum">--%</div>
+          <div class="lbl" data-i18n="tool_result_philtrum">Philtrum Height</div>
+        </div>
+        <div>
+          <div class="val" id="resultChin">--%</div>
+          <div class="lbl" data-i18n="tool_result_chin">Chin Height</div>
         </div>
       </div>
       <div class="tilt-flag" id="tiltFlag"></div>
@@ -655,6 +732,8 @@ const IDX = {
   foreheadTop: 10,   // topmost point the mesh reaches on the forehead
   browGlabella: 168, // between the eyebrows -> proxy for Nasion
   noseBase: 2,        // base of the nose -> proxy for Subnasale
+  upperLipTop: 0,     // vermilion border of the upper lip -> proxy for Labrale Superius (Ls), bottom of the philtrum
+  lowerLipBottom: 17, // vermilion border of the lower lip -> proxy for Labrale Inferius (Li), top of the chin
   chin: 152,          // bottom of the chin -> proxy for Menton
   leftEyeOuter: 33,
   rightEyeOuter: 263,
@@ -676,6 +755,8 @@ async function detectFrontPoints(img) {
   const glabella = landmarkToPx(pts[IDX.browGlabella], w, h);
   const foreheadTop = landmarkToPx(pts[IDX.foreheadTop], w, h);
   const sn = landmarkToPx(pts[IDX.noseBase], w, h);
+  const ls = landmarkToPx(pts[IDX.upperLipTop], w, h);
+  const li = landmarkToPx(pts[IDX.lowerLipBottom], w, h);
   const me = landmarkToPx(pts[IDX.chin], w, h);
 
   // Estimate trichion: extend the glabella→foreheadTop vector upward.
@@ -684,7 +765,7 @@ async function detectFrontPoints(img) {
   const dy = foreheadTop.y - glabella.y;
   const tr_ = { x: foreheadTop.x + dx * 0.9, y: foreheadTop.y + dy * 0.9 };
 
-  return { tr: tr_, n: glabella, sn, me };
+  return { tr: tr_, n: glabella, sn, ls, li, me };
 }
 
 async function detectSidePoints(img) {
@@ -703,7 +784,7 @@ async function detectSidePoints(img) {
 /* ══════════════════════════════════════
    STEP 3 — ADJUST (canvas + draggable points)
 ══════════════════════════════════════ */
-const POINT_COLORS = { tr: '#dc143c', n: '#ffb703', sn: '#4cc9f0', me: '#7bd389' };
+const POINT_COLORS = { tr: '#dc143c', n: '#ffb703', sn: '#4cc9f0', ls: '#ff6fae', li: '#b388ff', me: '#7bd389' };
 const SIDE_COLORS = { tragion: '#dc143c', orbit: '#4cc9f0' };
 
 function makeCanvasEditor(canvasEl, img, pointKeys, colors) {
@@ -722,24 +803,30 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors) {
     ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
     ctx.drawImage(img, 0, 0);
     if (!points) return;
-    const r = Math.max(11, 16 / scale);
+    const dotR = Math.max(4, 6 / scale);
+    const crossLen = Math.max(10, 14 / scale);
+    const gap = Math.max(3, 4 / scale);
     pointKeys.forEach(key => {
       const p = points[key];
       if (!p) return;
-      // outer glow ring so the dot stays visible on busy/dark photos
+      const c = colors[key];
+      // thin crosshair for a precise, medically-legible fix point
+      ctx.strokeStyle = c;
+      ctx.globalAlpha = 0.95;
+      ctx.lineWidth = Math.max(1, 1.5 / scale);
       ctx.beginPath();
-      ctx.arc(p.x, p.y, r + Math.max(3, 4 / scale), 0, Math.PI * 2);
-      ctx.strokeStyle = colors[key];
-      ctx.globalAlpha = 0.35;
-      ctx.lineWidth = Math.max(2, 3 / scale);
+      ctx.moveTo(p.x - crossLen, p.y); ctx.lineTo(p.x - gap, p.y);
+      ctx.moveTo(p.x + gap, p.y); ctx.lineTo(p.x + crossLen, p.y);
+      ctx.moveTo(p.x, p.y - crossLen); ctx.lineTo(p.x, p.y - gap);
+      ctx.moveTo(p.x, p.y + gap); ctx.lineTo(p.x, p.y + crossLen);
       ctx.stroke();
-      // main dot
+      // small solid core marks the exact pixel
       ctx.beginPath();
-      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = colors[key];
-      ctx.globalAlpha = 0.9;
+      ctx.arc(p.x, p.y, dotR, 0, Math.PI * 2);
+      ctx.fillStyle = c;
+      ctx.globalAlpha = 0.95;
       ctx.fill();
-      ctx.lineWidth = Math.max(2, 3 / scale);
+      ctx.lineWidth = Math.max(1, 1.5 / scale);
       ctx.strokeStyle = '#fff';
       ctx.globalAlpha = 1;
       ctx.stroke();
@@ -755,7 +842,7 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors) {
 
   function nearestPoint(pos) {
     if (!points) return null;
-    const r = Math.max(20, 28 / scale);
+    const r = Math.max(18, 24 / scale);
     let best = null, bestD = Infinity;
     pointKeys.forEach(key => {
       const p = points[key];
@@ -812,7 +899,7 @@ async function enterAdjustStep() {
   hintEl.style.display = 'none';
 
   const canvasFront = document.getElementById('canvasFront');
-  frontEditor = makeCanvasEditor(canvasFront, state.frontImg, ['tr', 'n', 'sn', 'me'], POINT_COLORS);
+  frontEditor = makeCanvasEditor(canvasFront, state.frontImg, ['tr', 'n', 'sn', 'ls', 'li', 'me'], POINT_COLORS);
   frontEditor.resize();
 
   let detected = null;
@@ -835,6 +922,8 @@ async function enterAdjustStep() {
       tr: { x: w * 0.5, y: h * 0.12 },
       n:  { x: w * 0.5, y: h * 0.42 },
       sn: { x: w * 0.5, y: h * 0.62 },
+      ls: { x: w * 0.5, y: h * 0.68 },
+      li: { x: w * 0.5, y: h * 0.78 },
       me: { x: w * 0.5, y: h * 0.86 }
     };
   }
@@ -889,7 +978,7 @@ function computeRatio() {
   // required, so we always use the Frankfort plane (tragion → infraorbital)
   // to find the head's tilt angle and rotate the front points to compensate
   // for any camera-level mismatch reflected in posture.
-  let pts = { tr: { ...p.tr }, n: { ...p.n }, sn: { ...p.sn }, me: { ...p.me } };
+  let pts = { tr: { ...p.tr }, n: { ...p.n }, sn: { ...p.sn }, ls: { ...p.ls }, li: { ...p.li }, me: { ...p.me } };
 
   const { tragion, orbit } = state.sidePts;
   const angle = Math.atan2(tragion.y - orbit.y, tragion.x - orbit.x);
@@ -900,7 +989,7 @@ function computeRatio() {
   const theta = -angle;
   if (Math.abs(theta) > 0.01) tilted = true;
   const cos = Math.cos(theta), sin = Math.sin(theta);
-  ['tr', 'n', 'sn', 'me'].forEach(k => {
+  ['tr', 'n', 'sn', 'ls', 'li', 'me'].forEach(k => {
     const dx = pts[k].x - cx, dy = pts[k].y - cy;
     pts[k] = { x: cx + dx * cos - dy * sin, y: cy + dx * sin + dy * cos };
   });
@@ -909,12 +998,18 @@ function computeRatio() {
   const lowerThird = pts.me.y - pts.sn.y;
   const ratio = totalHeight !== 0 ? (lowerThird / totalHeight) * 100 : 0;
 
-  return { ratio, tilted };
+  // Philtrum height: Subnasale → Labrale Superius (base of nose to top of upper lip).
+  // Chin height: Labrale Inferius → Menton (bottom of lower lip to the chin point).
+  // Both reported as a % of total facial height, same scale as the main ratio.
+  const philtrumRatio = totalHeight !== 0 ? ((pts.ls.y - pts.sn.y) / totalHeight) * 100 : 0;
+  const chinRatio = totalHeight !== 0 ? ((pts.me.y - pts.li.y) / totalHeight) * 100 : 0;
+
+  return { ratio, tilted, philtrumRatio, chinRatio };
 }
 
 document.getElementById('calculateBtn').addEventListener('click', () => {
   const p = frontEditor.getPoints();
-  if (!p || !p.tr || !p.n || !p.sn || !p.me) {
+  if (!p || !p.tr || !p.n || !p.sn || !p.ls || !p.li || !p.me) {
     showMsg(tr('tool_err_no_face'), 'error');
     document.getElementById('tabFront').click();
     return;
@@ -926,8 +1021,8 @@ document.getElementById('calculateBtn').addEventListener('click', () => {
     return;
   }
   state.sidePts = sp;
-  const { ratio, tilted } = computeRatio();
-  showResult(ratio, tilted);
+  const { ratio, tilted, philtrumRatio, chinRatio } = computeRatio();
+  showResult(ratio, tilted, philtrumRatio, chinRatio);
 });
 
 /* ══════════════════════════════════════
@@ -957,7 +1052,7 @@ function getRating(ratio) {
   return { key: 'rating_sub5', label: tr('rating_sub5'), tier: 'tier-sub5', score: 2 };
 }
 
-function showResult(ratio, tilted) {
+function showResult(ratio, tilted, philtrumRatio, chinRatio) {
   lastRatio = ratio;
   goToStep(3);
   document.getElementById('resultPct').textContent = ratio.toFixed(1) + '%';
@@ -965,6 +1060,9 @@ function showResult(ratio, tilted) {
   const deltaEl = document.getElementById('resultDelta');
   deltaEl.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%';
   deltaEl.style.color = Math.abs(delta) <= 2 ? '#5ecb96' : 'var(--crimson)';
+
+  document.getElementById('resultPhiltrum').textContent = philtrumRatio.toFixed(1) + '%';
+  document.getElementById('resultChin').textContent = chinRatio.toFixed(1) + '%';
 
   // side photo is always used now, so the ratio is always tilt-corrected
   const flag = document.getElementById('tiltFlag');

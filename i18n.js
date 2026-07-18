@@ -156,6 +156,7 @@ export const dict = {
     tool_fix_ok: '✓ Auto-corrected',
     tool_fix_skip: 'Using original — auto-fix unavailable',
     tool_fix_warn: '⚠ Head tilted — retake facing forward for best accuracy',
+    tool_fix_side_angle_warn: '⚠ Turn a bit further — this doesn\'t look like a full side profile yet',
     tool_side_instr_text: "Turn your head 90° so your ear is fully visible and the tragion (front of the ear) and lower eye socket aren't blocked by hair.",
     tool_archetype_title: 'Your Archetype',
     tool_rating_title: 'Rating',
@@ -174,6 +175,7 @@ export const dict = {
     tool_pt_ls: 'Ls — Labrale Superius (lip top)',
     tool_pt_li: 'Li — Labrale Inferius (lip bottom)',
     tool_guide_title: 'Reference guide — where these points go, per standard anthropometric landmarks',
+    tool_guide_ref_caption: 'Full clinical landmark map — for reference only, we use six of these points',
   },
   ar: {
     /* ── nav / common ── */
@@ -323,6 +325,7 @@ export const dict = {
     tool_fix_ok: '✓ تم التصحيح تلقائياً',
     tool_fix_skip: 'تم استخدام الصورة الأصلية — التصحيح التلقائي غير متاح',
     tool_fix_warn: '⚠ الرأس مائل — أعد التصوير وواجه الكاميرا مباشرة لأفضل دقة',
+    tool_fix_side_angle_warn: '⚠ أدر رأسك أكثر قليلاً — هذه لا تبدو صورة جانبية كاملة بعد',
     tool_side_instr_text: 'أدر رأسك ٩٠ درجة حتى تظهر أذنك بالكامل، وتأكد أن نقطة Tragion (أمام الأذن) وأسفل محجر العين غير مغطاتين بالشعر.',
     tool_archetype_title: 'نمط وجهك',
     tool_rating_title: 'التقييم',
@@ -341,6 +344,7 @@ export const dict = {
     tool_pt_ls: 'Ls — أعلى الشفة العليا',
     tool_pt_li: 'Li — أسفل الشفة السفلى',
     tool_guide_title: 'دليل مرجعي — أين توضع هذه النقاط وفق معايير القياسات التشريحية القياسية',
+    tool_guide_ref_caption: 'خريطة كاملة للمعالم السريرية — للاطلاع فقط، نستخدم ست نقاط منها',
   }
 };
 

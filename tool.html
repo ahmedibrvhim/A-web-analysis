@@ -90,7 +90,7 @@
 
 .tool-nav { display:flex; gap:14px; justify-content:center; margin-top:28px; }
 .tool-nav .hidden { display:none; }
-.tool-nav button:disabled, #calculateBtn:disabled, #saveResultBtn:disabled { opacity:.35; cursor:not-allowed; pointer-events:none; }
+.tool-nav button:disabled, #calculateBtn:disabled { opacity:.35; cursor:not-allowed; pointer-events:none; }
 
 /* ── instructions card (side step) ── */
 /* ── landmark reference guide (front + side diagram) ── */
@@ -440,8 +440,7 @@
       </div>
 
       <div class="tool-nav">
-        <button class="btn-ghost" id="startOverBtn" data-i18n="tool_start_over">Start Over</button>
-        <button class="btn-solid" id="saveResultBtn" data-i18n="tool_save_result">☠ &nbsp; Save To My Account</button>
+        <button class="btn-solid" id="startOverBtn" data-i18n="tool_start_over">Start Over</button>
       </div>
     </div>
   </section>
@@ -1078,16 +1077,16 @@ function showResult(ratio, tilted, philtrumRatio, chinRatio) {
   const ratingEl = document.getElementById('resultRating');
   ratingEl.textContent = rating.label;
   ratingEl.className = 'rating-badge ' + rating.tier;
+
+  autoSaveResult();
 }
 
 document.getElementById('startOverBtn').addEventListener('click', () => {
   location.reload();
 });
 
-document.getElementById('saveResultBtn').addEventListener('click', async () => {
+async function autoSaveResult() {
   if (!currentUser || lastRatio === null) return;
-  const btn = document.getElementById('saveResultBtn');
-  btn.disabled = true;
   try {
     await addDoc(collection(db, 'users', currentUser.uid, 'results'), {
       ratio: Number(lastRatio.toFixed(2)),
@@ -1098,14 +1097,10 @@ document.getElementById('saveResultBtn').addEventListener('click', async () => {
       ratingScore: lastRating ? lastRating.score : null,
       createdAt: serverTimestamp()
     });
-    showMsg(tr('tool_saved'), 'success');
   } catch (e) {
-    console.error(e);
-    showMsg(tr('tool_err_save'), 'error');
-  } finally {
-    btn.disabled = false;
+    console.error('Auto-save failed', e);
   }
-});
+}
 
 window.addEventListener('resize', () => {
   frontEditor && frontEditor.resize();

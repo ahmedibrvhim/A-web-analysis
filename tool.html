@@ -820,40 +820,18 @@ function getHeadPoseDegrees(result) {
 
 async function autoFixPhoto(img, view) {
   const lm = await getLandmarker();
-  if (!lm) { console.warn('[autoFix] landmarker not loaded'); return { img, fixed: false, tilted: false, noFace: false }; }
+  if (!lm) return { img, fixed: false, tilted: false };
   let result;
-  try { result = lm.detect(img); } catch (e) { console.warn('[autoFix] detect() threw', view, e); return { img, fixed: false, tilted: false, noFace: false }; }
-  if (!result || !result.faceLandmarks || !result.faceLandmarks.length) {
-    console.warn('[autoFix] no face detected', view);
-    return { img, fixed: false, tilted: false, noFace: true };
-  }
+  try { result = lm.detect(img); } catch (e) { console.error(e); return { img, fixed: false, tilted: false }; }
+  if (!result || !result.faceLandmarks || !result.faceLandmarks.length) return { img, fixed: false, tilted: false };
 
   const pts = result.faceLandmarks[0];
   const w = img.naturalWidth, h = img.naturalHeight;
 
-  // level the head so the reference plane is horizontal -> fixes roll.
-  // Frontal photos: the eye line. Side/profile photos: the eyes are the
-  // WRONG reference — one is occluded and its 2D position is unreliable
-  // in a real profile shot — so we use the same near-side tragion/orbit
-  // pick used for the actual side landmarks instead (Frankfort plane).
-  let angle = 0;
-  try {
-    if (view === 'side') {
-      const tragionIdx = pickNearerIdx(pts, IDX.tragion, IDX.tragionAlt);
-      const orbitIdx = pickNearerIdx(pts, IDX.infraorbital, IDX.infraorbitalAlt);
-      const tragion = landmarkToPx(pts[tragionIdx], w, h);
-      const orbit = landmarkToPx(pts[orbitIdx], w, h);
-      angle = Math.atan2(tragion.y - orbit.y, tragion.x - orbit.x);
-    } else {
-      const leftEye = landmarkToPx(pts[IDX.leftEyeOuter], w, h);
-      const rightEye = landmarkToPx(pts[IDX.rightEyeOuter], w, h);
-      angle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
-    }
-    if (!isFinite(angle)) angle = 0;
-  } catch (e) {
-    console.warn('[autoFix] leveling angle calc failed, skipping rotation', view, e);
-    angle = 0;
-  }
+  // level the eyes -> fixes left/right head tilt (roll)
+  const leftEye = landmarkToPx(pts[IDX.leftEyeOuter], w, h);
+  const rightEye = landmarkToPx(pts[IDX.rightEyeOuter], w, h);
+  const angle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
 
   // A turned head (yaw) can't be corrected by rotating the 2D photo without
   // warping the face, so that still just gets flagged for a retake. A head
@@ -875,76 +853,75 @@ async function autoFixPhoto(img, view) {
     if (pose && Math.abs(pose.yaw) < 35) shallowAngle = true;
   }
 
-  let fixedImg;
-  try {
-    // face bounding box, plus an estimated hairline (not part of the mesh) so
-    // the crop can be framed hairline-to-chin — head only, no shoulders/background
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    pts.forEach(p => {
-      const x = p.x * w, y = p.y * h;
-      if (x < minX) minX = x; if (x > maxX) maxX = x;
-      if (y < minY) minY = y; if (y > maxY) maxY = y;
-    });
-    const faceW = maxX - minX;
-    const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  // face bounding box, plus an estimated hairline (not part of the mesh) so
+  // the crop can be framed hairline-to-chin — head only, no shoulders/background
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  pts.forEach(p => {
+    const x = p.x * w, y = p.y * h;
+    if (x < minX) minX = x; if (x > maxX) maxX = x;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
+  });
+  const faceW = maxX - minX;
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
 
-    const glabella = landmarkToPx(pts[IDX.browGlabella], w, h);
-    const foreheadTop = landmarkToPx(pts[IDX.foreheadTop], w, h);
-    const chin = landmarkToPx(pts[IDX.chin], w, h);
-    const hdx = foreheadTop.x - glabella.x, hdy = foreheadTop.y - glabella.y;
-    const hairline = { x: foreheadTop.x + hdx * 0.9, y: foreheadTop.y + hdy * 0.9 };
+  const glabella = landmarkToPx(pts[IDX.browGlabella], w, h);
+  const foreheadTop = landmarkToPx(pts[IDX.foreheadTop], w, h);
+  const chin = landmarkToPx(pts[IDX.chin], w, h);
+  const hdx = foreheadTop.x - glabella.x, hdy = foreheadTop.y - glabella.y;
+  const hairline = { x: foreheadTop.x + hdx * 0.9, y: foreheadTop.y + hdy * 0.9 };
 
-    // rotate the full photo around the face center so the reference plane is level
-    const diag = Math.ceil(Math.sqrt(w * w + h * h));
-    const rot = document.createElement('canvas');
-    rot.width = diag; rot.height = diag;
-    const rctx = rot.getContext('2d');
-    rctx.fillStyle = '#000';
-    rctx.fillRect(0, 0, diag, diag);
-    rctx.translate(diag / 2, diag / 2);
-    rctx.rotate(-angle);
-    rctx.translate(-cx, -cy);
-    rctx.drawImage(img, 0, 0);
+  // rotate the full photo around the face center so the eye-line is level
+  const diag = Math.ceil(Math.sqrt(w * w + h * h));
+  const rot = document.createElement('canvas');
+  rot.width = diag; rot.height = diag;
+  const rctx = rot.getContext('2d');
+  rctx.fillStyle = '#000';
+  rctx.fillRect(0, 0, diag, diag);
+  rctx.translate(diag / 2, diag / 2);
+  rctx.rotate(-angle);
+  rctx.translate(-cx, -cy);
+  rctx.drawImage(img, 0, 0);
 
-    // map the hairline/chin points into that same rotated space so the crop
-    // window can be framed tightly around head only
-    function toRotated(p) {
-      const dx = p.x - cx, dy = p.y - cy;
-      return {
-        x: diag / 2 + dx * Math.cos(angle) + dy * Math.sin(angle),
-        y: diag / 2 - dx * Math.sin(angle) + dy * Math.cos(angle)
-      };
-    }
-    const hairlineR = toRotated(hairline);
-    const chinR = toRotated(chin);
-    const headH = Math.max(20, chinR.y - hairlineR.y);
-
-    // crop centered on the head, snug from hairline to chin with a little
-    // breathing room — this is what cuts out background/shoulders
-    const targetAspect = 3 / 4; // width / height, standard headshot framing
-    let cropH = headH * 1.35;
-    let cropW = cropH * targetAspect;
-    if (cropW < faceW * 1.5) { cropW = faceW * 1.5; cropH = cropW / targetAspect; }
-
-    const outW = 900, outH = Math.round(outW / targetAspect);
-    const out = document.createElement('canvas');
-    out.width = outW; out.height = outH;
-    const octx = out.getContext('2d');
-    octx.fillStyle = '#000';
-    octx.fillRect(0, 0, outW, outH);
-
-    const sx = diag / 2 - cropW / 2;
-    const midHeadY = (hairlineR.y + chinR.y) / 2;
-    const sy = midHeadY - cropH / 2;
-    octx.drawImage(rot, sx, sy, cropW, cropH, 0, 0, outW, outH);
-
-    const dataUrl = out.toDataURL('image/jpeg', 0.92);
-    fixedImg = await loadImageFromSrc(dataUrl);
-  } catch (e) {
-    console.warn('[autoFix] crop/rotate geometry failed', view, e);
-    return { img, fixed: false, tilted: false, shallowAngle: false, noFace: false };
+  // map the hairline/chin points into that same rotated space so the crop
+  // window can be framed tightly around head only
+  function toRotated(p) {
+    const dx = p.x - cx, dy = p.y - cy;
+    return {
+      x: diag / 2 + dx * Math.cos(angle) + dy * Math.sin(angle),
+      y: diag / 2 - dx * Math.sin(angle) + dy * Math.cos(angle)
+    };
   }
-  return { img: fixedImg, fixed: true, tilted, shallowAngle, noFace: false };
+  const hairlineR = toRotated(hairline);
+  const chinR = toRotated(chin);
+  const headH = Math.max(20, chinR.y - hairlineR.y);
+
+  // crop centered on the head, snug from hairline to chin with a little
+  // breathing room — this is what cuts out background/shoulders
+  const targetAspect = 3 / 4; // width / height, standard headshot framing
+  let cropH = headH * 1.35;
+  let cropW = cropH * targetAspect;
+  if (cropW < faceW * 1.5) { cropW = faceW * 1.5; cropH = cropW / targetAspect; }
+
+  const outW = 900, outH = Math.round(outW / targetAspect);
+  const out = document.createElement('canvas');
+  out.width = outW; out.height = outH;
+  const octx = out.getContext('2d');
+  octx.fillStyle = '#000';
+  octx.fillRect(0, 0, outW, outH);
+
+  const sx = diag / 2 - cropW / 2;
+  const midHeadY = (hairlineR.y + chinR.y) / 2;
+  const sy = midHeadY - cropH / 2;
+  octx.drawImage(rot, sx, sy, cropW, cropH, 0, 0, outW, outH);
+
+  const dataUrl = out.toDataURL('image/jpeg', 0.92);
+  try {
+    const fixedImg = await loadImageFromSrc(dataUrl);
+    return { img: fixedImg, fixed: true, tilted, shallowAngle };
+  } catch (e) {
+    console.error(e);
+    return { img, fixed: false, tilted: false, shallowAngle: false };
+  }
 }
 
 function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId, removeBtnId, fileNameId, fixOverlayId, fixStatusId, view, onLoaded }) {
@@ -991,30 +968,18 @@ function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId
         fixStatusEl.style.display = 'none';
         fixOverlay.style.display = 'flex';
 
-        let finalImg = img, fixed = false, tilted = false, shallowAngle = false, noFace = false;
+        let finalImg = img, fixed = false, tilted = false, shallowAngle = false;
         try {
           const result = await autoFixPhoto(img, view);
           finalImg = result.img;
           fixed = result.fixed;
           tilted = result.tilted;
           shallowAngle = result.shallowAngle;
-          noFace = result.noFace;
         } catch (err) {
           console.error('Auto-fix failed', err);
         }
 
         fixOverlay.style.display = 'none';
-
-        if (noFace && view === 'front') {
-          // Front detection is reliable enough that "no face found" almost
-          // always means it's genuinely not a face photo -> hard reject.
-          // Side profiles are a different story (see below), so this check
-          // only applies here.
-          showMsg(tr('tool_err_no_face'), 'error');
-          reset();
-          return;
-        }
-
         previewImg.src = finalImg.src;
         fixStatusEl.style.display = 'inline-flex';
         if (fixed && tilted) {
@@ -1121,12 +1086,7 @@ async function getLandmarker() {
       },
       runningMode: 'IMAGE',
       numFaces: 1,
-      outputFacialTransformationMatrixes: true,
-      // Defaults (0.5) are tuned for frontal/selfie-ish faces and miss a lot
-      // of true side-profile shots. Lowering these trades a bit of false-
-      // positive risk for much better recall on side photos.
-      minFaceDetectionConfidence: 0.3,
-      minFacePresenceConfidence: 0.3
+      outputFacialTransformationMatrixes: true
     });
   } catch (e) {
     console.error('MediaPipe load failed', e);

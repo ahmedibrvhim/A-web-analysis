@@ -975,7 +975,13 @@ async function autoFixPhoto(img, view) {
       // without real landmarks. No roll angle available this way, so we
       // can't level the photo, only crop in on the detected face.
       try {
-        const box = await detectProfileBox(img);
+        const box = await Promise.race([
+          detectProfileBox(img),
+          new Promise((resolve) => setTimeout(() => {
+            console.error('Profile cascade detection timed out');
+            resolve(null);
+          }, 8000))
+        ]);
         if (box) {
           const canvas = document.createElement('canvas');
           canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
@@ -1398,26 +1404,49 @@ function detectLenient(lm, img) {
    exercise. Test it against a handful of real side photos (both turn
    directions) and expect to retune the box proportions below.
 ══════════════════════════════════════ */
+// OpenCV.js is an ~8-10MB WASM build. On slow connections or low-memory
+// mobile devices it can fail to finish initializing without ever firing
+// an error — window.cv exists but .Mat / onRuntimeInitialized never show
+// up. The old version of this function polled for that with no cap, so
+// it would spin forever: the UI's "fixing pose..." overlay never clears,
+// and on some mobile browsers the WASM allocation itself is enough to
+// crash the tab. Everything here now resolves (successfully or with
+// null) within OPENCV_LOAD_TIMEOUT_MS no matter what.
+const OPENCV_LOAD_TIMEOUT_MS = 6000;
 let cvPromise = null;
 function loadOpenCV() {
   if (cvPromise) return cvPromise;
   cvPromise = new Promise((resolve) => {
-    if (window.cv && window.cv.Mat) { resolve(window.cv); return; }
+    let settled = false;
+    const finish = (val) => { if (!settled) { settled = true; resolve(val); } };
+
+    const timeoutId = setTimeout(() => {
+      console.error('OpenCV.js load timed out after', OPENCV_LOAD_TIMEOUT_MS, 'ms');
+      finish(null);
+    }, OPENCV_LOAD_TIMEOUT_MS);
+
+    if (window.cv && window.cv.Mat) { clearTimeout(timeoutId); finish(window.cv); return; }
+
     const script = document.createElement('script');
     script.src = 'https://docs.opencv.org/4.x/opencv.js';
     script.async = true;
     script.onload = () => {
       const waitReady = () => {
-        if (window.cv && window.cv.Mat) { resolve(window.cv); return; }
+        if (settled) return; // timeout already fired, stop polling
+        if (window.cv && window.cv.Mat) { clearTimeout(timeoutId); finish(window.cv); return; }
         if (window.cv && window.cv.onRuntimeInitialized !== undefined) {
-          window.cv['onRuntimeInitialized'] = () => resolve(window.cv);
+          window.cv['onRuntimeInitialized'] = () => { clearTimeout(timeoutId); finish(window.cv); };
         } else {
           setTimeout(waitReady, 50);
         }
       };
       waitReady();
     };
-    script.onerror = (e) => { console.error('OpenCV.js failed to load', e); resolve(null); };
+    script.onerror = (e) => {
+      console.error('OpenCV.js failed to load', e);
+      clearTimeout(timeoutId);
+      finish(null);
+    };
     document.head.appendChild(script);
   });
   return cvPromise;
@@ -1428,7 +1457,15 @@ function loadProfileCascade(cv) {
   if (profileCascadePromise) return profileCascadePromise;
   profileCascadePromise = (async () => {
     try {
-      const res = await fetch('https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_profileface.xml');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      let res;
+      try {
+        res = await fetch('https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_profileface.xml', { signal: controller.signal });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+      if (!res.ok) throw new Error('Cascade fetch failed: ' + res.status);
       const text = await res.text();
       cv.FS_createDataFile('/', 'haarcascade_profileface.xml', text, true, false, false);
       const classifier = new cv.CascadeClassifier();

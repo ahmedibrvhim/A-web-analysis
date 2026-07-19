@@ -108,6 +108,9 @@
 .upload-remove-btn:hover { border-color:var(--blood); color:var(--crimson); }
 .upload-remove-btn svg { width:12px; height:12px; }
 
+#sideMirrorBtn.warn-pulse { border-color:#c98a00; color:#ffb703; animation:mirrorPulse 1.6s ease-in-out infinite; }
+@keyframes mirrorPulse { 0%,100%{box-shadow:0 0 0 rgba(255,183,3,0)} 50%{box-shadow:0 0 10px rgba(255,183,3,.5)} }
+
 .tool-nav { display:flex; gap:14px; justify-content:center; margin-top:28px; }
 .tool-nav .hidden { display:none; }
 .tool-nav button:disabled, #calculateBtn:disabled { opacity:.35; cursor:not-allowed; pointer-events:none; }
@@ -648,6 +651,7 @@ body.lang-ar .guide-caption { text-align:right; }
       <div class="legend-item"><span class="legend-dot" style="background:#ffb703"></span><span data-i18n="tool_pt_gonion">Gonion — angle of the jaw</span></div>
       <div class="legend-item"><span class="legend-dot" style="background:#7bd389"></span><span data-i18n="tool_pt_menton_side">Menton — chin point (side)</span></div>
     </div>
+    <button type="button" class="btn-ghost" id="sideMirrorBtn" style="display:none; margin:0 auto 18px; font-size:9px;" data-i18n="tool_side_mirror">⇄ Points look mirrored — flip to other side</button>
 
     <div class="pt-dashboard" id="ptDashboard">
       <div class="pt-chips" id="ptChips"></div>
@@ -983,8 +987,8 @@ async function autoFixPhoto(img, view) {
   // only need to warn on genuinely extreme pitch, not tolerate less of it.
   let tilted = false;
   let shallowAngle = false;
+  const pose = getHeadPoseDegrees(result);
   if (view === 'front') {
-    const pose = getHeadPoseDegrees(result);
     if (pose) {
       if (Math.abs(pose.yaw) > 14 || Math.abs(pose.pitch) > 28) tilted = true;
     }
@@ -992,7 +996,6 @@ async function autoFixPhoto(img, view) {
     // side photos need a real ~90° turn — a shallow turn is the main
     // reason side landmarks end up inaccurate, since both cheeks stay
     // roughly equally visible and the near-side pick becomes unreliable.
-    const pose = getHeadPoseDegrees(result);
     if (pose && Math.abs(pose.yaw) < 35) shallowAngle = true;
   }
 
@@ -1007,11 +1010,26 @@ async function autoFixPhoto(img, view) {
   const faceW = maxX - minX;
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
 
-  const glabella = landmarkToPx(pts[IDX.browGlabella], w, h);
-  const foreheadTop = landmarkToPx(pts[IDX.foreheadTop], w, h);
-  const chin = landmarkToPx(pts[IDX.chin], w, h);
+  const glabella = landmarkToPxZ(pts[IDX.browGlabella], w, h);
+  const foreheadTop = landmarkToPxZ(pts[IDX.foreheadTop], w, h);
+  const chin = landmarkToPxZ(pts[IDX.chin], w, h);
   const hdx = foreheadTop.x - glabella.x, hdy = foreheadTop.y - glabella.y;
-  const hairline = { x: foreheadTop.x + hdx * 0.9, y: foreheadTop.y + hdy * 0.9 };
+  const hairline = { x: foreheadTop.x + hdx * 0.9, y: foreheadTop.y + hdy * 0.9, z: foreheadTop.z };
+
+  // A chin tipped up or down foreshortens the raw 2D distance between the
+  // hairline and the chin even though neither point moved off the face —
+  // left uncorrected, this used to make the crop frame too tight (chin up:
+  // cuts off the chin) or too loose (chin down) exactly on the photos where
+  // pose was worst. Un-rotate each point's (y,z) by the detected pitch
+  // before measuring head height, the same correction computeRatio() does
+  // for the on-canvas landmarks.
+  const pitchRad = pose ? pose.pitch * Math.PI / 180 : 0;
+  function unpitch(p) {
+    if (!pitchRad) return p;
+    return { x: p.x, y: p.y * Math.cos(pitchRad) + p.z * Math.sin(pitchRad) };
+  }
+  const hairlineUnpitched = unpitch(hairline);
+  const chinUnpitched = unpitch(chin);
 
   // rotate the full photo around the face center so the eye-line is level
   const diag = Math.ceil(Math.sqrt(w * w + h * h));
@@ -1036,7 +1054,12 @@ async function autoFixPhoto(img, view) {
   }
   const hairlineR = toRotated(hairline);
   const chinR = toRotated(chin);
-  const headH = Math.max(20, chinR.y - hairlineR.y);
+  // Real (visible) positions place the crop; the pitch-corrected pair sizes
+  // it, so a lifted or dropped chin no longer makes the frame too tight or
+  // too loose.
+  const hairlineUR = toRotated(hairlineUnpitched);
+  const chinUR = toRotated(chinUnpitched);
+  const headH = Math.max(20, chinUR.y - hairlineUR.y);
 
   // crop centered on the head, snug from hairline to chin with a little
   // breathing room — this is what cuts out background/shoulders
@@ -1492,6 +1515,24 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors, onSelect) {
       points[selectedKey].x += dxDisplayPx / scale;
       points[selectedKey].y += dyDisplayPx / scale;
       draw();
+    },
+    // Flip every point horizontally around the image's own center. Used for
+    // the side profile so a user whose auto-detected points landed on the
+    // wrong side of the face (or who got the "assumed" fallback layout for
+    // the opposite turn direction) can fix it in one tap instead of
+    // dragging all four points by hand. Left-facing and right-facing side
+    // photos are mirror images of each other, so this is the correct fix
+    // for either direction — it isn't "the left-facing button", it just
+    // swaps whichever side the tool guessed.
+    mirror() {
+      if (!points) return;
+      const w = canvasEl.width;
+      pointKeys.forEach(key => {
+        const p = points[key];
+        if (!p) return;
+        p.x = w - p.x;
+      });
+      draw();
     }
   };
 }
@@ -1665,13 +1706,19 @@ async function enterAdjustStep() {
   sideEditor.resize();
   let sidePts = null;
   try { sidePts = await detectSidePoints(state.sideImg); } catch (e) { console.error(e); }
+  state.sidePtsGuessed = false;
   if (!sidePts) {
     // No detection — seed a starting position tuned to the same hairline
     // (~13% from top) → chin (~87% from top) framing autoFixPhoto crops
     // every photo to, on the standard "ear on the right, facing left"
     // profile convention. Getting these proportions closer to a real face
     // means less dragging to correct, which was the main "points aren't
-    // near my face" complaint on side photos.
+    // near my face" complaint on side photos. Since this is a guess at
+    // orientation (MediaPipe's face detector frequently can't find a face
+    // at all in a true ~90° profile shot, which is why this fallback runs
+    // so often), flag it so the UI can point the user at the mirror button
+    // in case they turned the other way.
+    state.sidePtsGuessed = true;
     const w = state.sideImg.naturalWidth, h = state.sideImg.naturalHeight;
     sidePts = {
       orbit:   { x: w * 0.42, y: h * 0.30 },  // eye line sits in the upper third
@@ -1688,6 +1735,7 @@ async function enterAdjustStep() {
   }
   state.sidePts = sidePts;
   sideEditor.setPoints(sidePts);
+  document.getElementById('sideMirrorBtn').classList.toggle('warn-pulse', state.sidePtsGuessed);
 
   refreshDashboard('front');
   startGuideAutoplay();
@@ -1700,6 +1748,7 @@ document.getElementById('tabFront').addEventListener('click', () => {
   document.getElementById('canvasWrapSide').style.display = 'none';
   document.getElementById('frontLegend').style.display = 'flex';
   document.getElementById('sideLegend').style.display = 'none';
+  document.getElementById('sideMirrorBtn').style.display = 'none';
   frontEditor && frontEditor.resize();
   refreshDashboard('front');
   if (frontEditor) setGuidePoint('front', frontEditor.getSelected());
@@ -1711,9 +1760,16 @@ document.getElementById('tabSide').addEventListener('click', () => {
   document.getElementById('canvasWrapFront').style.display = 'none';
   document.getElementById('frontLegend').style.display = 'none';
   document.getElementById('sideLegend').style.display = 'flex';
+  document.getElementById('sideMirrorBtn').style.display = 'inline-flex';
   sideEditor && sideEditor.resize();
   refreshDashboard('side');
   if (sideEditor) setGuidePoint('side', sideEditor.getSelected());
+});
+document.getElementById('sideMirrorBtn').addEventListener('click', () => {
+  if (!sideEditor) return;
+  sideEditor.mirror();
+  state.sidePts = sideEditor.getPoints();
+  document.getElementById('sideMirrorBtn').classList.remove('warn-pulse');
 });
 
 document.getElementById('adjustBackBtn').addEventListener('click', () => {

@@ -1173,7 +1173,13 @@ function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId
 
         let finalImg = img, fixed = false, tilted = false, shallowAngle = false, approxFix = false;
         try {
-          const result = await autoFixPhoto(img, view);
+          const result = await Promise.race([
+            autoFixPhoto(img, view),
+            new Promise((resolve) => setTimeout(() => {
+              console.error('autoFixPhoto timed out — falling back to original photo');
+              resolve({ img, fixed: false, tilted: false, shallowAngle: false, approxFix: false });
+            }, 15000))
+          ]);
           finalImg = result.img;
           fixed = result.fixed;
           tilted = result.tilted;

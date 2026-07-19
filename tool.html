@@ -195,6 +195,7 @@ body.lang-ar .guide-caption { text-align:right; }
   border:1.5px solid var(--smoke); color:var(--text); cursor:pointer;
   padding:7px 12px; font-family:'Cinzel',serif; font-size:9px; letter-spacing:1.5px;
   text-transform:uppercase; transition:all .25s;
+  touch-action:manipulation;
 }
 .pt-chip-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 1px rgba(255,255,255,.5); }
 .pt-chip.active { border-color:var(--blood); background:rgba(139,0,0,.1); color:var(--white); box-shadow:0 0 10px rgba(139,0,0,.25); }
@@ -204,6 +205,7 @@ body.lang-ar .guide-caption { text-align:right; }
   background:transparent; border:1px solid var(--smoke); color:var(--crimson);
   cursor:pointer; display:flex; align-items:center; justify-content:center;
   transition:all .2s; font-size:14px;
+  touch-action:manipulation;
 }
 .pt-pad button:hover, .pt-pad button:active { border-color:var(--blood); background:rgba(139,0,0,.12); }
 .pt-pad button svg { width:17px; height:17px; }
@@ -218,6 +220,7 @@ body.lang-ar .guide-caption { text-align:right; }
   background:transparent; border:1px solid var(--smoke); color:var(--ash);
   padding:6px 10px; font-family:'Cinzel',serif; font-size:8px; letter-spacing:1px;
   text-transform:uppercase; cursor:pointer; transition:all .2s; margin-left:-1px;
+  touch-action:manipulation;
 }
 .pt-step-btn.active { border-color:var(--blood); color:var(--crimson); background:rgba(139,0,0,.1); position:relative; z-index:1; }
 @media (max-width:480px) {
@@ -272,31 +275,70 @@ body.lang-ar .guide-caption { text-align:right; }
 .result-extra-val { font-family:'Cinzel',serif; font-size:12px; color:var(--white); letter-spacing:.5px; line-height:1.5; }
 .result-extra-val .sub { display:block; font-family:'Cinzel',serif; font-size:9px; color:var(--muted); letter-spacing:1px; margin-top:3px; text-transform:uppercase; }
 
-/* ── step 4: framed front + side capture pair ──
-   No hero-section styles were available to match exactly (style.css /
-   home.html weren't provided), so this reuses the same crimson-on-black
-   design tokens already used throughout this page. */
-.result-photos { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin:8px 0 30px; }
-.result-photo-frame {
-  position:relative; width:150px; background:var(--panel);
-  border:1px solid var(--border); padding:8px 8px 12px;
+/* ── step 4: hero banner + circular front/side photos ──
+   Mirrors home.html's #hero / .hero-skull-ring treatment (same gradient,
+   grid overlay, glow and floating-ring animation) so Step 4 opens with the
+   same visual moment as the homepage, then drops straight into the results. */
+.result-hero {
+  position:relative; overflow:hidden;
+  margin:0 -20px 30px;
+  padding:38px 20px 34px;
+  text-align:center;
+  background:radial-gradient(ellipse at center, #150000 0%, #000 65%);
+  animation:heroFadeIn .8s ease;
 }
-.result-photo-frame::before, .result-photo-frame::after {
-  content:''; position:absolute; width:14px; height:14px;
-  border:1.5px solid var(--blood); pointer-events:none;
+@keyframes heroFadeIn { from{opacity:0} to{opacity:1} }
+.result-hero-grid {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(139,0,0,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(139,0,0,.04) 1px,transparent 1px);
+  background-size:60px 60px;
 }
-.result-photo-frame::before { top:3px; left:3px; border-right:none; border-bottom:none; }
-.result-photo-frame::after  { bottom:3px; right:3px; border-left:none; border-top:none; }
-.result-photo-img-wrap {
-  width:100%; aspect-ratio:3/4; overflow:hidden;
-  border:1px solid var(--smoke); box-shadow:0 0 22px rgba(139,0,0,.25);
+.result-hero-glow {
+  position:absolute; width:420px; height:420px;
+  background:radial-gradient(circle, rgba(139,0,0,.16) 0%, transparent 70%);
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  animation:gPulse 5s ease-in-out infinite;
 }
-.result-photo-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
-.result-photo-cap { display:block; font-size:8px; letter-spacing:2.5px; color:var(--crimson); text-transform:uppercase; text-align:center; margin-top:9px; }
+@keyframes gPulse {
+  0%,100%{opacity:.6;transform:translate(-50%,-50%) scale(1)}
+  50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
+}
+.result-hero .tool-eyebrow, .result-hero-title, .result-hero-sub, .result-photo-circles { position:relative; z-index:2; }
+.result-hero .tool-eyebrow { margin-bottom:8px; }
+.result-hero-title {
+  font-family:'Cinzel Decorative',cursive; font-weight:900;
+  font-size:clamp(22px,4.4vw,32px); color:var(--white);
+  letter-spacing:5px; text-transform:uppercase; line-height:1.2;
+  text-shadow:0 0 30px var(--blood), 0 0 60px rgba(139,0,0,.4);
+  margin:0 0 10px;
+}
+.result-hero-sub { font-size:9px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin:0 0 30px; }
+
+.result-photo-circles { display:flex; gap:36px; justify-content:center; flex-wrap:wrap; }
+.result-photo-circle-wrap { display:flex; flex-direction:column; align-items:center; }
+.result-photo-circle {
+  width:150px; height:150px; border-radius:50%;
+  border:2px solid var(--blood);
+  box-shadow:0 0 40px rgba(139,0,0,.45), 0 0 80px rgba(139,0,0,.15),
+             inset 0 0 40px rgba(0,0,0,.7);
+  overflow:hidden; background:var(--black);
+  animation:skullFloat 6s ease-in-out infinite;
+}
+.result-photo-circle-wrap:nth-child(2) .result-photo-circle { animation-delay:.4s; }
+@keyframes skullFloat {
+  0%,100%{transform:translateY(0);box-shadow:0 0 40px rgba(139,0,0,.45),0 0 80px rgba(139,0,0,.15)}
+  50%{transform:translateY(-8px);box-shadow:0 0 60px rgba(139,0,0,.7),0 0 110px rgba(139,0,0,.25)}
+}
+.result-photo-circle img { width:100%; height:100%; object-fit:cover; display:block; }
+.result-photo-cap { display:block; font-size:8px; letter-spacing:2.5px; color:var(--crimson); text-transform:uppercase; text-align:center; margin-top:12px; }
 @media (max-width:480px) {
-  .result-photo-frame { width:130px; }
-  .result-photos { gap:14px; }
+  .result-hero { margin:0 -20px 24px; padding:30px 16px 26px; }
+  .result-photo-circles { gap:20px; }
+  .result-photo-circle { width:118px; height:118px; }
 }
+
 .rating-badge {
   display:inline-block; font-family:'Cinzel Decorative',cursive; font-size:16px;
   letter-spacing:1px; text-transform:uppercase; padding:4px 16px;
@@ -600,21 +642,25 @@ body.lang-ar .guide-caption { text-align:right; }
 
   <!-- STEP 4: RESULT -->
   <section class="tool-step" id="stepResult">
-    <div class="tool-eyebrow">☠ Step 4 / 4 ☠</div>
-    <h1 class="tool-title" data-i18n="tool_step_result_title">Your Lower-Third Ratio</h1>
-
-    <div class="result-card">
-      <div class="result-photos">
-        <div class="result-photo-frame">
-          <div class="result-photo-img-wrap"><img id="resultFrontPhoto" alt="Front photo"></div>
+    <div class="result-hero">
+      <div class="result-hero-grid"></div>
+      <div class="result-hero-glow"></div>
+      <div class="tool-eyebrow">☠ Step 4 / 4 ☠</div>
+      <h1 class="result-hero-title" data-i18n="tool_step_result_title">Your Lower-Third Ratio</h1>
+      <p class="result-hero-sub" data-i18n="tool_result_hero_sub">Your captured landmarks, front & side</p>
+      <div class="result-photo-circles">
+        <div class="result-photo-circle-wrap">
+          <div class="result-photo-circle"><img id="resultFrontPhoto" alt="Front photo"></div>
           <span class="result-photo-cap" data-i18n="tool_view_front">Front</span>
         </div>
-        <div class="result-photo-frame">
-          <div class="result-photo-img-wrap"><img id="resultSidePhoto" alt="Side photo"></div>
+        <div class="result-photo-circle-wrap">
+          <div class="result-photo-circle"><img id="resultSidePhoto" alt="Side photo"></div>
           <span class="result-photo-cap" data-i18n="tool_view_side">Side</span>
         </div>
       </div>
+    </div>
 
+    <div class="result-card">
       <div class="result-ring">
         <div class="pct" id="resultPct">--%</div>
         <div class="pct-lbl" data-i18n="tool_result_yours">Your Ratio</div>
@@ -1773,6 +1819,11 @@ let lastGrowthLabel = null;
 const GROWTH_LABEL_KEYS = { growth_forward: 'growth_forward', growth_neutral: 'growth_neutral', growth_downward: 'growth_downward' };
 
 // Archetype: which side of the classical ideal the lower-third falls on.
+// (Kept ratio-only on purpose — this label describes the *shape* of the
+// lower third specifically, i.e. short vs. long relative to the classical
+// 33.3% split. It's a single, well-defined axis, unlike the rating below.
+// If you'd rather have this fold in gonial angle / growth / chin:philtrum
+// too, say the word and I'll rework it into a second composite.)
 function getArchetype(ratio) {
   if (ratio < 30)   return { key: 'archetype_short',          label: tr('archetype_short') };
   if (ratio < 32)   return { key: 'archetype_balanced_short', label: tr('archetype_balanced_short') };
@@ -1781,14 +1832,76 @@ function getArchetype(ratio) {
   return { key: 'archetype_long', label: tr('archetype_long') };
 }
 
-// Rating: distance from the 33.3% classical ideal, Sub5 → Chad.
-function getRating(ratio) {
+/* ── Composite rating ──────────────────────────────────────────────
+   Four sub-scores, each 0-10, each worth an equal 25% of the final
+   rating. Every sub-score is bucketed directly off the tier ranges
+   you pasted, so the bucket edges below trace straight back to those
+   tables rather than being invented independently.
+*/
+
+// 1) Lower-third ratio vs. the 33.3% classical ideal.
+function scoreRatio(ratio) {
   const delta = Math.abs(ratio - IDEAL);
-  if (delta <= 1.2) return { key: 'rating_chad',      label: tr('rating_chad'),      tier: 'tier-chad',    score: 10 };
-  if (delta <= 2.5) return { key: 'rating_above_avg', label: tr('rating_above_avg'), tier: 'tier-above',   score: 8  };
-  if (delta <= 4.5) return { key: 'rating_average',   label: tr('rating_average'),   tier: 'tier-average', score: 6  };
-  if (delta <= 7)   return { key: 'rating_below_avg', label: tr('rating_below_avg'), tier: 'tier-below',   score: 4  };
-  return { key: 'rating_sub5', label: tr('rating_sub5'), tier: 'tier-sub5', score: 2 };
+  if (delta <= 1.2) return 10;
+  if (delta <= 2.5) return 8;
+  if (delta <= 4.5) return 6;
+  if (delta <= 7)   return 4;
+  return 2;
+}
+
+// 2) Gonial angle vs. the 110°-115° "ideal L-shaped jaw" band.
+//    Sharper than 110° is treated as still-elite (uncapped on the low
+//    side, since the reference tiers only define the range above it).
+function scoreGonial(angle) {
+  if (angle == null) return null;
+  if (angle <= 115) return 10;
+  if (angle <= 120) return 8;
+  if (angle <= 125) return 6;
+  if (angle <= 130) return 4;
+  return 2;
+}
+
+// 3) Growth pattern via FMA — lower (more forward-growing) scores
+//    higher, using the same <22 / 22-30 / >30 split the app already
+//    uses for the forward/neutral/downward label, just split finer.
+function scoreGrowth(fma) {
+  if (fma == null) return null;
+  if (fma < 18) return 10;
+  if (fma < 22) return 8;
+  if (fma < 26) return 6;
+  if (fma < 30) return 4;
+  return 2;
+}
+
+// 4) Chin:philtrum ratio vs. the 2:1 → 2.5:1+ progression.
+function scoreChinPhiltrum(cpRatio) {
+  if (!cpRatio) return null;
+  if (cpRatio >= 2.5)  return 10;
+  if (cpRatio >= 2.3)  return 8;
+  if (cpRatio >= 2.15) return 6;
+  if (cpRatio >= 2.0)  return 4;
+  return 2;
+}
+
+// Rating: equal-weighted average of all four sub-scores, Sub5 → Chad.
+// `metrics` = { ratio, gonialAngle, fma, chinPhiltrumRatio }. Any metric
+// that isn't available yet (e.g. no side photo) just drops out of the
+// average instead of forcing a false score.
+function getRating(metrics) {
+  const scores = [
+    scoreRatio(metrics.ratio),
+    scoreGonial(metrics.gonialAngle),
+    scoreGrowth(metrics.fma),
+    scoreChinPhiltrum(metrics.chinPhiltrumRatio)
+  ].filter(s => s !== null && s !== undefined);
+
+  const composite = scores.reduce((a, b) => a + b, 0) / scores.length;
+
+  if (composite >= 9) return { key: 'rating_chad',      label: tr('rating_chad'),      tier: 'tier-chad',    score: composite };
+  if (composite >= 7) return { key: 'rating_above_avg', label: tr('rating_above_avg'), tier: 'tier-above',   score: composite };
+  if (composite >= 5) return { key: 'rating_average',   label: tr('rating_average'),   tier: 'tier-average', score: composite };
+  if (composite >= 3) return { key: 'rating_below_avg', label: tr('rating_below_avg'), tier: 'tier-below',   score: composite };
+  return { key: 'rating_sub5', label: tr('rating_sub5'), tier: 'tier-sub5', score: composite };
 }
 
 function showResult(ratio, tilted, philtrumRatio, chinRatio, chinPhiltrumRatio, sideAngles) {
@@ -1818,7 +1931,12 @@ function showResult(ratio, tilted, philtrumRatio, chinRatio, chinPhiltrumRatio, 
   flag.className = 'tilt-flag on';
 
   const archetype = getArchetype(ratio);
-  const rating = getRating(ratio);
+  const rating = getRating({
+    ratio,
+    gonialAngle: sideAngles ? sideAngles.gonialAngle : null,
+    fma: sideAngles ? sideAngles.fma : null,
+    chinPhiltrumRatio
+  });
   lastArchetype = archetype;
   lastRating = rating;
 
@@ -1858,7 +1976,7 @@ async function autoSaveResult() {
       tiltCorrected: true,
       archetype: lastArchetype ? lastArchetype.key : null,
       rating: lastRating ? lastRating.key : null,
-      ratingScore: lastRating ? lastRating.score : null,
+      ratingScore: lastRating ? Number(lastRating.score.toFixed(1)) : null,
       chinPhiltrumRatio: lastChinPhiltrumRatio ? Number(lastChinPhiltrumRatio.toFixed(2)) : null,
       gonialAngle: lastSideAngles ? Math.round(lastSideAngles.gonialAngle) : null,
       frankfortMandibularAngle: lastSideAngles ? Math.round(lastSideAngles.fma) : null,

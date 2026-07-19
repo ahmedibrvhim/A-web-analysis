@@ -266,9 +266,44 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
   #about { padding:40px 20px 90px; }
   .about-features { grid-template-columns:1fr; }
 }
+
+/* ── AUTH GATE ──────────────────────────────────────────────
+   Shown by default (no JS needed) so the page underneath never
+   flashes for a signed-out visitor who loads this URL directly.
+   JS removes it once Firebase confirms a real session; if there's
+   no session, the redirect to login.html fires while this is still
+   covering the screen. */
+.auth-gate {
+  position:fixed; inset:0; z-index:9999;
+  background:radial-gradient(ellipse at center, #150000 0%, #000 70%);
+  display:flex; align-items:center; justify-content:center;
+  transition:opacity .3s ease, visibility .3s ease;
+}
+.auth-gate.auth-gate-hidden { opacity:0; visibility:hidden; pointer-events:none; }
+.auth-gate-inner { text-align:center; }
+.auth-gate-skull {
+  width:70px; height:70px; border-radius:50%; object-fit:cover;
+  border:2px solid var(--blood); box-shadow:0 0 30px rgba(139,0,0,.4);
+  animation:authGatePulse 2.2s ease-in-out infinite; margin:0 auto 16px;
+}
+@keyframes authGatePulse {
+  0%,100% { transform:scale(1); opacity:.85; }
+  50%     { transform:scale(1.06); opacity:1; }
+}
+.auth-gate-text {
+  font-family:'Cinzel',serif; font-size:10px; letter-spacing:3px;
+  text-transform:uppercase; color:var(--muted);
+}
 </style>
 </head>
 <body>
+
+<div id="authGate" class="auth-gate">
+  <div class="auth-gate-inner">
+    <img src="Skull.png" alt="" class="auth-gate-skull">
+    <div class="auth-gate-text" data-i18n="auth_gate_checking">Checking your session…</div>
+  </div>
+</div>
 
 <!-- NAV -->
 <nav>
@@ -547,8 +582,11 @@ onAuthStateChanged(auth, async user => {
     }
 
     renderUserPill(user, displayName);
+    document.getElementById('authGate').classList.add('auth-gate-hidden');
   } else {
     // No signed-in user — this page requires auth, so bounce to login.
+    // Gate stays visible (no auth-gate-hidden class added) so the page
+    // underneath is never shown while the redirect happens.
     sessionStorage.setItem('authRequired', '1');
     window.location.href = 'login.html';
     return;

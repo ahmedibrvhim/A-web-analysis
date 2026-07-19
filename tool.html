@@ -367,9 +367,43 @@ body.lang-ar .guide-caption { text-align:right; }
   .result-ring .pct { font-size:30px; }
   .result-compare { gap:24px; }
 }
+
+/* ── AUTH GATE ──────────────────────────────────────────────
+   Shown by default (no JS needed) so the tool never flashes for a
+   signed-out visitor who loads this URL directly. JS removes it once
+   Firebase confirms a real session; if there's no session, the
+   redirect to login.html fires while this is still covering the screen. */
+.auth-gate {
+  position:fixed; inset:0; z-index:9999;
+  background:radial-gradient(ellipse at center, #150000 0%, #000 70%);
+  display:flex; align-items:center; justify-content:center;
+  transition:opacity .3s ease, visibility .3s ease;
+}
+.auth-gate.auth-gate-hidden { opacity:0; visibility:hidden; pointer-events:none; }
+.auth-gate-inner { text-align:center; }
+.auth-gate-skull {
+  width:70px; height:70px; border-radius:50%; object-fit:cover;
+  border:2px solid var(--blood); box-shadow:0 0 30px rgba(139,0,0,.4);
+  animation:authGatePulse 2.2s ease-in-out infinite; margin:0 auto 16px;
+}
+@keyframes authGatePulse {
+  0%,100% { transform:scale(1); opacity:.85; }
+  50%     { transform:scale(1.06); opacity:1; }
+}
+.auth-gate-text {
+  font-family:'Cinzel',serif; font-size:10px; letter-spacing:3px;
+  text-transform:uppercase; color:var(--muted);
+}
 </style>
 </head>
 <body>
+
+<div id="authGate" class="auth-gate">
+  <div class="auth-gate-inner">
+    <img src="Skull.png" alt="" class="auth-gate-skull">
+    <div class="auth-gate-text" data-i18n="auth_gate_checking">Checking your session…</div>
+  </div>
+</div>
 
 <!-- NAV -->
 <nav>
@@ -774,6 +808,7 @@ onAuthStateChanged(auth, user => {
   }
   currentUser = user;
   renderUserPill(user);
+  document.getElementById('authGate').classList.add('auth-gate-hidden');
 });
 
 /* ══════════════════════════════════════

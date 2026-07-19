@@ -346,9 +346,10 @@ body.lang-ar .guide-caption { text-align:right; }
   text-shadow:0 0 14px rgba(220,20,60,.5);
 }
 .rating-badge.tier-chad { border-color:#ffd700; color:#ffd700; text-shadow:0 0 16px rgba(255,215,0,.6); }
-.rating-badge.tier-above { border-color:#5ecb96; color:#5ecb96; text-shadow:0 0 14px rgba(94,203,150,.5); }
-.rating-badge.tier-average { border-color:var(--bone); color:var(--bone); }
-.rating-badge.tier-below { border-color:var(--smoke); color:var(--muted); }
+.rating-badge.tier-chadlite { border-color:#5ecb96; color:#5ecb96; text-shadow:0 0 14px rgba(94,203,150,.5); }
+.rating-badge.tier-htn { border-color:var(--crimson); color:var(--crimson); text-shadow:0 0 14px rgba(220,20,60,.4); }
+.rating-badge.tier-mtn { border-color:var(--bone); color:var(--bone); }
+.rating-badge.tier-ltn { border-color:var(--smoke); color:var(--muted); }
 .rating-badge.tier-sub5 { border-color:var(--ash); color:var(--ash); }
 
 .msg-bar { padding:11px 16px; font-size:10px; letter-spacing:1px; text-align:center; margin-bottom:18px; border:1px solid transparent; display:none; }
@@ -1918,7 +1919,11 @@ function scoreChinPhiltrum(cpRatio) {
   return 2;
 }
 
-// Rating: equal-weighted average of all four sub-scores, Sub5 → Chad.
+// Rating: equal-weighted average of all four sub-scores, bucketed into
+// six tiers — Sub5 → LTN → MTN → HTN → ChadLite → Chad. The top end is
+// deliberately steep: with four 0-10 sub-scores averaged together,
+// landing in ChadLite or Chad means being near-ideal on nearly every
+// metric at once, not just decent on one and average on the rest.
 // `metrics` = { ratio, gonialAngle, fma, chinPhiltrumRatio }. Any metric
 // that isn't available yet (e.g. no side photo) just drops out of the
 // average instead of forcing a false score.
@@ -1932,10 +1937,11 @@ function getRating(metrics) {
 
   const composite = scores.reduce((a, b) => a + b, 0) / scores.length;
 
-  if (composite >= 9) return { key: 'rating_chad',      label: tr('rating_chad'),      tier: 'tier-chad',    score: composite };
-  if (composite >= 7) return { key: 'rating_above_avg', label: tr('rating_above_avg'), tier: 'tier-above',   score: composite };
-  if (composite >= 5) return { key: 'rating_average',   label: tr('rating_average'),   tier: 'tier-average', score: composite };
-  if (composite >= 3) return { key: 'rating_below_avg', label: tr('rating_below_avg'), tier: 'tier-below',   score: composite };
+  if (composite >= 9.5) return { key: 'rating_chad',     label: tr('rating_chad'),     tier: 'tier-chad',     score: composite };
+  if (composite >= 8.5) return { key: 'rating_chadlite', label: tr('rating_chadlite'), tier: 'tier-chadlite', score: composite };
+  if (composite >= 7)   return { key: 'rating_htn',      label: tr('rating_htn'),      tier: 'tier-htn',      score: composite };
+  if (composite >= 5)   return { key: 'rating_mtn',      label: tr('rating_mtn'),      tier: 'tier-mtn',      score: composite };
+  if (composite >= 3.5) return { key: 'rating_ltn',      label: tr('rating_ltn'),      tier: 'tier-ltn',      score: composite };
   return { key: 'rating_sub5', label: tr('rating_sub5'), tier: 'tier-sub5', score: composite };
 }
 

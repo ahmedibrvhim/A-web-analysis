@@ -967,9 +967,41 @@ function getHeadPoseDegrees(result) {
 
 async function autoFixPhoto(img, view) {
   const lm = await getLandmarker();
-  if (!lm) return { img, fixed: false, tilted: false };
-  const result = detectLenient(lm, img);
-  if (!result || !result.faceLandmarks || !result.faceLandmarks.length) return { img, fixed: false, tilted: false };
+  const result = lm ? detectLenient(lm, img) : null;
+  if (!result || !result.faceLandmarks || !result.faceLandmarks.length) {
+    if (view === 'side') {
+      // MediaPipe found nothing — try the Haar profile cascade just to
+      // get a crop, since we at least know roughly where the face is even
+      // without real landmarks. No roll angle available this way, so we
+      // can't level the photo, only crop in on the detected face.
+      try {
+        const box = await detectProfileBox(img);
+        if (box) {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+          canvas.getContext('2d').drawImage(img, 0, 0);
+          const padX = box.width * 0.6, padTop = box.height * 0.45, padBottom = box.height * 0.25;
+          const targetAspect = 3 / 4;
+          let cropX = Math.max(0, box.x - padX);
+          let cropY = Math.max(0, box.y - padTop);
+          let cropW = Math.min(canvas.width - cropX, box.width + padX * 2);
+          let cropH = Math.min(canvas.height - cropY, box.height + padTop + padBottom);
+          if (cropW / cropH > targetAspect) { cropW = cropH * targetAspect; } else { cropH = cropW / targetAspect; }
+          const outW = 900, outH = Math.round(outW / targetAspect);
+          const out = document.createElement('canvas');
+          out.width = outW; out.height = outH;
+          const octx = out.getContext('2d');
+          octx.fillStyle = '#000'; octx.fillRect(0, 0, outW, outH);
+          octx.drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, outW, outH);
+          const fixedImg = await loadImageFromSrc(out.toDataURL('image/jpeg', 0.92));
+          return { img: fixedImg, fixed: true, tilted: false, shallowAngle: false, approxFix: true };
+        }
+      } catch (e) {
+        console.error('Profile cascade crop fallback failed', e);
+      }
+    }
+    return { img, fixed: false, tilted: false };
+  }
 
   const pts = result.faceLandmarks[0];
   const w = img.naturalWidth, h = img.naturalHeight;
@@ -1133,13 +1165,14 @@ function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId
         fixStatusEl.style.display = 'none';
         fixOverlay.style.display = 'flex';
 
-        let finalImg = img, fixed = false, tilted = false, shallowAngle = false;
+        let finalImg = img, fixed = false, tilted = false, shallowAngle = false, approxFix = false;
         try {
           const result = await autoFixPhoto(img, view);
           finalImg = result.img;
           fixed = result.fixed;
           tilted = result.tilted;
           shallowAngle = result.shallowAngle;
+          approxFix = !!result.approxFix;
         } catch (err) {
           console.error('Auto-fix failed', err);
         }
@@ -1147,7 +1180,10 @@ function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId
         fixOverlay.style.display = 'none';
         previewImg.src = finalImg.src;
         fixStatusEl.style.display = 'inline-flex';
-        if (fixed && tilted) {
+        if (approxFix) {
+          fixStatusEl.textContent = tr('tool_fix_approx');
+          fixStatusEl.className = 'fix-status warn';
+        } else if (fixed && tilted) {
           fixStatusEl.textContent = tr('tool_fix_warn');
           fixStatusEl.className = 'fix-status warn';
         } else if (fixed && shallowAngle) {
@@ -1343,6 +1379,151 @@ function detectLenient(lm, img) {
   return result; // still null/empty — genuinely no face found either way
 }
 
+/* ══════════════════════════════════════
+   PROFILE FALLBACK — OpenCV.js Haar cascade
+   MediaPipe's face detector is trained mostly on frontal/¾ faces and
+   regularly finds nothing at all on a genuine ~90° profile (a documented
+   limitation, not a config issue — see the model's own failure cases on
+   strong head rotations). When that happens for a side photo, fall back
+   to OpenCV.js's Haar cascade profile-face classifier, which IS trained
+   specifically for turned heads. It only returns a bounding box, not
+   individual landmarks, so it can't drive the gonial-angle math directly
+   — but it tells us where the face actually is, how big it is, and which
+   way it's turned, which lets us seed the four side points at real
+   coordinates instead of a blind whole-image guess. The user still
+   verifies/drags from there, same as every other auto-placed point in
+   this tool.
+   NOTE: this has only been syntax-checked, not run in a live browser —
+   opencv.js needs an actual DOM/canvas/WebAssembly environment to
+   exercise. Test it against a handful of real side photos (both turn
+   directions) and expect to retune the box proportions below.
+══════════════════════════════════════ */
+let cvPromise = null;
+function loadOpenCV() {
+  if (cvPromise) return cvPromise;
+  cvPromise = new Promise((resolve) => {
+    if (window.cv && window.cv.Mat) { resolve(window.cv); return; }
+    const script = document.createElement('script');
+    script.src = 'https://docs.opencv.org/4.x/opencv.js';
+    script.async = true;
+    script.onload = () => {
+      const waitReady = () => {
+        if (window.cv && window.cv.Mat) { resolve(window.cv); return; }
+        if (window.cv && window.cv.onRuntimeInitialized !== undefined) {
+          window.cv['onRuntimeInitialized'] = () => resolve(window.cv);
+        } else {
+          setTimeout(waitReady, 50);
+        }
+      };
+      waitReady();
+    };
+    script.onerror = (e) => { console.error('OpenCV.js failed to load', e); resolve(null); };
+    document.head.appendChild(script);
+  });
+  return cvPromise;
+}
+
+let profileCascadePromise = null;
+function loadProfileCascade(cv) {
+  if (profileCascadePromise) return profileCascadePromise;
+  profileCascadePromise = (async () => {
+    try {
+      const res = await fetch('https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_profileface.xml');
+      const text = await res.text();
+      cv.FS_createDataFile('/', 'haarcascade_profileface.xml', text, true, false, false);
+      const classifier = new cv.CascadeClassifier();
+      classifier.load('haarcascade_profileface.xml');
+      return classifier;
+    } catch (e) {
+      console.error('Profile cascade failed to load', e);
+      return null;
+    }
+  })();
+  return profileCascadePromise;
+}
+
+// Runs the Haar profile cascade on the image, trying both the original
+// and a horizontally-flipped copy — like the classic frontal cascade,
+// this one is only trained to catch one turn direction reliably — and
+// returns the largest face box found plus which copy matched.
+// `matchedFlipped` tells the caller whether the box (already mapped back
+// into the ORIGINAL photo's coordinates) came from the flipped attempt,
+// so point-seeding can mirror its template to match.
+async function detectProfileBox(img) {
+  const cv = await loadOpenCV();
+  if (!cv) return null;
+  const classifier = await loadProfileCascade(cv);
+  if (!classifier) return null;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  canvas.getContext('2d').drawImage(img, 0, 0);
+
+  function runOn(mat) {
+    const gray = new cv.Mat();
+    const faces = new cv.RectVector();
+    let best = null;
+    try {
+      cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY);
+      cv.equalizeHist(gray, gray);
+      const minDim = Math.max(20, Math.round(Math.min(mat.cols, mat.rows) * 0.12));
+      classifier.detectMultiScale(gray, faces, 1.1, 4, 0,
+        new cv.Size(minDim, minDim), new cv.Size(0, 0));
+      for (let i = 0; i < faces.size(); i++) {
+        const f = faces.get(i);
+        if (!best || f.width * f.height > best.width * best.height) best = f;
+      }
+    } finally {
+      gray.delete(); faces.delete();
+    }
+    return best;
+  }
+
+  const src = cv.imread(canvas);
+  let box, matchedFlipped = false;
+  try {
+    box = runOn(src);
+    if (!box) {
+      const flipped = new cv.Mat();
+      cv.flip(src, flipped, 1);
+      try {
+        box = runOn(flipped);
+        if (box) matchedFlipped = true;
+      } finally {
+        flipped.delete();
+      }
+    }
+  } finally {
+    src.delete();
+  }
+  if (!box) return null;
+
+  const x = matchedFlipped ? canvas.width - (box.x + box.width) : box.x;
+  return { x, y: box.y, width: box.width, height: box.height, matchedFlipped, imgW: canvas.width, imgH: canvas.height };
+}
+
+// Seeds the four side points proportionally within a detected profile
+// box, using the same "ear on the far side, nose on the near side"
+// template as the whole-image fallback defaults, mirrored automatically
+// if the box came from the flipped-image match. These proportions are a
+// starting estimate of where Haar's face box typically sits (roughly
+// brow-to-chin, nose-to-past-the-ear) — expect to retune against real
+// photos, same as any auto-placed point in this tool.
+function seedSidePointsFromBox(box) {
+  const { x, y, width: w, height: h } = box;
+  let pts = {
+    orbit:   { x: x + w * 0.30, y: y + h * 0.16 },
+    tragion: { x: x + w * 0.85, y: y + h * 0.32 },
+    gonion:  { x: x + w * 0.80, y: y + h * 0.82 },
+    menton:  { x: x + w * 0.22, y: y + h * 0.98 }
+  };
+  if (box.matchedFlipped) {
+    Object.keys(pts).forEach(k => { pts[k].x = 2 * x + w - pts[k].x; });
+  }
+  return pts;
+}
+
 /* MediaPipe FaceMesh 468-point indices used as proxies for our 4 clinical points.
    Trichion (hairline) is not part of the face mesh — we estimate it by
    extrapolating upward from the brow/forehead points, then let the user
@@ -1417,9 +1598,22 @@ async function detectFrontPoints(img) {
 
 async function detectSidePoints(img) {
   const lm = await getLandmarker();
-  if (!lm) return null;
-  const result = detectLenient(lm, img);
-  if (!result || !result.faceLandmarks || !result.faceLandmarks.length) return null;
+  const result = lm ? detectLenient(lm, img) : null;
+  if (!result || !result.faceLandmarks || !result.faceLandmarks.length) {
+    // MediaPipe found nothing — the expected outcome on a lot of genuine
+    // ~90° profiles. Try the Haar profile cascade instead of giving up:
+    // it can't give us real landmarks or gonial-angle math, but a real
+    // detected face box beats a blind whole-image guess.
+    try {
+      const box = await detectProfileBox(img);
+      if (box) {
+        return { ...seedSidePointsFromBox(box), shallowAngle: false, fromBoxEstimate: true };
+      }
+    } catch (e) {
+      console.error('Profile cascade fallback failed', e);
+    }
+    return null;
+  }
   const pts = result.faceLandmarks[0];
   const w = img.naturalWidth, h = img.naturalHeight;
 
@@ -1816,7 +2010,7 @@ async function enterAdjustStep() {
   }
   state.sidePts = sidePts;
   sideEditor.setPoints(sidePts);
-  document.getElementById('sideMirrorBtn').classList.toggle('warn-pulse', state.sidePtsGuessed);
+  document.getElementById('sideMirrorBtn').classList.toggle('warn-pulse', state.sidePtsGuessed || !!sidePts.fromBoxEstimate);
 
   refreshDashboard('front');
   startGuideAutoplay();

@@ -602,7 +602,7 @@ body.lang-ar .guide-caption { text-align:right; }
             <text class="guide-label" id="gl-side-tragion" x="132" y="108" fill="#dc143c">Tra</text>
             <circle class="guide-dot gd-idle" id="gd-side-gonion" data-view="side" data-key="gonion" cx="118" cy="132" r="5" fill="#ffb703" style="animation-delay:.8s"/>
             <text class="guide-label" id="gl-side-gonion" x="128" y="135" fill="#ffb703">Go</text>
-            <circle class="guide-dot gd-idle" id="gd-side-menton" data-view="side" data-key="menton" cx="52" cy="146" r="5" fill="#7bd389" style="animation-delay:1.2s"/>
+            <circle class="guide-dot gd-idle" id="gd-side-menton" data-view="side" data-key="menton" cx="39" cy="145" r="5" fill="#7bd389" style="animation-delay:1.2s"/>
             <text class="guide-label" id="gl-side-menton" x="40" y="160" fill="#7bd389" text-anchor="middle">Me</text>
           </svg>
           <span class="guide-col-lbl" data-i18n="tool_view_side">Side</span>
@@ -961,9 +961,34 @@ function getHeadPoseDegrees(result) {
   return { pitch: pitch * 180 / Math.PI, yaw: yaw * 180 / Math.PI, roll: roll * 180 / Math.PI };
 }
 
-async function autoFixPhoto(img, view) {
+// Modern phone cameras (12MP+) commonly produce images whose diagonal
+// blows past the canvas size/area limits some mobile browsers enforce
+// (notably Safari, ~4096x4096 / ~16.7M px). autoFixPhoto below draws
+// into a square canvas sized to the full image diagonal, so on a large
+// photo that canvas silently comes back blank (or throws) and the whole
+// "fix" step corrupts the photo. Downscaling first — losslessly, since
+// MediaPipe's landmark coordinates are already resolution-independent
+// (0-1 fractions) — keeps every canvas this function creates well under
+// that ceiling regardless of the source photo's resolution.
+async function downscaleIfNeeded(img, maxDim) {
+  const w = img.naturalWidth, h = img.naturalHeight;
+  if (Math.max(w, h) <= maxDim) return img;
+  const scale = maxDim / Math.max(w, h);
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * scale);
+  c.height = Math.round(h * scale);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return loadImageFromSrc(c.toDataURL('image/jpeg', 0.92));
+}
+
+async function autoFixPhoto(rawImg, view) {
   const lm = await getLandmarker();
-  if (!lm) return { img, fixed: false, tilted: false };
+  if (!lm) return { img: rawImg, fixed: false, tilted: false };
+
+  let img;
+  try { img = await downscaleIfNeeded(rawImg, 2000); }
+  catch (e) { console.error('Downscale failed', e); img = rawImg; }
+
   let result;
   try { result = lm.detect(img); } catch (e) { console.error(e); return { img, fixed: false, tilted: false }; }
   if (!result || !result.faceLandmarks || !result.faceLandmarks.length) return { img, fixed: false, tilted: false };
@@ -1079,8 +1104,15 @@ function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId
   const fixOverlay = document.getElementById(fixOverlayId);
   const fixStatusEl = document.getElementById(fixStatusId);
   let dragDepth = 0;
+  // Bumped on every new file pick/remove. Any async work (FileReader,
+  // autoFixPhoto) started for an older pick checks this before touching
+  // the DOM/state, so if someone picks a photo, then quickly picks a
+  // different one (or hits remove) before the first finishes processing,
+  // the stale result can't land on top of / clobber the newer one.
+  let requestId = 0;
 
   function reset() {
+    requestId++;
     uploaderLabel.style.display = 'flex';
     previewBox.style.display = 'none';
     fixOverlay.style.display = 'none';
@@ -1096,14 +1128,26 @@ function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId
       showMsg(tr('tool_err_file_type'), 'error');
       return;
     }
+    if (!file.size) {
+      showMsg(tr('tool_err_file_decode'), 'error');
+      return;
+    }
     if (file.size > MAX_FILE_BYTES) {
       showMsg(tr('tool_err_file_size'), 'error');
       return;
     }
+    const myId = ++requestId;
     const reader = new FileReader();
+    reader.onerror = () => {
+      if (myId !== requestId) return;
+      showMsg(tr('tool_err_file_decode'), 'error');
+      reset();
+    };
     reader.onload = (e) => {
+      if (myId !== requestId) return; // a newer/other file was picked meanwhile
       const img = new Image();
       img.onload = async () => {
+        if (myId !== requestId) return;
         previewImg.src = e.target.result;
         fileNameEl.textContent = `${file.name} · ${formatFileSize(file.size)}`;
         uploaderLabel.style.display = 'none';
@@ -1114,12 +1158,14 @@ function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId
         let finalImg = img, fixed = false, tilted = false, shallowAngle = false;
         try {
           const result = await autoFixPhoto(img, view);
+          if (myId !== requestId) return; // stale by the time the fix finished
           finalImg = result.img;
           fixed = result.fixed;
           tilted = result.tilted;
           shallowAngle = result.shallowAngle;
         } catch (err) {
           console.error('Auto-fix failed', err);
+          if (myId !== requestId) return;
         }
 
         fixOverlay.style.display = 'none';
@@ -1141,6 +1187,7 @@ function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId
         onLoaded(finalImg);
       };
       img.onerror = () => {
+        if (myId !== requestId) return;
         // Most non-Safari browsers can't decode HEIC/HEIF via <img>/canvas —
         // this is the friendliest place to catch that and ask for a re-upload.
         showMsg(tr('tool_err_file_decode'), 'error');
@@ -1637,12 +1684,8 @@ async function enterAdjustStep() {
 
   if (detected) {
     state.autoDetected = true;
-    hintEl.style.display = 'none';
   } else {
     state.autoDetected = false;
-    hintEl.style.display = 'block';
-    hintEl.textContent = modelLoadFailed ? tr('tool_err_load_model') : tr('tool_manual_hint');
-    hintEl.classList.add('warn');
     // seed reasonable default points near common face proportions so the
     // user is nudging into place rather than starting from nothing
     const w = state.frontImg.naturalWidth, h = state.frontImg.naturalHeight;
@@ -1666,12 +1709,18 @@ async function enterAdjustStep() {
   let sidePts = null;
   try { sidePts = await detectSidePoints(state.sideImg); } catch (e) { console.error(e); }
   if (!sidePts) {
+    state.sideAutoDetected = false;
     // No detection — seed a starting position tuned to the same hairline
     // (~13% from top) → chin (~87% from top) framing autoFixPhoto crops
     // every photo to, on the standard "ear on the right, facing left"
-    // profile convention. Getting these proportions closer to a real face
-    // means less dragging to correct, which was the main "points aren't
-    // near my face" complaint on side photos.
+    // profile convention. This is only a rough starting guess for the case
+    // where detection totally failed (no face found at all) — it does NOT
+    // know which way your particular photo is actually facing, so the
+    // manual-placement warning below matters a lot more here than on the
+    // front photo. Real detection (the common case) already handles a
+    // profile facing either left or right automatically, via depth (z) —
+    // see pickNearerIdx / detectSidePoints — so this fallback only ever
+    // fires when MediaPipe couldn't find a face in the photo at all.
     const w = state.sideImg.naturalWidth, h = state.sideImg.naturalHeight;
     sidePts = {
       orbit:   { x: w * 0.42, y: h * 0.30 },  // eye line sits in the upper third
@@ -1679,18 +1728,40 @@ async function enterAdjustStep() {
       gonion:  { x: w * 0.70, y: h * 0.74 },  // jaw angle, below and slightly forward of the ear
       menton:  { x: w * 0.40, y: h * 0.87 }   // chin tip, forward under the nose/lips
     };
-  } else if (!sidePts.gonion || !sidePts.menton) {
-    // detectSidePoints() always returns all four together now, but guard
-    // against a stale/partial result just in case.
-    const w = state.sideImg.naturalWidth, h = state.sideImg.naturalHeight;
-    sidePts.gonion = sidePts.gonion || { x: w * 0.70, y: h * 0.74 };
-    sidePts.menton = sidePts.menton || { x: w * 0.40, y: h * 0.87 };
+  } else {
+    state.sideAutoDetected = true;
+    if (!sidePts.gonion || !sidePts.menton) {
+      // detectSidePoints() always returns all four together now, but guard
+      // against a stale/partial result just in case.
+      const w = state.sideImg.naturalWidth, h = state.sideImg.naturalHeight;
+      sidePts.gonion = sidePts.gonion || { x: w * 0.70, y: h * 0.74 };
+      sidePts.menton = sidePts.menton || { x: w * 0.40, y: h * 0.87 };
+    }
   }
   state.sidePts = sidePts;
   sideEditor.setPoints(sidePts);
 
+  updateAdjustHint('front');
   refreshDashboard('front');
   startGuideAutoplay();
+}
+
+// Shows/hides the "place points manually" warning for whichever tab is
+// active, based on whether THAT photo's auto-detection actually
+// succeeded — previously this only ever reflected the front photo's
+// result, so a failed side detection silently left the user with
+// misplaced dots and no warning telling them to check/drag them.
+function updateAdjustHint(view) {
+  const hintEl = document.getElementById('adjustHint');
+  const ok = view === 'front' ? state.autoDetected : state.sideAutoDetected;
+  if (ok) {
+    hintEl.style.display = 'none';
+    hintEl.classList.remove('warn');
+  } else {
+    hintEl.style.display = 'block';
+    hintEl.textContent = modelLoadFailed ? tr('tool_err_load_model') : tr('tool_manual_hint');
+    hintEl.classList.add('warn');
+  }
 }
 
 document.getElementById('tabFront').addEventListener('click', () => {
@@ -1702,6 +1773,7 @@ document.getElementById('tabFront').addEventListener('click', () => {
   document.getElementById('sideLegend').style.display = 'none';
   frontEditor && frontEditor.resize();
   refreshDashboard('front');
+  updateAdjustHint('front');
   if (frontEditor) setGuidePoint('front', frontEditor.getSelected());
 });
 document.getElementById('tabSide').addEventListener('click', () => {
@@ -1713,6 +1785,7 @@ document.getElementById('tabSide').addEventListener('click', () => {
   document.getElementById('sideLegend').style.display = 'flex';
   sideEditor && sideEditor.resize();
   refreshDashboard('side');
+  updateAdjustHint('side');
   if (sideEditor) setGuidePoint('side', sideEditor.getSelected());
 });
 
@@ -1870,53 +1943,57 @@ function getArchetype(ratio) {
 
 /* ── Composite rating ──────────────────────────────────────────────
    Four sub-scores, each 0-10, each worth an equal 25% of the final
-   rating. Every sub-score is bucketed directly off the tier ranges
-   you pasted, so the bucket edges below trace straight back to those
-   tables rather than being invented independently.
+   rating. Every sub-score is anchored on the same tier ranges as
+   before, but now interpolated continuously between those anchors
+   instead of snapping to 5 flat steps (10/8/6/4/2). The old stepped
+   version meant huge numbers of visibly-different faces all landed on
+   the exact same sub-score, so the composite average only had ~17
+   possible values total — that's what made results feel like they
+   all pooled into "Low/Mid". Continuous scoring restores real spread
+   between people who are close-but-not-identical on a metric, so the
+   full Sub5→Chad range actually gets used.
 */
+
+// Piecewise-linear interpolation between calibration points.
+// pts = [[x0,y0], [x1,y1], ...] sorted by x ascending. Values outside
+// the range clamp to the nearest end instead of extrapolating.
+function lerpScore(x, pts) {
+  if (x <= pts[0][0]) return pts[0][1];
+  const last = pts[pts.length - 1];
+  if (x >= last[0]) return last[1];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
+    if (x >= x0 && x <= x1) return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+  }
+  return last[1];
+}
 
 // 1) Lower-third ratio vs. the 33.3% classical ideal.
 function scoreRatio(ratio) {
   const delta = Math.abs(ratio - IDEAL);
-  if (delta <= 1.2) return 10;
-  if (delta <= 2.5) return 8;
-  if (delta <= 4.5) return 6;
-  if (delta <= 7)   return 4;
-  return 2;
+  return lerpScore(delta, [[0, 10], [1.2, 10], [2.5, 8], [4.5, 6], [7, 4], [11, 2], [16, 0.5]]);
 }
 
 // 2) Gonial angle vs. the 110°-115° "ideal L-shaped jaw" band.
-//    Sharper than 110° is treated as still-elite (uncapped on the low
-//    side, since the reference tiers only define the range above it).
+//    Sharper than 110° is treated as still-elite (flat, uncapped on the
+//    low side, since the reference tiers only define the range above it).
 function scoreGonial(angle) {
   if (angle == null) return null;
-  if (angle <= 115) return 10;
-  if (angle <= 120) return 8;
-  if (angle <= 125) return 6;
-  if (angle <= 130) return 4;
-  return 2;
+  return lerpScore(angle, [[95, 10], [115, 10], [120, 8], [125, 6], [130, 4], [140, 1.5]]);
 }
 
 // 3) Growth pattern via FMA — lower (more forward-growing) scores
 //    higher, using the same <22 / 22-30 / >30 split the app already
-//    uses for the forward/neutral/downward label, just split finer.
+//    uses for the forward/neutral/downward label, just interpolated finer.
 function scoreGrowth(fma) {
   if (fma == null) return null;
-  if (fma < 18) return 10;
-  if (fma < 22) return 8;
-  if (fma < 26) return 6;
-  if (fma < 30) return 4;
-  return 2;
+  return lerpScore(fma, [[10, 10], [18, 10], [22, 8], [26, 6], [30, 4], [38, 1]]);
 }
 
 // 4) Chin:philtrum ratio vs. the 2:1 → 2.5:1+ progression.
 function scoreChinPhiltrum(cpRatio) {
   if (!cpRatio) return null;
-  if (cpRatio >= 2.5)  return 10;
-  if (cpRatio >= 2.3)  return 8;
-  if (cpRatio >= 2.15) return 6;
-  if (cpRatio >= 2.0)  return 4;
-  return 2;
+  return lerpScore(cpRatio, [[1.4, 1], [1.7, 2.5], [2.0, 4], [2.15, 6], [2.3, 8], [2.5, 10], [2.8, 10]]);
 }
 
 // Rating: equal-weighted average of all four sub-scores, bucketed into

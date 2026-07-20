@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy Policy | Lower Third Calculator</title>
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ── Page-specific layout for the legal content — reuses the site's
+   existing color tokens/fonts from style.css so this matches the rest
+   of the site without duplicating its whole design system. Explicit
+   dark background here too, so this page still looks right even if
+   style.css only sets backgrounds on specific sections (like #hero)
+   rather than globally on <body>. ── */
+html, body {
+  background: radial-gradient(ellipse at center, #150000 0%, #000 65%);
+  background-color: #000;
+  min-height: 100%;
+}
+.legal-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 56px 24px 90px;
+}
+.legal-eyebrow {
+  font-size: 11px; letter-spacing: 3px; color: var(--crimson, #dc143c);
+  text-transform: uppercase; margin-bottom: 14px;
+}
+.legal-title {
+  font-family: 'Cinzel', serif; font-size: clamp(28px, 4vw, 40px);
+  color: var(--white, #f4f4f4); letter-spacing: 1px; margin-bottom: 10px;
+}
+.legal-updated {
+  font-size: 12px; color: var(--muted, #999); margin-bottom: 40px;
+}
+.legal-section { margin-bottom: 30px; }
+.legal-section h2 {
+  font-family: 'Cinzel', serif; font-size: 16px; color: var(--bone, #e8e0d5);
+  letter-spacing: .5px; margin-bottom: 12px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border, #2a2a2a);
+}
+.legal-section p, .legal-section li {
+  font-size: 13.5px; line-height: 1.7; color: var(--muted, #999);
+}
+.legal-section ul { margin: 8px 0 8px 0; padding-left: 20px; }
+.legal-section li { margin-bottom: 6px; }
+.legal-section a { color: var(--crimson, #dc143c); text-decoration: none; border-bottom: 1px solid rgba(220,20,60,.4); }
+.legal-section a:hover { border-bottom-color: var(--crimson, #dc143c); }
+.legal-section strong { color: var(--bone, #e8e0d5); }
+.legal-contact-box {
+  background: var(--panel, #0d0d0d); border: 1px solid var(--border, #2a2a2a);
+  padding: 18px 22px; font-size: 13.5px; color: var(--muted, #999); line-height: 1.8;
+}
+body.lang-ar .legal-wrap { direction: ltr; text-align: left; }
+/* Legal text is kept English-only for accuracy (see note at the bottom
+   of the page) even when the site nav itself is switched to Arabic. */
+</style>
+</head>
+<body>
+
+<!-- NAV (same markup/behavior as the rest of the site) -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <img src="Skull.png" alt="Lower Third">
+    <div>
+      <div class="logo-mark" data-i18n="brand_name">Lower Third</div>
+      <div class="logo-tag" data-i18n="brand_tag">Calculator</div>
+    </div>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-right" id="navRight">
+    <button class="nav-lang" id="navLang" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      <span><span class="lang-cur" id="langCur">EN</span> <span class="lang-sep">/</span> <span id="langOther">AR</span></span>
+    </button>
+    <a class="btn-ghost" href="login.html" data-i18n="nav_login">Login / Register</a>
+  </div>
+</nav>
+
+<div class="legal-wrap">
+  <div class="legal-eyebrow">☠ Legal ☠</div>
+  <h1 class="legal-title">Privacy Policy</h1>
+  <div class="legal-updated">Last updated: July 20, 2026</div>
+
+  <div class="legal-section">
+    <p><strong>Lower Third Calculator</strong> respects your privacy. Here's the short version of how we handle
+    your data.</p>
+  </div>
+
+  <div class="legal-section">
+    <h2>Your Photos</h2>
+    <p>Your photos are processed <strong>entirely in your own browser</strong> — they're never uploaded to or
+    stored on our servers. If you're signed in, only the numeric results (ratios, angles, scores) are saved to
+    your account, never the photos themselves.</p>
+  </div>
+
+  <div class="legal-section">
+    <h2>Account Data</h2>
+    <p>If you create an account, we use Google Firebase to store your email, display name, and saved results.
+    We never sell or share this data with third parties for marketing.</p>
+  </div>
+
+  <div class="legal-section">
+    <h2>Cookies &amp; Ads</h2>
+    <p>We use local storage for basic preferences like your language choice. This Site may show ads via
+    <strong>Google AdSense</strong>, which may use cookies to personalize ads based on your browsing.
+    You can opt out anytime at <a href="https://adssettings.google.com" target="_blank" rel="noopener">Google Ads Settings</a>
+    or <a href="https://www.aboutads.info/choices" target="_blank" rel="noopener">aboutads.info/choices</a>.</p>
+  </div>
+
+  <div class="legal-section">
+    <h2>Third-Party Services</h2>
+    <p>We rely on <strong>Google Firebase</strong> (auth, database, hosting) and <strong>Google Fonts</strong>.
+    Data these services process on our behalf is governed by
+    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</p>
+  </div>
+
+  <div class="legal-section">
+    <h2>Your Rights</h2>
+    <p>You can request access to, or deletion of, your account and saved results at any time — just reach out
+    (contact below). This Site isn't intended for anyone under 16.</p>
+  </div>
+
+  <div class="legal-section">
+    <h2>Contact</h2>
+    <div class="legal-contact-box">
+      Questions about this policy or your data? Reach us on TikTok:<br>
+      <a href="https://www.tiktok.com/@vhmedi" target="_blank" rel="noopener"><strong>@vhmedi</strong></a>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { getLang, applyDocumentDirection, applyTranslations, wireLangToggle } from './i18n.js';
+let currentLang = getLang();
+applyDocumentDirection(currentLang);
+applyTranslations(currentLang);
+wireLangToggle(document.getElementById('navLang'), currentLang, (next) => {
+  currentLang = next;
+  applyDocumentDirection(next);
+  applyTranslations(next);
+});
+</script>
+<script>
+function toggleMobileNav() {
+  document.getElementById('hamburger').classList.toggle('open');
+  document.getElementById('navLinks').classList.toggle('mobile-open');
+  document.getElementById('navRight').classList.toggle('mobile-open');
+}
+</script>
+
+</body>
+</html>

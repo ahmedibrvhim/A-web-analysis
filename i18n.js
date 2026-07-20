@@ -12,6 +12,7 @@ export const dict = {
     /* ── nav / common ── */
     nav_home: 'Home',
     nav_login: 'Login / Register',
+    nav_privacy: 'Privacy Policy',
     sign_out: 'Sign out',
     auth_gate_checking: 'Checking your session…',
     lang_label: 'EN',
@@ -191,11 +192,46 @@ export const dict = {
     growth_forward: 'Forward Growth',
     growth_neutral: 'Neutral Growth',
     growth_downward: 'Downward Growth',
+
+    /* ── V2 engine: validation gate (Phase 2) ── */
+    tool_retake_photo: 'Please retake the photo.',
+    tool_reject_face_small: 'The face is too small in this photo — move closer or crop tighter.',
+    tool_reject_yaw: 'Head is turned too far from the camera.',
+    tool_reject_pitch: 'Head is tilted too far up or down.',
+    tool_reject_roll: 'Head is tilted too far to one side.',
+    tool_reject_smile: 'A neutral expression is needed — this looks like a smile.',
+    tool_reject_eyes_closed: 'Eyes need to be open and visible.',
+    tool_reject_turn: 'Turn your head further — this doesn\u2019t look like a full side profile yet.',
+
+    /* ── V2 engine: growth classification (Phase 7) ── */
+    growth_class_forward: 'Forward Growth',
+    growth_class_slight_forward: 'Slight Forward Growth',
+    growth_class_neutral: 'Neutral Growth',
+    growth_class_slight_downward: 'Slight Downward Growth',
+    growth_class_downward: 'Downward Growth',
+
+    /* ── V2 engine: explanation panel (Phase 11) ── */
+    explain_why_title: 'Why This Score',
+    explain_confidence_label: 'Measurement Confidence',
+    explain_bullet_vertical_good: 'Lower-third ratio sits close to the classical ideal.',
+    explain_bullet_vertical_long: 'Lower third runs long relative to the classical ideal.',
+    explain_bullet_vertical_short: 'Lower third runs short relative to the classical ideal.',
+    explain_bullet_jaw_strong: 'Gonial angle and jaw taper read as a strong, well-defined jaw.',
+    explain_bullet_jaw_soft: 'Jaw structure sits softer than the ideal band.',
+    explain_bullet_growth_forward: 'Growth pattern reads forward and horizontal.',
+    explain_bullet_growth_downward: 'Growth pattern reads downward and vertical.',
+    explain_bullet_chin_strong: 'Chin and lip projection read strong.',
+    explain_bullet_chin_weak: 'Chin-to-philtrum ratio sits under the ideal range.',
+    explain_bullet_harmony_good: 'Features agree well with each other — proportions are balanced.',
+    explain_bullet_harmony_poor: 'Some features pull against each other, reducing harmony.',
+    explain_bullet_confidence_low: 'Several landmarks were low-confidence or estimated — treat this score as a rough read.',
+    explain_bullet_confidence_high: 'Every landmark was detected or confirmed with high confidence.',
   },
   ar: {
     /* ── nav / common ── */
     nav_home: 'الرئيسية',
     nav_login: 'تسجيل الدخول / إنشاء حساب',
+    nav_privacy: 'سياسة الخصوصية',
     sign_out: 'تسجيل الخروج',
     auth_gate_checking: 'جارٍ التحقق من جلستك…',
     lang_label: 'AR',
@@ -375,6 +411,40 @@ export const dict = {
     growth_forward: 'نمو أمامي',
     growth_neutral: 'نمو متوازن',
     growth_downward: 'نمو نازل',
+
+    /* ── محرك الإصدار الثاني: بوابة التحقق (المرحلة ٢) ── */
+    tool_retake_photo: 'الرجاء إعادة التقاط الصورة.',
+    tool_reject_face_small: 'الوجه صغير جداً في هذه الصورة — اقترب أكثر أو استخدم إطاراً أضيق.',
+    tool_reject_yaw: 'الرأس مُدار بعيداً جداً عن الكاميرا.',
+    tool_reject_pitch: 'الرأس مائل للأعلى أو للأسفل أكثر من اللازم.',
+    tool_reject_roll: 'الرأس مائل لأحد الجانبين أكثر من اللازم.',
+    tool_reject_smile: 'مطلوب تعبير محايد — يبدو أن هذه ابتسامة.',
+    tool_reject_eyes_closed: 'يجب أن تكون العينان مفتوحتين وواضحتين.',
+    tool_reject_turn: 'أدر رأسك أكثر — هذه لا تبدو صورة جانبية كاملة بعد.',
+
+    /* ── محرك الإصدار الثاني: تصنيف النمو (المرحلة ٧) ── */
+    growth_class_forward: 'نمو أمامي',
+    growth_class_slight_forward: 'نمو أمامي طفيف',
+    growth_class_neutral: 'نمو متوازن',
+    growth_class_slight_downward: 'نمو نازل طفيف',
+    growth_class_downward: 'نمو نازل',
+
+    /* ── محرك الإصدار الثاني: لوحة الشرح (المرحلة ١١) ── */
+    explain_why_title: 'سبب هذه النتيجة',
+    explain_confidence_label: 'موثوقية القياس',
+    explain_bullet_vertical_good: 'نسبة الثلث السفلي قريبة جداً من المثال الكلاسيكي.',
+    explain_bullet_vertical_long: 'الثلث السفلي أطول من المثال الكلاسيكي.',
+    explain_bullet_vertical_short: 'الثلث السفلي أقصر من المثال الكلاسيكي.',
+    explain_bullet_jaw_strong: 'زاوية الفك وتناسقه يعكسان فكاً قوياً وواضح المعالم.',
+    explain_bullet_jaw_soft: 'بنية الفك أنعم من النطاق المثالي.',
+    explain_bullet_growth_forward: 'نمط النمو أمامي وأفقي.',
+    explain_bullet_growth_downward: 'نمط النمو نازل وعمودي.',
+    explain_bullet_chin_strong: 'بروز الذقن والشفة قوي.',
+    explain_bullet_chin_weak: 'نسبة الذقن إلى الفلتروم أقل من النطاق المثالي.',
+    explain_bullet_harmony_good: 'الملامح متناسقة مع بعضها — التناسب متوازن.',
+    explain_bullet_harmony_poor: 'بعض الملامح تتعارض مع بعضها، مما يقلل من الانسجام.',
+    explain_bullet_confidence_low: 'عدة نقاط مرجعية كانت منخفضة الموثوقية أو تقديرية — تعامل مع هذه النتيجة كتقدير تقريبي.',
+    explain_bullet_confidence_high: 'تم رصد أو تأكيد كل نقطة مرجعية بموثوقية عالية.',
   }
 };
 

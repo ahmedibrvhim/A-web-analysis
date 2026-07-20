@@ -275,6 +275,21 @@ body.lang-ar .guide-caption { text-align:right; }
 .result-extra-val { font-family:'Cinzel',serif; font-size:12px; color:var(--white); letter-spacing:.5px; line-height:1.5; }
 .result-extra-val .sub { display:block; font-family:'Cinzel',serif; font-size:9px; color:var(--muted); letter-spacing:1px; margin-top:3px; text-transform:uppercase; }
 
+.result-explain { background:var(--panel); border:1px solid var(--border); padding:18px 22px; margin-bottom:26px; text-align:left; max-width:520px; margin-left:auto; margin-right:auto; }
+.explain-list { list-style:none; margin:10px 0 14px; padding:0; display:flex; flex-direction:column; gap:7px; }
+.explain-list li { font-size:12px; letter-spacing:.3px; padding-left:18px; position:relative; color:var(--muted); line-height:1.4; }
+.explain-list li::before { position:absolute; left:0; top:0; }
+.explain-list li.good { color:var(--bone); }
+.explain-list li.good::before { content:'+'; color:#5ecb96; }
+.explain-list li.poor { color:var(--muted); }
+.explain-list li.poor::before { content:'–'; color:var(--crimson); }
+.confidence-badge { display:inline-block; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; padding:5px 12px; border:1px solid var(--border); }
+.confidence-badge.high { color:#5ecb96; border-color:#5ecb96; }
+.confidence-badge.mid { color:var(--bone); border-color:var(--border); }
+.confidence-badge.low { color:var(--crimson); border-color:var(--crimson); }
+
+.debug-panel { text-align:left; max-width:640px; margin:0 auto 26px; max-height:420px; overflow:auto; background:#0a0a0a; border:1px solid var(--border); padding:14px; font-size:10px; line-height:1.5; color:#8fd6ff; white-space:pre-wrap; word-break:break-word; }
+
 /* ── step 4: hero banner + circular front/side photos ──
    Mirrors home.html's #hero / .hero-skull-ring treatment (same gradient,
    grid overlay, glow and floating-ring animation) so Step 4 opens with the
@@ -417,6 +432,7 @@ body.lang-ar .guide-caption { text-align:right; }
   </a>
   <ul class="nav-links" id="navLinks">
     <li><a href="home.html" data-i18n="nav_home">Home</a></li>
+    <li><a href="privacy-policy.html" data-i18n="nav_privacy">Privacy Policy</a></li>
   </ul>
   <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -745,6 +761,14 @@ body.lang-ar .guide-caption { text-align:right; }
         </div>
       </div>
 
+      <div class="result-explain" id="resultExplain" style="display:none;">
+        <div class="result-extra-lbl" data-i18n="explain_why_title">Why This Score</div>
+        <ul class="explain-list" id="explainList"></ul>
+        <div class="confidence-badge" id="confidenceBadge"></div>
+      </div>
+
+      <pre class="debug-panel" id="debugPanel" style="display:none;"></pre>
+
       <div class="tool-nav">
         <button class="btn-solid" id="startOverBtn" data-i18n="tool_start_over">Start Over</button>
       </div>
@@ -916,7 +940,71 @@ const state = {
   frontPts: null,      // { tr:{x,y}, n:{x,y}, sn:{x,y}, me:{x,y} } in natural image px
   sidePts: null,        // { tragion:{x,y}, orbit:{x,y} } in natural image px, for tilt
   hasSide: false,
-  autoDetected: false
+  autoDetected: false,
+  // Confidence per landmark key (0-1), Phase 4. Populated by detectFrontPoints/
+  // detectSidePoints; a manually-dragged point is bumped to 1 (user-confirmed).
+  frontConfidence: {},
+  sideConfidence: {},
+  // Auxiliary measurements read straight off the raw 468/478-point mesh at
+  // detection time (bizygomatic/bigonial width, IPD, mouth width) — these
+  // aren't user-draggable points, just extra numbers for the measurement
+  // layer, so they live separately from frontPts/sidePts.
+  auxMeasurements: null,
+  // Blendshape-derived expression scores from the front photo (Phase 2).
+  frontExpression: null,
+  // Raw pose degrees from the last detection on each view (Phase 2 gate).
+  frontPose: null,
+  sidePose: null,
+  // Per-point pixel delta between what auto-detection placed and where the
+  // point ended up after any manual adjustment — Phase 13's lightweight
+  // "automatic vs manual" tracking, no external dataset required.
+  autoVsManualDeltaPx: {}
+};
+
+/* ══════════════════════════════════════
+   V2 ENGINE CONFIG (Master Plan)
+   Central place for every threshold/weight so the whole pipeline can be
+   tuned from one spot instead of hunting through the math functions below.
+══════════════════════════════════════ */
+const ENGINE_CONFIG = {
+  // Phase 2 — validation gate. The plan's own numbers (yaw>5°, pitch>5°,
+  // roll>3° for the front shot) are tight enough that almost no handheld
+  // phone photo clears them, so REJECT is a slightly looser outer bound
+  // (a photo this far off is genuinely unusable) and WARN is the plan's
+  // literal number (flagged, but does not block — matches how strict the
+  // plan wants "ideal" to be without making the tool unusable in practice).
+  // Tighten REJECT yourself here if you want the plan's numbers to be hard.
+  validation: {
+    front: { yawWarn: 5, yawReject: 15, pitchWarn: 5, pitchReject: 20, rollWarn: 3, rollReject: 10,
+             smileReject: 0.55, eyesClosedReject: 0.5, minFaceFrac: 0.12 },
+    side:  { turnMin: 55, turnReject: 40, minFaceFrac: 0.10 } // turn = |yaw| toward profile
+  },
+  // Phase 4 — below this, a landmark is flagged for mandatory manual review.
+  confidenceReviewThreshold: 0.70,
+  // Phase 6 — approximate population reference stats used purely to convert
+  // a raw measurement into a z-score/percentile. These are reasonable
+  // midpoints drawn from published adult craniofacial-anthropometry ranges,
+  // not a substitute for a real per-population norm table — treat them as
+  // "roughly calibrated," not clinical ground truth.
+  norms: {
+    lowerThirdRatio:     { mean: 33.3, sd: 2.6 },
+    philtrumRatio:       { mean: 14.5, sd: 2.0 },
+    chinPhiltrumRatio:   { mean: 2.1,  sd: 0.35 },
+    gonialAngle:         { mean: 122,  sd: 7 },
+    fma:                 { mean: 24,   sd: 5 },
+    jawTaper:            { mean: 0.22, sd: 0.06 }, // (bizygomatic-bigonial)/bizygomatic
+    chinProjection:      { mean: 0,    sd: 6 },     // px-normalized, see computeMeasurements
+    lipProjection:       { mean: 0,    sd: 5 }
+  },
+  // Phase 9 — six-category rating weights (must sum to 1).
+  ratingWeights: {
+    verticalHarmony: 0.30,
+    jawStructure:    0.25,
+    growth:          0.15,
+    projection:      0.15,
+    facialBalance:   0.10,
+    confidence:      0.05
+  }
 };
 
 /* ══════════════════════════════════════
@@ -961,6 +1049,20 @@ function getHeadPoseDegrees(result) {
   return { pitch: pitch * 180 / Math.PI, yaw: yaw * 180 / Math.PI, roll: roll * 180 / Math.PI };
 }
 
+// Pulls the handful of blendshape scores the validation gate cares about
+// (Phase 2: smile / eyes-closed rejection) out of MediaPipe's full
+// blendshape list. Returns null if blendshapes weren't produced (e.g. an
+// older cached model) so callers can just skip that check.
+function getExpressionScores(result) {
+  const cats = result.faceBlendshapes && result.faceBlendshapes[0] && result.faceBlendshapes[0].categories;
+  if (!cats) return null;
+  const find = (name) => { const c = cats.find(c => c.categoryName === name); return c ? c.score : 0; };
+  const smile = Math.max(find('mouthSmileLeft'), find('mouthSmileRight'));
+  const eyesClosed = Math.min(find('eyeBlinkLeft'), find('eyeBlinkRight')); // both must be closed, not a single wink
+  const mouthOpen = find('jawOpen');
+  return { smile, eyesClosed, mouthOpen };
+}
+
 // Modern phone cameras (12MP+) commonly produce images whose diagonal
 // blows past the canvas size/area limits some mobile browsers enforce
 // (notably Safari, ~4096x4096 / ~16.7M px). autoFixPhoto below draws
@@ -979,6 +1081,44 @@ async function downscaleIfNeeded(img, maxDim) {
   c.height = Math.round(h * scale);
   c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
   return loadImageFromSrc(c.toDataURL('image/jpeg', 0.92));
+}
+
+// Phase 2 — validation gate. Runs on the raw detection MediaPipe just gave
+// us and decides whether this photo is even usable, rather than silently
+// measuring a bad photo and hoping the number is close enough. Returns
+// { reject: bool, code, warn: bool, warnCode } — `code`/`warnCode` are i18n
+// keys so the UI can show a specific "why" message, not just a generic one.
+function validatePhoto(result, view, pose, expr, w, h, faceW) {
+  const V = ENGINE_CONFIG.validation;
+  const faceFrac = faceW / Math.max(w, h);
+
+  if (view === 'front') {
+    const cfg = V.front;
+    if (faceFrac < cfg.minFaceFrac) return { reject: true, code: 'tool_reject_face_small' };
+    if (pose) {
+      if (Math.abs(pose.yaw) > cfg.yawReject) return { reject: true, code: 'tool_reject_yaw' };
+      if (Math.abs(pose.pitch) > cfg.pitchReject) return { reject: true, code: 'tool_reject_pitch' };
+      if (Math.abs(pose.roll) > cfg.rollReject) return { reject: true, code: 'tool_reject_roll' };
+    }
+    if (expr) {
+      if (expr.smile > cfg.smileReject) return { reject: true, code: 'tool_reject_smile' };
+      if (expr.eyesClosed > cfg.eyesClosedReject) return { reject: true, code: 'tool_reject_eyes_closed' };
+    }
+    // Soft warnings: outside the plan's "ideal" band but not bad enough to
+    // block — these map to the existing tilted/shallowAngle flags.
+    let warn = false, warnCode = null;
+    if (pose && (Math.abs(pose.yaw) > cfg.yawWarn || Math.abs(pose.pitch) > cfg.pitchWarn || Math.abs(pose.roll) > cfg.rollWarn)) {
+      warn = true; warnCode = 'tool_fix_warn';
+    }
+    return { reject: false, warn, warnCode };
+  } else {
+    const cfg = V.side;
+    if (faceFrac < cfg.minFaceFrac) return { reject: true, code: 'tool_reject_face_small' };
+    if (pose && Math.abs(pose.yaw) < cfg.turnReject) return { reject: true, code: 'tool_reject_turn' };
+    let warn = false, warnCode = null;
+    if (pose && Math.abs(pose.yaw) < cfg.turnMin) { warn = true; warnCode = 'tool_fix_side_angle_warn'; }
+    return { reject: false, warn, warnCode };
+  }
 }
 
 async function autoFixPhoto(rawImg, view) {
@@ -1001,28 +1141,8 @@ async function autoFixPhoto(rawImg, view) {
   const rightEye = landmarkToPx(pts[IDX.rightEyeOuter], w, h);
   const angle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
 
-  // A turned head (yaw) can't be corrected by rotating the 2D photo without
-  // warping the face, so that still just gets flagged for a retake. A head
-  // tipped back/down (pitch) is different: computeRatio() now uses the
-  // landmark depth (z) to un-foreshorten the vertical measurements, so we
-  // only need to warn on genuinely extreme pitch, not tolerate less of it.
-  let tilted = false;
-  let shallowAngle = false;
-  if (view === 'front') {
-    const pose = getHeadPoseDegrees(result);
-    if (pose) {
-      if (Math.abs(pose.yaw) > 14 || Math.abs(pose.pitch) > 28) tilted = true;
-    }
-  } else if (view === 'side') {
-    // side photos need a real ~90° turn — a shallow turn is the main
-    // reason side landmarks end up inaccurate, since both cheeks stay
-    // roughly equally visible and the near-side pick becomes unreliable.
-    const pose = getHeadPoseDegrees(result);
-    if (pose && Math.abs(pose.yaw) < 35) shallowAngle = true;
-  }
-
-  // face bounding box, plus an estimated hairline (not part of the mesh) so
-  // the crop can be framed hairline-to-chin — head only, no shoulders/background
+  // face bounding box, used both for the Phase 2 "face too small" check and
+  // (below) to frame the crop
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   pts.forEach(p => {
     const x = p.x * w, y = p.y * h;
@@ -1031,6 +1151,24 @@ async function autoFixPhoto(rawImg, view) {
   });
   const faceW = maxX - minX;
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+
+  const pose = getHeadPoseDegrees(result);
+  const expr = view === 'front' ? getExpressionScores(result) : null;
+  if (view === 'front') { state.frontPose = pose; state.frontExpression = expr; }
+  else { state.sidePose = pose; }
+
+  const verdict = validatePhoto(result, view, pose, expr, w, h, faceW);
+  if (verdict.reject) {
+    return { img, fixed: false, tilted: false, shallowAngle: false, rejected: true, rejectCode: verdict.code };
+  }
+
+  // A turned head (yaw) can't be corrected by rotating the 2D photo without
+  // warping the face, so that still just gets flagged for a retake. A head
+  // tipped back/down (pitch) is different: computeRatio() now uses the
+  // landmark depth (z) to un-foreshorten the vertical measurements, so we
+  // only need to warn on genuinely extreme pitch, not tolerate less of it.
+  const tilted = view === 'front' && verdict.warn && verdict.warnCode === 'tool_fix_warn';
+  const shallowAngle = view === 'side' && verdict.warn && verdict.warnCode === 'tool_fix_side_angle_warn';
 
   const glabella = landmarkToPx(pts[IDX.browGlabella], w, h);
   const foreheadTop = landmarkToPx(pts[IDX.foreheadTop], w, h);
@@ -1159,6 +1297,14 @@ function wireUploader({ inputId, zoneId, previewBoxId, previewImgId, changeBtnId
         try {
           const result = await autoFixPhoto(img, view);
           if (myId !== requestId) return; // stale by the time the fix finished
+          if (result.rejected) {
+            // Phase 2: never proceed with fake measurements — reset the
+            // uploader back to empty and tell the person exactly why.
+            fixOverlay.style.display = 'none';
+            showMsg(tr(result.rejectCode) + ' ' + tr('tool_retake_photo'), 'error');
+            reset();
+            return;
+          }
           finalImg = result.img;
           fixed = result.fixed;
           tilted = result.tilted;
@@ -1276,7 +1422,14 @@ async function getLandmarker() {
       },
       runningMode: 'IMAGE',
       numFaces: 1,
-      outputFacialTransformationMatrixes: true
+      outputFacialTransformationMatrixes: true,
+      // refineLandmarks adds the iris points (indices 468-477) — needed for
+      // an accurate interpupillary distance instead of eye-corner proxies.
+      refineLandmarks: true,
+      // Blendshapes give us mouth-open/smile and eye-blink scores, which the
+      // validation gate (Phase 2) uses to reject non-neutral expressions
+      // instead of guessing from landmark geometry alone.
+      outputFaceBlendshapes: true
     });
   } catch (e) {
     console.error('MediaPipe load failed', e);
@@ -1296,9 +1449,20 @@ const IDX = {
   noseBase: 2,        // base of the nose -> proxy for Subnasale
   upperLipTop: 0,     // vermilion border of the upper lip -> proxy for Labrale Superius (Ls), bottom of the philtrum
   lowerLipBottom: 17, // vermilion border of the lower lip -> proxy for Labrale Inferius (Li), top of the chin
+  stomion: 13,        // where the lips meet when closed -> Stomion (Phase 1, auto-only, not user-draggable)
   chin: 152,          // bottom of the chin -> proxy for Menton
   leftEyeOuter: 33,
   rightEyeOuter: 263,
+  // Iris centers (only present when refineLandmarks:true adds indices
+  // 468-477). Used for interpupillary distance (Phase 5, horizontal).
+  leftIris: 468, rightIris: 473,
+  // Mouth corners -> mouth width (Phase 5, horizontal).
+  mouthCornerL: 61, mouthCornerR: 291,
+  // Zygion mirror pair (widest point of the cheekbone) -> bizygomatic width.
+  zygionL: 234, zygionR: 454,
+  // Jaw-angle mirror pair (used for both front-view bigonial width and the
+  // side-view gonial-angle math below).
+  gonionL: 172, gonionR: 397,
   // Side-view proxies for the Frankfort plane. The mesh has a point on
   // *both* cheeks — 234/454 are the confirmed left/right cheek mirror pair
   // (used for face-width measurement in most MediaPipe demos), and
@@ -1314,7 +1478,12 @@ const IDX = {
   // to camera" treatment as tragion/orbitale above. Menton for the side
   // view reuses the same chin vertex as the front view (IDX.chin) — it's a
   // midline point, so it doesn't need a left/right pair.
-  gonion: 172, gonionAlt: 397
+  gonion: 172, gonionAlt: 397,
+  // Pogonion proxy (most-anterior point of the bony chin) — the mesh has no
+  // dedicated point for this, so 175 (a hair below IDX.chin on the chin
+  // pad) is used as the nearest available vertex and treated as an
+  // approximation, not a precise clinical Pogonion.
+  pogonionApprox: 175
 };
 
 function landmarkToPx(lm, w, h) { return { x: lm.x * w, y: lm.y * h }; }
@@ -1331,6 +1500,21 @@ function pickNearerIdx(pts, idxA, idxB) {
 // can compensate for a head pitched back/down before it ever touches the
 // drawn pixel position.
 function landmarkToPxZ(lm, w, h) { return { x: lm.x * w, y: lm.y * h, z: lm.z * w }; }
+
+// Phase 4 — confidence model. MediaPipe's FaceLandmarker does not return a
+// true per-vertex confidence score (unlike, say, pose-estimation models
+// with visibility scores), so this builds an honest proxy instead of
+// faking a number: it starts from a strong base for a directly-detected
+// mesh vertex and knocks confidence down for the things that actually make
+// a landmark unreliable — how far off-axis the head is, and whether the
+// point is estimated/extrapolated rather than a real mesh vertex.
+function baseConfidenceFromPose(pose) {
+  if (!pose) return 0.75; // no pose info at all (e.g. matrixes unavailable) — moderate default
+  const yawPenalty = Math.min(0.3, Math.abs(pose.yaw) / 60);
+  const pitchPenalty = Math.min(0.3, Math.abs(pose.pitch) / 60);
+  const rollPenalty = Math.min(0.15, Math.abs(pose.roll) / 40);
+  return Math.max(0.35, 1 - yawPenalty - pitchPenalty - rollPenalty);
+}
 
 async function detectFrontPoints(img) {
   const lm = await getLandmarker();
@@ -1349,11 +1533,51 @@ async function detectFrontPoints(img) {
 
   // Estimate trichion: extend the glabella→foreheadTop vector upward.
   // This is a rough starting guess — the user should verify/drag it.
+  // (Phase 3: hairline is always the weakest landmark — it's never a real
+  // mesh vertex, only ever this extrapolation, which is exactly why its
+  // confidence below is capped well under the others regardless of pose.)
   const dx = foreheadTop.x - glabella.x;
   const dy = foreheadTop.y - glabella.y;
   const tr_ = { x: foreheadTop.x + dx * 0.9, y: foreheadTop.y + dy * 0.9, z: foreheadTop.z };
 
   const pose = getHeadPoseDegrees(result);
+  const base = baseConfidenceFromPose(pose);
+
+  // Phase 4 confidence per point. Directly-detected vertices share the pose
+  // -adjusted base; the extrapolated trichion is knocked down further
+  // (Phase 3), scaled by how long the extrapolation vector is relative to
+  // the glabella→foreheadTop span itself (a longer reach = a shakier guess).
+  const confidence = {
+    tr: Math.max(0.25, base * 0.72),
+    n: base,
+    sn: base,
+    ls: Math.min(base, 0.97),
+    li: Math.min(base, 0.97),
+    me: base
+  };
+
+  // Phase 5/1 auxiliary points — not user-draggable, just extra numbers fed
+  // into computeMeasurements() for width/projection metrics that don't need
+  // a manual-correction UI of their own.
+  const zygionL = landmarkToPxZ(pts[IDX.zygionL], w, h);
+  const zygionR = landmarkToPxZ(pts[IDX.zygionR], w, h);
+  const gonionL = landmarkToPxZ(pts[IDX.gonionL], w, h);
+  const gonionR = landmarkToPxZ(pts[IDX.gonionR], w, h);
+  const mouthL = landmarkToPxZ(pts[IDX.mouthCornerL], w, h);
+  const mouthR = landmarkToPxZ(pts[IDX.mouthCornerR], w, h);
+  const irisAvailable = pts.length > IDX.leftIris && pts.length > IDX.rightIris;
+  const ipd = irisAvailable
+    ? Math.hypot(pts[IDX.rightIris].x * w - pts[IDX.leftIris].x * w, pts[IDX.rightIris].y * h - pts[IDX.leftIris].y * h)
+    : Math.hypot(pts[IDX.rightEyeOuter].x * w - pts[IDX.leftEyeOuter].x * w, pts[IDX.rightEyeOuter].y * h - pts[IDX.leftEyeOuter].y * h) * 0.55; // rough eye-outer-corner fallback
+
+  state.auxMeasurements = {
+    bizygomaticWidth: Math.hypot(zygionR.x - zygionL.x, zygionR.y - zygionL.y),
+    bigonialWidth: Math.hypot(gonionR.x - gonionL.x, gonionR.y - gonionL.y),
+    mouthWidth: Math.hypot(mouthR.x - mouthL.x, mouthR.y - mouthL.y),
+    interpupillaryDistance: ipd,
+    faceHeightPx: me.y - foreheadTop.y
+  };
+  state.frontConfidence = confidence;
 
   return { tr: tr_, n: glabella, sn, ls, li, me, _pitchDeg: pose ? pose.pitch : 0 };
 }
@@ -1379,6 +1603,20 @@ async function detectSidePoints(img) {
   const pose = getHeadPoseDegrees(result);
   const shallowAngle = pose ? Math.abs(pose.yaw) < 35 : false;
 
+  // Phase 4 confidence: the near-side pick itself is the main risk on a
+  // side photo (pickNearerIdx becomes a coin-flip the closer the turn is to
+  // frontal), so confidence here is driven by how decisively "turned" the
+  // head is, not just general pose noise.
+  const turn = pose ? Math.abs(pose.yaw) : 45;
+  const turnConfidence = Math.max(0.3, Math.min(1, (turn - 20) / 45));
+  const sideConfidence = {
+    tragion: turnConfidence,
+    orbit: turnConfidence,
+    gonion: turnConfidence * 0.95, // gonion is a soft jaw-contour point, slightly less certain even at a good turn
+    menton: Math.max(0.5, baseConfidenceFromPose(pose)) // Menton is midline, so it's not affected by the near/far-side pick
+  };
+  state.sideConfidence = sideConfidence;
+
   return {
     tragion: landmarkToPx(pts[tragionIdx], w, h),
     orbit: landmarkToPx(pts[orbitIdx], w, h),
@@ -1387,6 +1625,9 @@ async function detectSidePoints(img) {
     // Frankfort-plane tilt correction.
     gonion: landmarkToPx(pts[gonionIdx], w, h),
     menton: landmarkToPx(pts[IDX.chin], w, h),
+    // Pogonion approximation — used only by the growth/projection math
+    // (Phase 7), not shown as a separate draggable point.
+    pogonion: landmarkToPx(pts[IDX.pogonionApprox], w, h),
     shallowAngle
   };
 }
@@ -1400,7 +1641,7 @@ const CHIP_SHORT = { tr: 'Tr', n: 'N', sn: 'Sn', ls: 'Ls', li: 'Li', me: 'Me', t
 const POINT_LABEL_KEYS = { tr: 'tool_pt_tr', n: 'tool_pt_n', sn: 'tool_pt_sn', ls: 'tool_pt_ls', li: 'tool_pt_li', me: 'tool_pt_me', tragion: 'tool_pt_tragion', orbit: 'tool_pt_orbit', gonion: 'tool_pt_gonion', menton: 'tool_pt_menton_side' };
 const GUIDE_DESC_KEYS = { tr: 'tool_guide_desc_tr', n: 'tool_guide_desc_n', sn: 'tool_guide_desc_sn', ls: 'tool_guide_desc_ls', li: 'tool_guide_desc_li', me: 'tool_guide_desc_me', tragion: 'tool_guide_desc_tragion', orbit: 'tool_guide_desc_orbit', gonion: 'tool_guide_desc_gonion', menton: 'tool_guide_desc_menton_side' };
 
-function makeCanvasEditor(canvasEl, img, pointKeys, colors, onSelect) {
+function makeCanvasEditor(canvasEl, img, pointKeys, colors, onSelect, onPointMoved) {
   const ctx = canvasEl.getContext('2d');
   let scale = 1;
   let points = null; // in natural-image pixel coords
@@ -1515,6 +1756,7 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors, onSelect) {
     if (!dragKey) return; // only true for an active mouse drag
     points[dragKey] = toImgCoords(e.clientX, e.clientY);
     draw();
+    if (onPointMoved) onPointMoved(dragKey);
   });
 
   function endMouseDrag() {
@@ -1539,6 +1781,7 @@ function makeCanvasEditor(canvasEl, img, pointKeys, colors, onSelect) {
       points[selectedKey].x += dxDisplayPx / scale;
       points[selectedKey].y += dyDisplayPx / scale;
       draw();
+      if (onPointMoved) onPointMoved(selectedKey);
     }
   };
 }
@@ -1636,6 +1879,25 @@ function onEditorSelect(view, key) {
   renderChips(view);
 }
 
+// Phase 3/4: once a person drags a point themselves, it's user-confirmed —
+// bump its confidence to 1 so downstream scoring stops treating it as
+// uncertain. Also feeds Phase 13's lightweight auto-vs-manual tracking:
+// no external photo dataset needed, we just log how far each point moved
+// from where auto-detection first put it.
+function handlePointManuallyMoved(view, key) {
+  const confidenceStore = view === 'front' ? state.frontConfidence : state.sideConfidence;
+  if (confidenceStore) confidenceStore[key] = 1;
+
+  const editor = view === 'front' ? frontEditor : sideEditor;
+  const autoPts = view === 'front' ? state._frontAutoPts : state._sideAutoPts;
+  if (!editor || !autoPts || !autoPts[key]) return;
+  const now = editor.getPoints()[key];
+  if (!now) return;
+  const deltaPx = Math.hypot(now.x - autoPts[key].x, now.y - autoPts[key].y);
+  state.autoVsManualDeltaPx[view + '.' + key] = deltaPx;
+  if (debugModeOn()) renderDebugPanel();
+}
+
 function doNudge(dx, dy) {
   const editor = currentEditor();
   if (!editor) return;
@@ -1674,7 +1936,8 @@ async function enterAdjustStep() {
 
   const canvasFront = document.getElementById('canvasFront');
   frontEditor = makeCanvasEditor(canvasFront, state.frontImg, ['tr', 'n', 'sn', 'ls', 'li', 'me'], POINT_COLORS,
-    (key) => onEditorSelect('front', key));
+    (key) => onEditorSelect('front', key),
+    (key) => handlePointManuallyMoved('front', key));
   frontEditor.resize();
 
   let detected = null;
@@ -1697,14 +1960,19 @@ async function enterAdjustStep() {
       li: { x: w * 0.5, y: h * 0.78 },
       me: { x: w * 0.5, y: h * 0.86 }
     };
+    // no real detection -> confidence is unknown/low for every point until
+    // the user confirms it by hand
+    state.frontConfidence = { tr: 0.3, n: 0.3, sn: 0.3, ls: 0.3, li: 0.3, me: 0.3 };
   }
   state.frontPts = detected;
+  state._frontAutoPts = JSON.parse(JSON.stringify(detected)); // Phase 13 baseline for auto-vs-manual diff
   frontEditor.setPoints(detected);
 
   // side photo is required — always detect + editable dots for it too
   const canvasSide = document.getElementById('canvasSide');
   sideEditor = makeCanvasEditor(canvasSide, state.sideImg, ['tragion', 'orbit', 'gonion', 'menton'], SIDE_COLORS,
-    (key) => onEditorSelect('side', key));
+    (key) => onEditorSelect('side', key),
+    (key) => handlePointManuallyMoved('side', key));
   sideEditor.resize();
   let sidePts = null;
   try { sidePts = await detectSidePoints(state.sideImg); } catch (e) { console.error(e); }
@@ -1728,6 +1996,7 @@ async function enterAdjustStep() {
       gonion:  { x: w * 0.70, y: h * 0.74 },  // jaw angle, below and slightly forward of the ear
       menton:  { x: w * 0.40, y: h * 0.87 }   // chin tip, forward under the nose/lips
     };
+    state.sideConfidence = { tragion: 0.3, orbit: 0.3, gonion: 0.3, menton: 0.3 };
   } else {
     state.sideAutoDetected = true;
     if (!sidePts.gonion || !sidePts.menton) {
@@ -1739,6 +2008,7 @@ async function enterAdjustStep() {
     }
   }
   state.sidePts = sidePts;
+  state._sideAutoPts = JSON.parse(JSON.stringify(sidePts)); // Phase 13 baseline
   sideEditor.setPoints(sidePts);
 
   updateAdjustHint('front');
@@ -1910,12 +2180,12 @@ document.getElementById('calculateBtn').addEventListener('click', () => {
     return;
   }
   state.sidePts = sp;
-  const { ratio, tilted, philtrumRatio, chinRatio, chinPhiltrumRatio, sideAngles } = computeRatio();
-  showResult(ratio, tilted, philtrumRatio, chinRatio, chinPhiltrumRatio, sideAngles);
+  const m = computeMeasurements();
+  showResult(m);
 });
 
 /* ══════════════════════════════════════
-   STEP 4 — RESULT
+   STEP 4 — RESULT (V2 engine: Phases 5-11)
 ══════════════════════════════════════ */
 const IDEAL = 33.3;
 let lastRatio = null;
@@ -1924,39 +2194,159 @@ let lastRating = null;
 let lastChinPhiltrumRatio = null;
 let lastSideAngles = null;
 let lastGrowthLabel = null;
+let lastMeasurements = null;   // Phase 5 — pure measurement bundle
+let lastGrowthResult = null;   // Phase 7
+let lastHarmonyScore = null;   // Phase 8
+let lastExplanation = null;    // Phase 11
 
 const GROWTH_LABEL_KEYS = { growth_forward: 'growth_forward', growth_neutral: 'growth_neutral', growth_downward: 'growth_downward' };
 
-// Archetype: which side of the classical ideal the lower-third falls on.
-// (Kept ratio-only on purpose — this label describes the *shape* of the
-// lower third specifically, i.e. short vs. long relative to the classical
-// 33.3% split. It's a single, well-defined axis, unlike the rating below.
-// If you'd rather have this fold in gonial angle / growth / chin:philtrum
-// too, say the word and I'll rework it into a second composite.)
-function getArchetype(ratio) {
-  if (ratio < 30)   return { key: 'archetype_short',          label: tr('archetype_short') };
-  if (ratio < 32)   return { key: 'archetype_balanced_short', label: tr('archetype_balanced_short') };
-  if (ratio <= 34.6) return { key: 'archetype_golden',         label: tr('archetype_golden') };
-  if (ratio <= 38)  return { key: 'archetype_elongated',      label: tr('archetype_elongated') };
-  return { key: 'archetype_long', label: tr('archetype_long') };
+/* ── Phase 5 — pure measurement layer ─────────────────────────────
+   Bundles everything computeRatio()/computeSideAngles() already produce
+   with the auxiliary width/projection numbers captured at detection time.
+   This function does no scoring or interpretation — only numbers — so
+   every scoring function below reads from this bundle instead of ever
+   touching raw points directly. That's what makes it structurally
+   impossible for a rating tweak to quietly change a measurement. */
+function computeMeasurements() {
+  const core = computeRatio(); // { ratio, tilted, philtrumRatio, chinRatio, chinPhiltrumRatio, sideAngles }
+  const aux = state.auxMeasurements || {};
+  const sp = state.sidePts;
+
+  // Chin/jaw projection: how far forward Pogonion/Gonion sit relative to a
+  // vertical reference dropped from Orbitale. This is a coarse proxy for
+  // the clinical Frankfort-vertical projection line (which needs Nasion in
+  // the same plane as the side photo, which our landmark set doesn't
+  // capture) — treat the sign/magnitude as directional, not millimeter-exact.
+  let chinProjection = null, jawProjection = null;
+  if (sp && sp.pogonion && sp.orbit && sp.gonion) {
+    const vertRef = sp.orbit.x;
+    chinProjection = sp.pogonion.x - vertRef;
+    jawProjection = sp.gonion.x - vertRef;
+  }
+
+  const jawTaper = (aux.bizygomaticWidth && aux.bigonialWidth)
+    ? (aux.bizygomaticWidth - aux.bigonialWidth) / aux.bizygomaticWidth
+    : null;
+
+  return {
+    ...core,
+    bizygomaticWidth: aux.bizygomaticWidth || null,
+    bigonialWidth: aux.bigonialWidth || null,
+    interpupillaryDistance: aux.interpupillaryDistance || null,
+    mouthWidth: aux.mouthWidth || null,
+    jawTaper,
+    chinProjection,
+    jawProjection
+  };
 }
 
-/* ── Composite rating ──────────────────────────────────────────────
-   Four sub-scores, each 0-10, each worth an equal 25% of the final
-   rating. Every sub-score is anchored on the same tier ranges as
-   before, but now interpolated continuously between those anchors
-   instead of snapping to 5 flat steps (10/8/6/4/2). The old stepped
-   version meant huge numbers of visibly-different faces all landed on
-   the exact same sub-score, so the composite average only had ~17
-   possible values total — that's what made results feel like they
-   all pooled into "Low/Mid". Continuous scoring restores real spread
-   between people who are close-but-not-identical on a metric, so the
-   full Sub5→Chad range actually gets used.
-*/
+/* ── Phase 6 — normalization ───────────────────────────────────────
+   Converts a raw measurement into a z-score / percentile against the
+   approximate reference stats in ENGINE_CONFIG.norms, instead of a bare
+   number with no sense of what's typical. These norms are reasonable
+   midpoints from published adult craniofacial-proportion ranges, not a
+   substitute for a real per-population table — treat as roughly
+   calibrated, not clinical ground truth (see ENGINE_CONFIG comment). */
+function zScore(value, normKey) {
+  const n = ENGINE_CONFIG.norms[normKey];
+  if (!n || value == null) return null;
+  return (value - n.mean) / n.sd;
+}
+function zToPercentile(z) {
+  // Standard normal CDF approximation (Abramowitz & Stegun 7.1.26).
+  const sign = z < 0 ? -1 : 1;
+  const x = Math.abs(z) / Math.SQRT2;
+  const t = 1 / (1 + 0.3275911 * x);
+  const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+  return 0.5 * (1 + sign * y) * 100;
+}
+function normalize(value, normKey) {
+  const z = zScore(value, normKey);
+  if (z === null) return null;
+  return { value, zScore: z, percentile: zToPercentile(z), idealDeviationSD: Math.round(z * 100) / 100 };
+}
 
-// Piecewise-linear interpolation between calibration points.
-// pts = [[x0,y0], [x1,y1], ...] sorted by x ascending. Values outside
-// the range clamp to the nearest end instead of extrapolating.
+/* ── Phase 7 — growth score (0-100) ────────────────────────────────
+   Combines five inputs instead of FMA alone: FMA, mandibular-plane
+   steepness, ramus inclination (proxy — no true condylion/ramus-top point
+   exists in our landmark set, so Tragion→Gonion stands in for it), chin
+   projection, and lower facial height. Each converts to a 0-100 sub-score,
+   then a weighted blend gives the final Growth Score and classification. */
+function computeGrowthScore(m, sideAngles) {
+  if (!sideAngles) return null;
+  const sp = state.sidePts;
+
+  const fmaScore = lerpScore(sideAngles.fma, [[10, 100], [18, 95], [22, 80], [26, 60], [30, 40], [38, 10]]);
+
+  let mandPlaneScore = 50;
+  if (sp && sp.gonion && sp.menton) {
+    const dx = sp.menton.x - sp.gonion.x, dy = sp.menton.y - sp.gonion.y;
+    const steepness = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+    mandPlaneScore = lerpScore(steepness, [[10, 100], [20, 80], [30, 55], [40, 30], [55, 10]]);
+  }
+
+  let ramusScore = 50;
+  if (sp && sp.tragion && sp.gonion) {
+    const dx = sp.gonion.x - sp.tragion.x, dy = sp.gonion.y - sp.tragion.y;
+    const fromVertical = Math.abs(90 - Math.abs(Math.atan2(dy, dx) * 180 / Math.PI));
+    ramusScore = lerpScore(fromVertical, [[5, 100], [15, 80], [25, 55], [35, 30], [50, 10]]);
+  }
+
+  const chinProjScore = m.chinProjection != null
+    ? lerpScore(m.chinProjection, [[-30, 10], [-10, 40], [0, 60], [10, 85], [20, 100], [35, 100]])
+    : 50;
+
+  const lowerHeightScore = lerpScore(Math.abs(m.chinRatio - 20), [[0, 100], [4, 80], [8, 55], [12, 30], [18, 10]]);
+
+  const w = { fma: 0.35, mandPlane: 0.25, ramus: 0.15, chinProj: 0.15, lowerHeight: 0.10 };
+  const score = fmaScore * w.fma + mandPlaneScore * w.mandPlane + ramusScore * w.ramus
+              + chinProjScore * w.chinProj + lowerHeightScore * w.lowerHeight;
+
+  let classification;
+  if (score >= 85) classification = 'growth_class_forward';
+  else if (score >= 70) classification = 'growth_class_slight_forward';
+  else if (score >= 55) classification = 'growth_class_neutral';
+  else if (score >= 40) classification = 'growth_class_slight_downward';
+  else classification = 'growth_class_downward';
+
+  return { score: Math.round(score), classification, parts: { fmaScore, mandPlaneScore, ramusScore, chinProjScore, lowerHeightScore } };
+}
+
+/* ── Phase 8 — facial harmony ──────────────────────────────────────
+   A separate axis from the rating: measures whether features *agree*
+   with each other, independent of whether any single one is "good."
+   E.g. a great lower-third ratio paired with a very weak chin, or a
+   strong jaw paired with an unusually long philtrum, both read as
+   *disharmonious* even if no individual measurement is bad on its own.
+   Implemented as: convert each feature to a z-score, then for a handful
+   of clinically-linked pairs, penalize how far apart those z-scores are
+   (features that are supposed to move together but didn't) — 0-10 scale. */
+function computeHarmonyScore(m, sideAngles) {
+  const zLowerThird = zScore(m.ratio, 'lowerThirdRatio');
+  const zChinPhiltrum = zScore(m.chinPhiltrumRatio, 'chinPhiltrumRatio');
+  const zGonial = sideAngles ? zScore(sideAngles.gonialAngle, 'gonialAngle') : null;
+  const zPhiltrum = zScore(m.philtrumRatio, 'philtrumRatio');
+
+  const pairs = [
+    { a: zLowerThird, b: zChinPhiltrum, weight: 0.4 },  // lower third vs. chin strength
+    { a: zGonial,     b: zPhiltrum,     weight: 0.3 },  // jaw vs. philtrum length
+    { a: zChinPhiltrum, b: zGonial,     weight: 0.3 }   // chin vs. jaw (both lower-face structure)
+  ].filter(p => p.a != null && p.b != null);
+
+  if (!pairs.length) return null;
+  let weightedAgreement = 0, weightTotal = 0;
+  pairs.forEach(p => {
+    const gap = Math.abs(p.a - p.b);
+    const agreement = Math.max(0, Math.min(10, 10 - gap * 2.2));
+    weightedAgreement += agreement * p.weight;
+    weightTotal += p.weight;
+  });
+  return Math.round((weightedAgreement / weightTotal) * 10) / 10;
+}
+
+/* ── Phase 5-continued: existing four sub-scores (kept for the rating v2
+   below and for the explanation panel) ─────────────────────────────── */
 function lerpScore(x, pts) {
   if (x <= pts[0][0]) return pts[0][1];
   const last = pts[pts.length - 1];
@@ -1967,75 +2357,164 @@ function lerpScore(x, pts) {
   }
   return last[1];
 }
-
-// 1) Lower-third ratio vs. the 33.3% classical ideal.
 function scoreRatio(ratio) {
   const delta = Math.abs(ratio - IDEAL);
   return lerpScore(delta, [[0, 10], [1.2, 10], [2.5, 8], [4.5, 6], [7, 4], [11, 2], [16, 0.5]]);
 }
-
-// 2) Gonial angle vs. the 110°-115° "ideal L-shaped jaw" band.
-//    Sharper than 110° is treated as still-elite (flat, uncapped on the
-//    low side, since the reference tiers only define the range above it).
 function scoreGonial(angle) {
   if (angle == null) return null;
   return lerpScore(angle, [[95, 10], [115, 10], [120, 8], [125, 6], [130, 4], [140, 1.5]]);
 }
-
-// 3) Growth pattern via FMA — lower (more forward-growing) scores
-//    higher, using the same <22 / 22-30 / >30 split the app already
-//    uses for the forward/neutral/downward label, just interpolated finer.
-function scoreGrowth(fma) {
-  if (fma == null) return null;
-  return lerpScore(fma, [[10, 10], [18, 10], [22, 8], [26, 6], [30, 4], [38, 1]]);
-}
-
-// 4) Chin:philtrum ratio vs. the 2:1 → 2.5:1+ progression.
 function scoreChinPhiltrum(cpRatio) {
   if (!cpRatio) return null;
   return lerpScore(cpRatio, [[1.4, 1], [1.7, 2.5], [2.0, 4], [2.15, 6], [2.3, 8], [2.5, 10], [2.8, 10]]);
 }
-
-// Rating: equal-weighted average of all four sub-scores, bucketed into
-// six tiers — Sub5 → LTN → MTN → HTN → ChadLite → Chad. The top end is
-// deliberately steep: with four 0-10 sub-scores averaged together,
-// landing in ChadLite or Chad means being near-ideal on nearly every
-// metric at once, not just decent on one and average on the rest.
-// `metrics` = { ratio, gonialAngle, fma, chinPhiltrumRatio }. Any metric
-// that isn't available yet (e.g. no side photo) just drops out of the
-// average instead of forcing a false score.
-function getRating(metrics) {
-  const scores = [
-    scoreRatio(metrics.ratio),
-    scoreGonial(metrics.gonialAngle),
-    scoreGrowth(metrics.fma),
-    scoreChinPhiltrum(metrics.chinPhiltrumRatio)
-  ].filter(s => s !== null && s !== undefined);
-
-  const composite = scores.reduce((a, b) => a + b, 0) / scores.length;
-
-  if (composite >= 9.5) return { key: 'rating_chad',     label: tr('rating_chad'),     tier: 'tier-chad',     score: composite };
-  if (composite >= 8.5) return { key: 'rating_chadlite', label: tr('rating_chadlite'), tier: 'tier-chadlite', score: composite };
-  if (composite >= 7)   return { key: 'rating_htn',      label: tr('rating_htn'),      tier: 'tier-htn',      score: composite };
-  if (composite >= 5)   return { key: 'rating_mtn',      label: tr('rating_mtn'),      tier: 'tier-mtn',      score: composite };
-  if (composite >= 3.5) return { key: 'rating_ltn',      label: tr('rating_ltn'),      tier: 'tier-ltn',      score: composite };
-  return { key: 'rating_sub5', label: tr('rating_sub5'), tier: 'tier-sub5', score: composite };
+function scoreJawTaper(jawTaper) {
+  const n = normalize(jawTaper, 'jawTaper');
+  if (!n) return null;
+  return lerpScore(Math.abs(n.zScore), [[0, 10], [0.5, 8], [1, 6], [1.5, 4], [2.5, 1]]);
+}
+// Phase 9's "Measurement Confidence" category — average of every landmark
+// confidence currently in play (front + side), 0-10.
+function computeConfidenceSubscore() {
+  const vals = [...Object.values(state.frontConfidence || {}), ...Object.values(state.sideConfidence || {})];
+  if (!vals.length) return 5;
+  return (vals.reduce((a, b) => a + b, 0) / vals.length) * 10;
+}
+// Phase 9's "Facial Balance" category — distinct from Harmony above:
+// Harmony checks agreement *between* different feature categories (jaw vs
+// philtrum, etc); Balance checks internal consistency of the lower-third's
+// own sub-proportions (philtrum height vs chin height) — a face can have
+// good harmony but still an internally lopsided lower third, or vice versa.
+function computeFacialBalanceScore(m) {
+  const vals = [m.philtrumRatio, m.chinRatio].filter(v => v != null);
+  if (vals.length < 2) return 5;
+  const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+  const variance = vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length;
+  const sd = Math.sqrt(variance);
+  return lerpScore(sd, [[0, 10], [2, 8], [4, 6], [7, 4], [11, 2]]);
 }
 
-function showResult(ratio, tilted, philtrumRatio, chinRatio, chinPhiltrumRatio, sideAngles) {
+function avgDefined(arr) {
+  const vals = arr.filter(v => v !== null && v !== undefined);
+  return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+}
+
+/* ── Phase 9 — rating engine v2 ────────────────────────────────────
+   Six weighted categories (ENGINE_CONFIG.ratingWeights) instead of four
+   equally-weighted metrics. Any category that can't be computed (e.g. no
+   side photo) drops out and the remaining weights renormalize, the same
+   "missing metrics just fall out of the average" behavior as before —
+   just per-category now instead of per-metric. Same tier thresholds/scale
+   (0-10, Sub5→Chad) so the archetype/UI code downstream doesn't need to
+   change shape, only what feeds into it. */
+function getRating(m, sideAngles, growthResult, harmonyScore) {
+  const verticalHarmony = avgDefined([scoreRatio(m.ratio), harmonyScore]);
+  const jawStructure = avgDefined([scoreGonial(sideAngles ? sideAngles.gonialAngle : null), scoreJawTaper(m.jawTaper)]);
+  const growth = growthResult ? growthResult.score / 10 : null;
+  const projection = avgDefined([growthResult ? growthResult.parts.chinProjScore / 10 : null, scoreChinPhiltrum(m.chinPhiltrumRatio)]);
+  const facialBalance = computeFacialBalanceScore(m);
+  const confidence = computeConfidenceSubscore();
+
+  const subs = { verticalHarmony, jawStructure, growth, projection, facialBalance, confidence };
+
+  let weightedSum = 0, weightTotal = 0;
+  Object.keys(ENGINE_CONFIG.ratingWeights).forEach(k => {
+    const v = subs[k];
+    if (v == null) return;
+    const w = ENGINE_CONFIG.ratingWeights[k];
+    weightedSum += v * w; weightTotal += w;
+  });
+  const composite = weightTotal > 0 ? weightedSum / weightTotal : 5;
+
+  let tier;
+  if (composite >= 9.5) tier = { key: 'rating_chad', tier: 'tier-chad' };
+  else if (composite >= 8.5) tier = { key: 'rating_chadlite', tier: 'tier-chadlite' };
+  else if (composite >= 7) tier = { key: 'rating_htn', tier: 'tier-htn' };
+  else if (composite >= 5) tier = { key: 'rating_mtn', tier: 'tier-mtn' };
+  else if (composite >= 3.5) tier = { key: 'rating_ltn', tier: 'tier-ltn' };
+  else tier = { key: 'rating_sub5', tier: 'tier-sub5' };
+
+  return { key: tier.key, label: tr(tier.key), tier: tier.tier, score: composite, subs };
+}
+
+/* ── Phase 10 — archetype classification v2 ────────────────────────
+   The vertical lower-third ratio stays the primary axis (it's a single,
+   well-defined proportion, unlike the composite rating), but the boundary
+   between "balanced" and the more jaw-driven "elongated/long" archetypes
+   now folds in jaw taper, gonial angle, and growth — a long lower third
+   only reads as the masculine/elongated archetype when the jaw actually
+   backs it up; otherwise it settles into the more balanced label instead. */
+function getArchetype(m, sideAngles, growthResult) {
+  const ratio = m.ratio;
+  const jawTaperNorm = normalize(m.jawTaper, 'jawTaper');
+  const squareJaw = jawTaperNorm ? jawTaperNorm.zScore < -0.3 : null;
+  const strongGonial = sideAngles ? sideAngles.gonialAngle <= 122 : null;
+  const forwardGrowth = growthResult ? growthResult.score >= 55 : null;
+  const signals = [squareJaw, strongGonial, forwardGrowth].filter(v => v !== null);
+  const jawIsStrong = signals.length > 0 && signals.filter(Boolean).length >= Math.ceil(signals.length / 2);
+
+  let key;
+  if (ratio < 30) key = 'archetype_short';
+  else if (ratio < 32) key = 'archetype_balanced_short';
+  else if (ratio <= 34.6) key = 'archetype_golden';
+  else if (ratio <= 38) key = jawIsStrong ? 'archetype_elongated' : 'archetype_balanced_short';
+  else key = jawIsStrong ? 'archetype_long' : 'archetype_golden';
+
+  return { key, label: tr(key), jawIsStrong };
+}
+
+/* ── Phase 11 — explanation generator ──────────────────────────────
+   Turns the rating's six sub-scores into a short list of plain-language
+   reasons instead of a flat label — only calling out categories that are
+   clearly good (>=7.5) or clearly weak (<=5); anything in between is
+   "unremarkable" and left out so the list stays focused on what actually
+   moved the score. */
+function buildExplanation(rating, m) {
+  const s = rating.subs;
+  const bullets = [];
+  if (s.verticalHarmony != null) {
+    if (s.verticalHarmony >= 7.5) bullets.push({ text: tr('explain_bullet_vertical_good'), positive: true });
+    else if (s.verticalHarmony <= 5) bullets.push({ text: m.ratio > IDEAL ? tr('explain_bullet_vertical_long') : tr('explain_bullet_vertical_short'), positive: false });
+  }
+  if (s.jawStructure != null) {
+    if (s.jawStructure >= 7.5) bullets.push({ text: tr('explain_bullet_jaw_strong'), positive: true });
+    else if (s.jawStructure <= 5) bullets.push({ text: tr('explain_bullet_jaw_soft'), positive: false });
+  }
+  if (s.growth != null) {
+    if (s.growth >= 8) bullets.push({ text: tr('explain_bullet_growth_forward'), positive: true });
+    else if (s.growth <= 4) bullets.push({ text: tr('explain_bullet_growth_downward'), positive: false });
+  }
+  if (s.projection != null) {
+    if (s.projection >= 7.5) bullets.push({ text: tr('explain_bullet_chin_strong'), positive: true });
+    else if (s.projection <= 5) bullets.push({ text: tr('explain_bullet_chin_weak'), positive: false });
+  }
+  if (s.facialBalance != null) {
+    if (s.facialBalance >= 7.5) bullets.push({ text: tr('explain_bullet_harmony_good'), positive: true });
+    else if (s.facialBalance <= 5) bullets.push({ text: tr('explain_bullet_harmony_poor'), positive: false });
+  }
+  const confidencePct = Math.round((s.confidence || 5) * 10);
+  if (confidencePct < 65) bullets.push({ text: tr('explain_bullet_confidence_low'), positive: false });
+  else if (confidencePct >= 90) bullets.push({ text: tr('explain_bullet_confidence_high'), positive: true });
+
+  return { bullets, confidencePct };
+}
+
+function showResult(m) {
   stopGuideAutoplay();
-  lastRatio = ratio;
-  lastChinPhiltrumRatio = chinPhiltrumRatio;
-  lastSideAngles = sideAngles;
+  lastRatio = m.ratio;
+  lastChinPhiltrumRatio = m.chinPhiltrumRatio;
+  lastSideAngles = m.sideAngles;
+  lastMeasurements = m;
   goToStep(3);
-  document.getElementById('resultPct').textContent = ratio.toFixed(1) + '%';
-  const delta = ratio - IDEAL;
+  document.getElementById('resultPct').textContent = m.ratio.toFixed(1) + '%';
+  const delta = m.ratio - IDEAL;
   const deltaEl = document.getElementById('resultDelta');
   deltaEl.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%';
   deltaEl.style.color = Math.abs(delta) <= 2 ? '#5ecb96' : 'var(--crimson)';
 
-  document.getElementById('resultPhiltrum').textContent = philtrumRatio.toFixed(1) + '%';
-  document.getElementById('resultChin').textContent = chinRatio.toFixed(1) + '%';
+  document.getElementById('resultPhiltrum').textContent = m.philtrumRatio.toFixed(1) + '%';
+  document.getElementById('resultChin').textContent = m.chinRatio.toFixed(1) + '%';
 
   // front + side photos, framed, straight from what was uploaded in Step 1 & 2
   const frontPhotoEl = document.getElementById('resultFrontPhoto');
@@ -2048,15 +2527,17 @@ function showResult(ratio, tilted, philtrumRatio, chinRatio, chinPhiltrumRatio, 
   flag.textContent = tr('tool_result_tilt_corrected');
   flag.className = 'tilt-flag on';
 
-  const archetype = getArchetype(ratio);
-  const rating = getRating({
-    ratio,
-    gonialAngle: sideAngles ? sideAngles.gonialAngle : null,
-    fma: sideAngles ? sideAngles.fma : null,
-    chinPhiltrumRatio
-  });
+  const growthResult = computeGrowthScore(m, m.sideAngles);
+  const harmonyScore = computeHarmonyScore(m, m.sideAngles);
+  const archetype = getArchetype(m, m.sideAngles, growthResult);
+  const rating = getRating(m, m.sideAngles, growthResult, harmonyScore);
+  const explanation = buildExplanation(rating, m);
+
   lastArchetype = archetype;
   lastRating = rating;
+  lastGrowthResult = growthResult;
+  lastHarmonyScore = harmonyScore;
+  lastExplanation = explanation;
 
   document.getElementById('resultArchetype').textContent = archetype.label;
   const ratingEl = document.getElementById('resultRating');
@@ -2064,19 +2545,41 @@ function showResult(ratio, tilted, philtrumRatio, chinRatio, chinPhiltrumRatio, 
   ratingEl.className = 'rating-badge ' + rating.tier;
 
   document.getElementById('resultChinPhiltrum').textContent =
-    chinPhiltrumRatio ? chinPhiltrumRatio.toFixed(1) + ' : 1' : '--';
+    m.chinPhiltrumRatio ? m.chinPhiltrumRatio.toFixed(1) + ' : 1' : '--';
 
   const gonialEl = document.getElementById('resultGonial');
   const growthEl = document.getElementById('resultGrowth');
-  if (sideAngles) {
-    gonialEl.textContent = Math.round(sideAngles.gonialAngle) + '°';
-    lastGrowthLabel = tr(sideAngles.growth);
-    growthEl.innerHTML = lastGrowthLabel + '<span class="sub">FMA ' + Math.round(sideAngles.fma) + '°</span>';
+  if (m.sideAngles) {
+    gonialEl.textContent = Math.round(m.sideAngles.gonialAngle) + '°';
+    // Phase 7: prefer the 5-input growth classification; fall back to the
+    // plain FMA-only label if for some reason the fuller score couldn't
+    // be computed (sideAngles present but growthResult somehow isn't).
+    lastGrowthLabel = growthResult ? tr(growthResult.classification) : tr(m.sideAngles.growth);
+    const fmaTxt = 'FMA ' + Math.round(m.sideAngles.fma) + '°';
+    const growthScoreTxt = growthResult ? ' · ' + growthResult.score + '/100' : '';
+    growthEl.innerHTML = lastGrowthLabel + '<span class="sub">' + fmaTxt + growthScoreTxt + '</span>';
   } else {
     gonialEl.textContent = '--';
     growthEl.textContent = '--';
     lastGrowthLabel = null;
   }
+
+  // Phase 11 — explanation panel
+  const explainListEl = document.getElementById('explainList');
+  const explainSectionEl = document.getElementById('resultExplain');
+  const confidenceBadgeEl = document.getElementById('confidenceBadge');
+  if (explainListEl) {
+    explainListEl.innerHTML = explanation.bullets
+      .map(b => `<li class="${b.positive ? 'good' : 'poor'}">${b.text}</li>`)
+      .join('');
+  }
+  if (confidenceBadgeEl) {
+    confidenceBadgeEl.textContent = tr('explain_confidence_label') + ': ' + explanation.confidencePct + '%';
+    confidenceBadgeEl.className = 'confidence-badge ' + (explanation.confidencePct < 65 ? 'low' : explanation.confidencePct >= 90 ? 'high' : 'mid');
+  }
+  if (explainSectionEl) explainSectionEl.style.display = explanation.bullets.length ? 'block' : 'none';
+
+  if (debugModeOn()) renderDebugPanel();
 
   autoSaveResult();
 }
@@ -2095,10 +2598,14 @@ async function autoSaveResult() {
       archetype: lastArchetype ? lastArchetype.key : null,
       rating: lastRating ? lastRating.key : null,
       ratingScore: lastRating ? Number(lastRating.score.toFixed(1)) : null,
+      ratingSubs: lastRating ? Object.fromEntries(Object.entries(lastRating.subs).map(([k, v]) => [k, v == null ? null : Number(v.toFixed(2))])) : null,
       chinPhiltrumRatio: lastChinPhiltrumRatio ? Number(lastChinPhiltrumRatio.toFixed(2)) : null,
       gonialAngle: lastSideAngles ? Math.round(lastSideAngles.gonialAngle) : null,
       frankfortMandibularAngle: lastSideAngles ? Math.round(lastSideAngles.fma) : null,
       growthPattern: lastSideAngles ? lastSideAngles.growth : null,
+      growthScore: lastGrowthResult ? lastGrowthResult.score : null,
+      harmonyScore: lastHarmonyScore,
+      confidencePct: lastExplanation ? lastExplanation.confidencePct : null,
       createdAt: serverTimestamp()
     });
   } catch (e) {
@@ -2110,6 +2617,105 @@ window.addEventListener('resize', () => {
   frontEditor && frontEditor.resize();
   sideEditor && sideEditor.resize();
 });
+
+/* ══════════════════════════════════════
+   PHASE 12 — DEBUG MODE
+   Hidden overlay showing every landmark, confidence value, measurement,
+   angle, and intermediate calculation that fed the final score. Toggle
+   with ?debug=1 in the URL, or by clicking the result page title 5 times.
+══════════════════════════════════════ */
+function debugModeOn() {
+  if (new URLSearchParams(location.search).get('debug') === '1') return true;
+  return localStorage.getItem('toolDebugMode') === '1';
+}
+function setDebugMode(on) {
+  localStorage.setItem('toolDebugMode', on ? '1' : '0');
+  const panel = document.getElementById('debugPanel');
+  if (panel) panel.style.display = on ? 'block' : 'none';
+  if (on) renderDebugPanel();
+}
+(function wireDebugToggle() {
+  const titleEl = document.querySelector('.result-hero-title');
+  if (!titleEl) return;
+  let clicks = 0, clickTimer = null;
+  titleEl.addEventListener('click', () => {
+    clicks++;
+    clearTimeout(clickTimer);
+    clickTimer = setTimeout(() => { clicks = 0; }, 1200);
+    if (clicks >= 5) { clicks = 0; setDebugMode(!debugModeOn()); }
+  });
+  if (debugModeOn()) setDebugMode(true);
+})();
+
+function renderDebugPanel() {
+  const panel = document.getElementById('debugPanel');
+  if (!panel) return;
+  panel.style.display = 'block';
+  const dump = {
+    frontPts: state.frontPts, sidePts: state.sidePts,
+    frontConfidence: state.frontConfidence, sideConfidence: state.sideConfidence,
+    frontPose: state.frontPose, sidePose: state.sidePose, frontExpression: state.frontExpression,
+    auxMeasurements: state.auxMeasurements,
+    autoVsManualDeltaPx: state.autoVsManualDeltaPx,
+    measurements: lastMeasurements,
+    growthResult: lastGrowthResult,
+    harmonyScore: lastHarmonyScore,
+    rating: lastRating,
+    archetype: lastArchetype,
+    explanation: lastExplanation,
+    selfTest: runSelfTests()
+  };
+  panel.textContent = JSON.stringify(dump, (k, v) => typeof v === 'number' ? Math.round(v * 1000) / 1000 : v, 2);
+}
+
+/* ══════════════════════════════════════
+   PHASE 13 — LIGHTWEIGHT SELF-TEST HARNESS
+   No external labeled-photo dataset is bundled with this app (that needs
+   an actual curated set of real, consented, diverse photos, which isn't
+   something to fabricate) — but the *math* underneath every phase above
+   can still be verified on its own with synthetic inputs. This runs a
+   handful of structural sanity checks every time debug mode renders, and
+   logs pass/fail so a regression in the formulas doesn't silently ship.
+   Separately, state.autoVsManualDeltaPx (populated by
+   handlePointManuallyMoved) gives real automatic-vs-manual displacement
+   data from actual usage, which is the practical substitute for a curated
+   before/after dataset until one exists.
+══════════════════════════════════════ */
+function runSelfTests() {
+  const results = [];
+  const check = (name, pass) => results.push({ name, pass: !!pass });
+
+  // Rating weights must sum to 1, or the composite silently biases toward
+  // whichever categories happen to be present.
+  const weightSum = Object.values(ENGINE_CONFIG.ratingWeights).reduce((a, b) => a + b, 0);
+  check('ratingWeights sum to 1', Math.abs(weightSum - 1) < 1e-9);
+
+  // lerpScore should be monotonic across a simple increasing calibration.
+  const monotonicPts = [[0, 0], [10, 10], [20, 20]];
+  check('lerpScore monotonic', lerpScore(5, monotonicPts) < lerpScore(15, monotonicPts));
+  check('lerpScore clamps below range', lerpScore(-5, monotonicPts) === 0);
+  check('lerpScore clamps above range', lerpScore(50, monotonicPts) === 20);
+
+  // zScore at the mean should be exactly 0, and percentile at z=0 should be 50.
+  const meanVal = ENGINE_CONFIG.norms.lowerThirdRatio.mean;
+  check('zScore(mean) === 0', zScore(meanVal, 'lowerThirdRatio') === 0);
+  check('zToPercentile(0) ≈ 50', Math.abs(zToPercentile(0) - 50) < 0.1);
+  check('zToPercentile is increasing in z', zToPercentile(1) > zToPercentile(-1));
+
+  // vecAngleDeg of identical vectors is 0; of opposite vectors is 180.
+  check('vecAngleDeg same vector = 0°', Math.abs(vecAngleDeg(1, 0, 1, 0)) < 1e-6);
+  check('vecAngleDeg opposite vectors = 180°', Math.abs(vecAngleDeg(1, 0, -1, 0) - 180) < 1e-6);
+
+  // Growth score weights (Phase 7) must also sum to 1.
+  const growthWeights = { fma: 0.35, mandPlane: 0.25, ramus: 0.15, chinProj: 0.15, lowerHeight: 0.10 };
+  const growthWeightSum = Object.values(growthWeights).reduce((a, b) => a + b, 0);
+  check('growth score weights sum to 1', Math.abs(growthWeightSum - 1) < 1e-9);
+
+  const passCount = results.filter(r => r.pass).length;
+  console.log(`[self-test] ${passCount}/${results.length} passed`, results.filter(r => !r.pass));
+  return { passCount, total: results.length, results };
+}
+
 </script>
 </body>
 </html>

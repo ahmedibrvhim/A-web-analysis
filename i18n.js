@@ -226,6 +226,27 @@ export const dict = {
     explain_bullet_harmony_poor: 'Some features pull against each other, reducing harmony.',
     explain_bullet_confidence_low: 'Several landmarks were low-confidence or estimated — treat this score as a rough read.',
     explain_bullet_confidence_high: 'Every landmark was detected or confirmed with high confidence.',
+
+    /* ── privacy-policy.html ── */
+    legal_eyebrow: 'Legal',
+    legal_title: 'Privacy Policy',
+    legal_updated: 'Last updated: July 20, 2026',
+    legal_intro: "Lower Third Calculator respects your privacy. Here's the short version of how we handle your data.",
+    legal_h_photos: 'Your Photos',
+    legal_p_photos: "Your photos are processed entirely in your own browser — they're never uploaded to or stored on our servers. If you're signed in, only the numeric results (ratios, angles, scores) are saved to your account, never the photos themselves.",
+    legal_h_account: 'Account Data',
+    legal_p_account: 'If you create an account, we use Google Firebase to store your email, display name, and saved results. We never sell or share this data with third parties for marketing.',
+    legal_h_cookies: 'Cookies & Ads',
+    legal_p_cookies_a: 'We use local storage for basic preferences like your language choice. This Site may show ads via Google AdSense, which may use cookies to personalize ads based on your browsing. You can opt out anytime at',
+    legal_p_cookies_b: 'or',
+    legal_p_cookies_c: '.',
+    legal_h_thirdparty: 'Third-Party Services',
+    legal_p_thirdparty_a: 'We rely on Google Firebase (auth, database, hosting) and Google Fonts. Data these services process on our behalf is governed by',
+    legal_p_thirdparty_b: '.',
+    legal_h_rights: 'Your Rights',
+    legal_p_rights: "You can request access to, or deletion of, your account and saved results at any time — just reach out (contact below). This Site isn't intended for anyone under 16.",
+    legal_h_contact: 'Contact',
+    legal_p_contact: 'Questions about this policy or your data? Reach us on TikTok:',
   },
   ar: {
     /* ── nav / common ── */
@@ -445,6 +466,27 @@ export const dict = {
     explain_bullet_harmony_poor: 'بعض الملامح تتعارض مع بعضها، مما يقلل من الانسجام.',
     explain_bullet_confidence_low: 'عدة نقاط مرجعية كانت منخفضة الموثوقية أو تقديرية — تعامل مع هذه النتيجة كتقدير تقريبي.',
     explain_bullet_confidence_high: 'تم رصد أو تأكيد كل نقطة مرجعية بموثوقية عالية.',
+
+    /* ── privacy-policy.html ── */
+    legal_eyebrow: 'قانوني',
+    legal_title: 'سياسة الخصوصية',
+    legal_updated: 'آخر تحديث: ٢٠ يوليو ٢٠٢٦',
+    legal_intro: 'يحترم "Lower Third Calculator" خصوصيتك. إليك النسخة المختصرة لكيفية تعاملنا مع بياناتك.',
+    legal_h_photos: 'صورك',
+    legal_p_photos: 'تتم معالجة صورك بالكامل داخل متصفحك — لا يتم رفعها أو تخزينها على خوادمنا أبداً. إذا كنت مسجلاً الدخول، يتم حفظ النتائج الرقمية فقط (النسب والزوايا والدرجات) في حسابك، وليس الصور نفسها.',
+    legal_h_account: 'بيانات الحساب',
+    legal_p_account: 'عند إنشاء حساب، نستخدم Google Firebase لتخزين بريدك الإلكتروني واسمك الظاهر ونتائجك المحفوظة. لا نبيع أو نشارك هذه البيانات مع أي جهة خارجية لأغراض تسويقية.',
+    legal_h_cookies: 'ملفات تعريف الارتباط والإعلانات',
+    legal_p_cookies_a: 'نستخدم التخزين المحلي للمتصفح لحفظ تفضيلات بسيطة مثل لغتك المختارة. قد يعرض هذا الموقع إعلانات عبر Google AdSense، والتي قد تستخدم ملفات تعريف الارتباط لتخصيص الإعلانات بناءً على تصفحك. يمكنك إلغاء الاشتراك في أي وقت من',
+    legal_p_cookies_b: 'أو',
+    legal_p_cookies_c: '.',
+    legal_h_thirdparty: 'خدمات الطرف الثالث',
+    legal_p_thirdparty_a: 'نعتمد على Google Firebase (المصادقة وقاعدة البيانات والاستضافة) وGoogle Fonts. تخضع البيانات التي تعالجها هذه الخدمات نيابة عنا لـ',
+    legal_p_thirdparty_b: '.',
+    legal_h_rights: 'حقوقك',
+    legal_p_rights: 'يمكنك طلب الوصول إلى حسابك ونتائجك المحفوظة أو حذفها في أي وقت — فقط تواصل معنا (التواصل أدناه). هذا الموقع غير موجّه لأي شخص دون سن ١٦.',
+    legal_h_contact: 'التواصل',
+    legal_p_contact: 'لديك أسئلة حول هذه السياسة أو بياناتك؟ تواصل معنا عبر تيك توك:',
   }
 };
 

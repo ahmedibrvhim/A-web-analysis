@@ -9,12 +9,43 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
+/* ── NAV BRANDING (matches home.html/tool.html — multi-word name) ── */
+.nav-logo .logo-mark { font-size:16px; letter-spacing:1px; white-space:nowrap; }
+.nav-logo .logo-tag { display:block; }
+body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weight:700; }
+
+/* ── MOBILE NAV (hamburger dropdown) — same rules as home.html/tool.html.
+   Without these the hamburger button is visible but does nothing, since
+   .nav-links/.nav-right have no collapsed/expanded states of their own. ── */
+.hamburger {
+  display: none; flex-direction: column; justify-content: center;
+  gap: 5px; background: none; border: 1px solid var(--blood, #8b0000);
+  padding: 8px 10px; cursor: pointer; margin-left: auto; flex-shrink: 0;
+}
+.hamburger span { display: block; width: 22px; height: 2px; background: var(--blood, #8b0000); transition: all .3s; }
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+@media (max-width: 768px) {
+  nav { flex-wrap: wrap; padding: 0 14px; gap: 0; height: auto; min-height: 58px; }
+  .nav-logo { padding: 10px 0; flex: 1; }
+  .hamburger { display: flex; }
+  .nav-links { display: none; flex-direction: column; width: 100%; order: 3; border-top: 1px solid var(--border); padding: 8px 0; gap: 0; }
+  .nav-links.mobile-open { display: flex; }
+  .nav-links li { width: 100%; }
+  .nav-links a { display: block; padding: 12px 4px; border-bottom: 1px solid rgba(255,255,255,.04); font-size: 10px; letter-spacing: 3px; }
+  .nav-right { display: none; flex-direction: column; width: 100%; order: 4; padding: 10px 0 14px; gap: 8px; border-top: 1px solid var(--border); }
+  .nav-right.mobile-open { display: flex; }
+  .btn-ghost { width: 100%; text-align: center; justify-content: center; }
+}
+
 /* ── Page-specific layout for the legal content — reuses the site's
    existing color tokens/fonts from style.css so this matches the rest
    of the site without duplicating its whole design system. Explicit
    dark background here too, so this page still looks right even if
    style.css only sets backgrounds on specific sections (like #hero)
-   rather than globally on <body>. ── */
+   rather than globally on the page body. ── */
 html, body {
   background: radial-gradient(ellipse at center, #150000 0%, #000 65%);
   background-color: #000;
@@ -54,9 +85,18 @@ html, body {
   background: var(--panel, #0d0d0d); border: 1px solid var(--border, #2a2a2a);
   padding: 18px 22px; font-size: 13.5px; color: var(--muted, #999); line-height: 1.8;
 }
-body.lang-ar .legal-wrap { direction: ltr; text-align: left; }
-/* Legal text is kept English-only for accuracy (see note at the bottom
-   of the page) even when the site nav itself is switched to Arabic. */
+/* The whole page is now fully bilingual (Phase: EN/AR toggle fix) — RTL
+   is allowed to flow naturally in Arabic instead of being forced LTR,
+   and Arabic text switches to Tajawal since Cinzel has no Arabic glyphs. */
+body.lang-ar .legal-title,
+body.lang-ar .legal-eyebrow,
+body.lang-ar .legal-updated,
+body.lang-ar .legal-section h2,
+body.lang-ar .legal-section p,
+body.lang-ar .legal-section li,
+body.lang-ar .legal-contact-box {
+  font-family: 'Tajawal', sans-serif;
+}
 </style>
 </head>
 <body>
@@ -72,6 +112,7 @@ body.lang-ar .legal-wrap { direction: ltr; text-align: left; }
   </a>
   <ul class="nav-links" id="navLinks">
     <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+    <li><a href="privacy-policy.html" class="active" data-i18n="nav_privacy">Privacy Policy</a></li>
   </ul>
   <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -86,53 +127,51 @@ body.lang-ar .legal-wrap { direction: ltr; text-align: left; }
 </nav>
 
 <div class="legal-wrap">
-  <div class="legal-eyebrow">☠ Legal ☠</div>
-  <h1 class="legal-title">Privacy Policy</h1>
-  <div class="legal-updated">Last updated: July 20, 2026</div>
+  <div class="legal-eyebrow" data-i18n="legal_eyebrow">☠ Legal ☠</div>
+  <h1 class="legal-title" data-i18n="legal_title">Privacy Policy</h1>
+  <div class="legal-updated" data-i18n="legal_updated">Last updated: July 20, 2026</div>
 
   <div class="legal-section">
-    <p><strong>Lower Third Calculator</strong> respects your privacy. Here's the short version of how we handle
-    your data.</p>
+    <p data-i18n="legal_intro">Lower Third Calculator respects your privacy. Here's the short version of how we handle your data.</p>
   </div>
 
   <div class="legal-section">
-    <h2>Your Photos</h2>
-    <p>Your photos are processed <strong>entirely in your own browser</strong> — they're never uploaded to or
-    stored on our servers. If you're signed in, only the numeric results (ratios, angles, scores) are saved to
-    your account, never the photos themselves.</p>
+    <h2 data-i18n="legal_h_photos">Your Photos</h2>
+    <p data-i18n="legal_p_photos">Your photos are processed entirely in your own browser — they're never uploaded to or stored on our servers. If you're signed in, only the numeric results (ratios, angles, scores) are saved to your account, never the photos themselves.</p>
   </div>
 
   <div class="legal-section">
-    <h2>Account Data</h2>
-    <p>If you create an account, we use Google Firebase to store your email, display name, and saved results.
-    We never sell or share this data with third parties for marketing.</p>
+    <h2 data-i18n="legal_h_account">Account Data</h2>
+    <p data-i18n="legal_p_account">If you create an account, we use Google Firebase to store your email, display name, and saved results. We never sell or share this data with third parties for marketing.</p>
   </div>
 
   <div class="legal-section">
-    <h2>Cookies &amp; Ads</h2>
-    <p>We use local storage for basic preferences like your language choice. This Site may show ads via
-    <strong>Google AdSense</strong>, which may use cookies to personalize ads based on your browsing.
-    You can opt out anytime at <a href="https://adssettings.google.com" target="_blank" rel="noopener">Google Ads Settings</a>
-    or <a href="https://www.aboutads.info/choices" target="_blank" rel="noopener">aboutads.info/choices</a>.</p>
+    <h2 data-i18n="legal_h_cookies">Cookies &amp; Ads</h2>
+    <p>
+      <span data-i18n="legal_p_cookies_a">We use local storage for basic preferences like your language choice. This Site may show ads via Google AdSense, which may use cookies to personalize ads based on your browsing. You can opt out anytime at</span>
+      <a href="https://adssettings.google.com" target="_blank" rel="noopener">Google Ads Settings</a>
+      <span data-i18n="legal_p_cookies_b">or</span>
+      <a href="https://www.aboutads.info/choices" target="_blank" rel="noopener">aboutads.info/choices</a><span data-i18n="legal_p_cookies_c">.</span>
+    </p>
   </div>
 
   <div class="legal-section">
-    <h2>Third-Party Services</h2>
-    <p>We rely on <strong>Google Firebase</strong> (auth, database, hosting) and <strong>Google Fonts</strong>.
-    Data these services process on our behalf is governed by
-    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</p>
+    <h2 data-i18n="legal_h_thirdparty">Third-Party Services</h2>
+    <p>
+      <span data-i18n="legal_p_thirdparty_a">We rely on Google Firebase (auth, database, hosting) and Google Fonts. Data these services process on our behalf is governed by</span>
+      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a><span data-i18n="legal_p_thirdparty_b">.</span>
+    </p>
   </div>
 
   <div class="legal-section">
-    <h2>Your Rights</h2>
-    <p>You can request access to, or deletion of, your account and saved results at any time — just reach out
-    (contact below). This Site isn't intended for anyone under 16.</p>
+    <h2 data-i18n="legal_h_rights">Your Rights</h2>
+    <p data-i18n="legal_p_rights">You can request access to, or deletion of, your account and saved results at any time — just reach out (contact below). This Site isn't intended for anyone under 16.</p>
   </div>
 
   <div class="legal-section">
-    <h2>Contact</h2>
+    <h2 data-i18n="legal_h_contact">Contact</h2>
     <div class="legal-contact-box">
-      Questions about this policy or your data? Reach us on TikTok:<br>
+      <span data-i18n="legal_p_contact">Questions about this policy or your data? Reach us on TikTok:</span><br>
       <a href="https://www.tiktok.com/@vhmedi" target="_blank" rel="noopener"><strong>@vhmedi</strong></a>
     </div>
   </div>

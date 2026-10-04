@@ -102,18 +102,20 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
 .lm-stage{position:relative;background:#000;border:1px solid var(--border);display:flex;justify-content:center;overflow:hidden}
 .lm-stage canvas{display:block;max-width:100%;pointer-events:none;user-select:none;-webkit-user-select:none}
 .lm-busy{position:absolute;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;gap:12px;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
-.lm-chips{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:16px}
-.lm-chip{position:relative;padding:10px 12px;font-size:10px;letter-spacing:.5px;line-height:1.5;text-align:start;color:var(--text);background:var(--panel);border:1px solid var(--border);cursor:pointer;font-family:inherit;transition:all .2s}
-.lm-chip.lower{border-inline-start:2px solid var(--blood)}
+.lm-ref{margin:0 auto 18px;max-width:520px;border:1px solid var(--border);background:#fff;overflow:hidden}
+.lm-ref img{display:block;width:100%;aspect-ratio:800/790;object-fit:cover;object-position:top}
+.lm-ref figcaption{padding:8px 12px;background:var(--panel);border-top:1px solid var(--border);font-size:9px;letter-spacing:.5px;line-height:1.7;color:var(--ash);text-align:center}
+.lm-chips{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px;direction:ltr}
+.lm-chip{position:relative;padding:11px 2px;font-size:12px;font-weight:700;letter-spacing:1px;line-height:1.2;text-align:center;color:var(--text);background:var(--panel);border:1px solid var(--border);cursor:pointer;font-family:inherit;transition:all .2s}
+.lm-chip.lower{border-bottom:2px solid var(--blood)}
 .lm-chip:hover{border-color:var(--blood)}
 .lm-chip.sel{border-color:var(--crimson);background:rgba(139,0,0,.16);color:var(--white);box-shadow:0 0 14px rgba(220,20,60,.25)}
-.lm-chip.seen::after{content:'✓';position:absolute;top:8px;inset-inline-end:10px;color:#5ecb96;font-size:11px}
+.lm-chip.seen::after{content:'';position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:#5ecb96}
 .lm-chip bdi{unicode-bidi:isolate}
-.lm-desc{min-height:3.6em;margin:14px auto 0;max-width:460px;text-align:center;font-size:11px;line-height:1.8;color:var(--bone)}
+.lm-name{margin:14px 0 0;text-align:center;font-size:11px;letter-spacing:1px;color:var(--white);font-weight:700}
+.lm-desc{min-height:3.2em;margin:4px auto 0;max-width:460px;text-align:center;font-size:11px;line-height:1.8;color:var(--bone)}
 .lm-note{margin:6px auto 0;max-width:460px;text-align:center;font-size:9px;letter-spacing:.5px;line-height:1.8;color:var(--ash)}
 .lm-dash{display:flex;gap:22px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:18px;padding:20px 16px;border:1px solid var(--border);background:var(--panel);direction:ltr}
-.lm-loupe-box{text-align:center}
-.lm-loupe-box canvas{display:block;width:156px;height:156px;border:1px solid var(--smoke);background:#000}
 .lm-cap{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-top:7px}
 .lm-pad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:5px}
 .lm-pad button{display:flex;align-items:center;justify-content:center;background:rgba(139,0,0,.12);border:1px solid var(--smoke);color:var(--crimson);cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;transition:background .15s,border-color .15s}
@@ -130,7 +132,7 @@ html[dir=rtl] .lm-side{direction:rtl}
 .lm-seg button.on{background:var(--blood);color:var(--white)}
 .lm-side .btn-ghost{width:100%;text-align:center;justify-content:center}
 .lm-progress{text-align:center;font-size:10px;letter-spacing:2px;color:var(--muted);margin-top:16px;text-transform:uppercase}
-@media (max-width:520px){.lm-chips{grid-template-columns:1fr}.lm-dash{gap:16px}}
+@media (max-width:520px){.lm-dash{gap:16px}.lm-chip{font-size:11px;letter-spacing:0}}
 
 /* ── auth gate ── */
 .auth-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#150000 0%,#000 70%);display:flex;align-items:center;justify-content:center;transition:opacity .3s,visibility .3s}
@@ -197,16 +199,17 @@ html[dir=rtl] .lm-side{direction:rtl}
     <div class="tool-eyebrow" data-i18n="s2_eyebrow">Step 2 · Landmarks</div>
     <h2 class="tool-title" data-i18n="tool_step_adjust_title">Confirm The Landmarks</h2>
     <p class="tool-text" style="margin-bottom:22px" data-i18n="s2_text"></p>
+    <figure class="lm-ref"><img src="landmark-reference.jpg" alt="Anthropometric landmark reference"><figcaption data-i18n="tool_guide_ref_caption"></figcaption></figure>
     <div class="msg-bar" id="s2Msg"></div>
     <div class="lm-stage" id="lmStage">
       <canvas id="lmCanvas"></canvas>
       <div class="lm-busy" id="lmBusy"><span class="mini-spinner"></span><span id="lmBusyTxt"></span></div>
     </div>
     <div class="lm-chips" id="lmChips"></div>
+    <p class="lm-name" id="lmName"></p>
     <p class="lm-desc" id="lmDesc"></p>
     <p class="lm-note" data-i18n="s2_lower_note"></p>
     <div class="lm-dash">
-      <div class="lm-loupe-box"><canvas id="lmLoupe"></canvas><div class="lm-cap" id="lmLoupeCap"></div></div>
       <div class="lm-pad" id="lmPad">
         <span></span><button type="button" data-dx="0" data-dy="-1" data-k="up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button><span></span>
         <button type="button" data-dx="-1" data-dy="0" data-k="left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -477,7 +480,6 @@ const LM = [
 ];
 const STEP_PX = { fine: 0.5, normal: 2, coarse: 8 };   // image px per 1000 px of image height
 const DOT_R = 1.5;                                      // css px — deliberately tiny
-const LOUPE_WIN = 44;                                   // source px visible in the magnifier (per 1000 px height)
 let s2 = null;   // { src, img, W, H, k, dpr, pts:{id:{x,y,ax,ay,seen}}, sel, stepKey, detected, hairEst }
 const nf = n => lang === 'ar' ? String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -563,7 +565,7 @@ async function openStep2() {
   const r = await detectLandmarks(img);
   if (validation !== src) return;                           // photo was swapped meanwhile
   const pts = {};
-  LM.forEach((m, i) => { const p = r.pts[m.id]; pts[m.id] = { x: p.x, y: p.y, ax: p.x, ay: p.y, seen: i === 0 }; });   // first point is on screen in the magnifier
+  LM.forEach((m, i) => { const p = r.pts[m.id]; pts[m.id] = { x: p.x, y: p.y, ax: p.x, ay: p.y, seen: i === 0 }; });   // first point is on screen from the start
   s2 = { src, img, W: img.naturalWidth, H: img.naturalHeight, pts, sel: 0, stepKey: 'normal', detected: r.detected, hairEst: r.hairEst };
   $('lmBusy').style.display = 'none';
   const bar = $('s2Msg');
@@ -581,8 +583,6 @@ function layoutStage() {
   cv.style.width = cw + 'px'; cv.style.height = ch + 'px';
   cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
   s2.k = k; s2.dpr = dpr;
-  const lp = $('lmLoupe'), ls = 156;
-  lp.width = Math.round(ls * dpr); lp.height = Math.round(ls * dpr);
   draw();
 }
 
@@ -610,38 +610,19 @@ function draw() {
     g.strokeStyle = 'rgba(0,0,0,.75)'; g.lineWidth = .8 * d;
     g.beginPath(); g.arc(x, y, (on ? DOT_R + .3 : DOT_R) * d, 0, 7); g.fill(); g.stroke();
   });
-  drawLoupe();
-}
-
-function drawLoupe() {
-  const lp = $('lmLoupe'), g = lp.getContext('2d'), S = lp.width;
-  const p = s2.pts[LM[s2.sel].id], win = LOUPE_WIN * Math.max(1, s2.H / 1000), z = S / win;
-  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
-  g.fillStyle = '#000'; g.fillRect(0, 0, S, S);
-  g.drawImage(s2.img, p.x - win / 2, p.y - win / 2, win, win, 0, 0, S, S);
-  const d = s2.dpr, c = S / 2, gap = 6 * d;
-  g.strokeStyle = 'rgba(255,60,90,.85)'; g.lineWidth = d; g.beginPath();
-  g.moveTo(0, c); g.lineTo(c - gap, c); g.moveTo(c + gap, c); g.lineTo(S, c);
-  g.moveTo(c, 0); g.lineTo(c, c - gap); g.moveTo(c, c + gap); g.lineTo(c, S); g.stroke();
-  g.fillStyle = '#ff3c5a'; g.beginPath(); g.arc(c, c, 1.6 * d, 0, 7); g.fill();
-  LM.forEach(m => {                                         // neighbours, if they fall inside the window
-    if (m.id === LM[s2.sel].id) return;
-    const q = s2.pts[m.id], x = (q.x - p.x) * z + c, y = (q.y - p.y) * z + c;
-    if (x > 0 && x < S && y > 0 && y < S) { g.fillStyle = 'rgba(242,232,213,.8)'; g.beginPath(); g.arc(x, y, 1.4 * d, 0, 7); g.fill(); }
-  });
 }
 
 function renderStep2() {
   const box = $('lmChips');
   if (!box) return;
   $('lmStepLbl').textContent = T('s2_step_label');
-  $('lmLoupeCap').textContent = T('s2_loupe');
   const keys = { up: 's2_up', down: 's2_down', left: 's2_left', right: 's2_right' };
   $('lmPad').querySelectorAll('button').forEach(b => { b.setAttribute('aria-label', T(keys[b.dataset.k])); b.title = T(keys[b.dataset.k]); });
   if (!s2) { box.innerHTML = ''; return; }
   const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   box.innerHTML = LM.map((m, i) =>
-    `<button type="button" class="lm-chip${m.lower ? ' lower' : ''}${i === s2.sel ? ' sel' : ''}${s2.pts[m.id].seen ? ' seen' : ''}" data-i="${i}"><bdi>${esc(T(m.pt))}</bdi></button>`).join('');
+    `<button type="button" class="lm-chip${m.lower ? ' lower' : ''}${i === s2.sel ? ' sel' : ''}${s2.pts[m.id].seen ? ' seen' : ''}" data-i="${i}" title="${esc(T(m.pt))}">${m.id}</button>`).join('');
+  $('lmName').textContent = T(LM[s2.sel].pt);
   $('lmDesc').textContent = T(LM[s2.sel].desc);
   const n = LM.filter(m => s2.pts[m.id].seen).length;
   $('lmProgress').textContent = T('s2_progress', { n: nf(n), total: nf(LM.length) });
@@ -652,7 +633,7 @@ function renderStep2() {
 function select(i) {
   if (!s2) return;
   s2.sel = (i + LM.length) % LM.length;
-  s2.pts[LM[s2.sel].id].seen = true;                        // viewing a point in the loupe counts as reviewing it
+  s2.pts[LM[s2.sel].id].seen = true;                        // selecting a point counts as reviewing it
   renderStep2(); draw();
 }
 function nudge(dx, dy, coarse) {

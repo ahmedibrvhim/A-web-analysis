@@ -256,13 +256,12 @@ export const dict = {
 
     /* ── Step 2: landmark review ── */
     s2_eyebrow: 'Step 2 · Landmarks',
-    s2_text: 'Six points were placed on your face. Select a point, then move it with the arrow pad only — the magnifier shows the exact spot. Review every point to continue.',
+    s2_text: 'Six points were placed on your face. Select a point, then move it with the arrow pad only. Review every point to continue.',
     s2_lower_note: 'Sn · Ls · Li · Me measure your lower third. Tr and N complete the facial thirds.',
     s2_detecting: 'Placing landmarks…',
     s2_fallback: 'Automatic detection was not possible — points start at average positions. Review each one carefully.',
     s2_hairline_est: 'Hairline was estimated — check Tr carefully.',
     s2_step_label: 'Step size',
-    s2_loupe: 'Magnifier',
     s2_next_point: 'Next point',
     s2_reset_point: 'Reset point',
     s2_reset_all: 'Reset all',
@@ -543,13 +542,12 @@ export const dict = {
 
     /* ── الخطوة ٢: مراجعة النقاط ── */
     s2_eyebrow: 'الخطوة ٢ · النقاط المرجعية',
-    s2_text: 'تم وضع ست نقاط على وجهك. اختر نقطة ثم حرّكها بلوحة الأسهم فقط — العدسة المكبّرة تُظهر الموضع بدقة. راجع كل نقطة للمتابعة.',
+    s2_text: 'تم وضع ست نقاط على وجهك. اختر نقطة ثم حرّكها بلوحة الأسهم فقط. راجع كل نقطة للمتابعة.',
     s2_lower_note: 'النقاط Sn · Ls · Li · Me تقيس الثلث السفلي. أما Tr وN فتكمّلان أثلاث الوجه.',
     s2_detecting: 'جارٍ وضع النقاط…',
     s2_fallback: 'تعذّر الكشف التلقائي — بدأت النقاط من مواضع متوسطة. راجع كل نقطة بعناية.',
     s2_hairline_est: 'تم تقدير خط الشعر — تحقق من نقطة Tr بعناية.',
     s2_step_label: 'حجم الخطوة',
-    s2_loupe: 'العدسة المكبّرة',
     s2_next_point: 'النقطة التالية',
     s2_reset_point: 'إعادة النقطة',
     s2_reset_all: 'إعادة الكل',

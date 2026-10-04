@@ -74,6 +74,27 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
 .upload-preview-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--border)}
 .upload-preview-name{font-size:9px;letter-spacing:.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
 
+
+/* ── validation verdict ── */
+.verdict{margin-top:18px;border:1px solid var(--border);background:var(--panel);padding:20px 20px 18px;text-align:left}
+.verdict.ok{border-color:#0a5;background:rgba(0,160,90,.05)}
+.verdict.bad{border-color:var(--blood);background:rgba(220,20,60,.06)}
+.verdict-head{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.verdict.ok .verdict-head{color:#5ecb96}
+.verdict.bad .verdict-head{color:#ff8080}
+.verdict p{font-size:11px;line-height:1.8;color:var(--text);margin-bottom:8px}
+.verdict-stats{display:flex;gap:22px;flex-wrap:wrap;margin:14px 0 4px;direction:ltr}
+.verdict-stat .val{font-size:16px;color:var(--white);font-weight:700}
+.verdict-stat .lbl{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-top:3px}
+.verdict-steps{margin:10px 0 0;padding-left:18px;font-size:11px;line-height:1.9;color:var(--text)}
+.verdict-refs{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:9px;line-height:1.8;color:var(--ash);letter-spacing:.3px}
+.verdict-loading{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.mini-spinner{width:20px;height:20px;border:2px solid var(--smoke);border-top-color:var(--blood);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tool-nav{display:flex;gap:14px;justify-content:center;margin-top:22px}
+.tool-nav button:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+.next-panel{border:1px dashed var(--smoke);background:var(--panel);padding:60px 24px;text-align:center;font-size:10px;letter-spacing:3px;color:var(--ash);text-transform:uppercase}
+
 /* ── auth gate ── */
 .auth-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#150000 0%,#000 70%);display:flex;align-items:center;justify-content:center;transition:opacity .3s,visibility .3s}
 .auth-gate.auth-gate-hidden{opacity:0;visibility:hidden;pointer-events:none}
@@ -129,6 +150,11 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
       <button class="btn-ghost" id="changeBtn" type="button" data-i18n="tool_change_photo">Change Photo</button>
     </div>
   </div>
+  <div class="verdict" id="verdict" style="display:none"></div>
+  <div class="tool-nav" id="continueNav" style="display:none">
+    <button class="btn-solid" id="continueBtn" type="button" disabled data-i18n="tool_continue">Continue →</button>
+  </div>
+  <div class="next-panel" id="nextPanel" style="display:none">Next step goes here</div>
 </div>
 </div>
 
@@ -177,8 +203,124 @@ $('navLinks').addEventListener('click', e => {
 });
 renderStatic();
 
+/* ── FACE ANALYSIS (runs fully in the browser with MediaPipe) ── */
+const RULES = {
+  yawMax: 15,       // deg — beyond this the head is turned (¾ view / profile)
+  pitchMax: 3,      // deg — pitch tolerance. "Any" pitch is impossible to measure at 0.0, so this is the noise floor. Lower = stricter.
+  rollLevel: 0.5    // deg — below this the pupillary line counts as already level
+};
+let landmarker = null, modelFailed = false;
+async function getLandmarker() {
+  if (landmarker || modelFailed) return landmarker;
+  try {
+    const base = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+    const vision = await import(base + '/vision_bundle.mjs');
+    const files = await vision.FilesetResolver.forVisionTasks(base + '/wasm');
+    landmarker = await vision.FaceLandmarker.createFromOptions(files, {
+      baseOptions: {
+        modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+        delegate: 'GPU'
+      },
+      runningMode: 'IMAGE',
+      numFaces: 2,                                  // 2 so a second person can be caught
+      outputFacialTransformationMatrixes: true
+    });
+  } catch (e) { console.error('MediaPipe load failed', e); modelFailed = true; landmarker = null; }
+  return landmarker;
+}
+
+// Head pose (deg) from MediaPipe's 4x4 column-major transform. +pitch = chin up.
+function headPose(result) {
+  const m = result.facialTransformationMatrixes?.[0]?.data;
+  if (!m) return null;
+  const deg = r => r * 180 / Math.PI;
+  return {
+    pitch: deg(Math.atan2(m[6], m[10])),
+    yaw:   deg(Math.asin(Math.max(-1, Math.min(1, -m[2])))),
+  };
+}
+
+// Pupillary line angle vs true horizontal. Image y points down, so a positive
+// angle means the line slopes down to the right (visually clockwise).
+function pupilRoll(lm, w, h) {
+  const hasIris = lm.length > 473;
+  const A = hasIris ? lm[468] : lm[33], B = hasIris ? lm[473] : lm[263];
+  const [L, R] = A.x <= B.x ? [A, B] : [B, A];     // L = left in the picture
+  return Math.atan2((R.y - L.y) * h, (R.x - L.x) * w) * 180 / Math.PI;
+}
+
+async function analyze(img) {
+  const lmk = await getLandmarker();
+  if (!lmk) return { error: 'The face model could not be loaded. Check your connection and try again.' };
+  let res;
+  try { res = lmk.detect(img); } catch (e) { console.error(e); return { error: 'Could not analyze this image.' }; }
+  const faces = res?.faceLandmarks?.length || 0;
+
+  // 1. Object detection & strict compliance
+  if (faces !== 1) return { ok: false, head: 'REJECTED: Subject must be a single human being.',
+    reason: faces === 0 ? 'No human face was detected in this image.' : 'More than one person was detected in this image.' };
+
+  const pose = headPose(res);
+  if (!pose) return { error: 'Could not read the head pose from this image.' };
+  const roll = pupilRoll(res.faceLandmarks[0], img.naturalWidth, img.naturalHeight);
+  const stats = { yaw: pose.yaw, pitch: pose.pitch, roll };
+
+  if (Math.abs(pose.yaw) > RULES.yawMax) return { ok: false, stats, head: 'REJECTED: Image must be a direct, front-facing portrait.',
+    reason: `The head is turned ${Math.abs(pose.yaw).toFixed(1)}° (limit ${RULES.yawMax}°). A profile or three-quarters view breaks the bilateral symmetry that Powell & Humphreys' Facial Aesthetic Analysis relies on.` };
+
+  // 2. Pitch & vertical alignment (the lower-third rule)
+  if (Math.abs(pose.pitch) > RULES.pitchMax) {
+    const dir = pose.pitch > 0 ? 'Chin Up' : 'Chin Down';
+    return { ok: false, stats, head: `REJECTED: Excessive pitch deviation detected (Chin Up/Down).`,
+      reason: `Detected: ${dir}, ${Math.abs(pose.pitch).toFixed(1)}° from level. Vertical head tilting distorts the calculation of the facial lower-third. Accurate structural mapping requires the Frankfort Horizontal Plane to be parallel to the ground.` };
+  }
+
+  // 3. Smart geometric correction (roll)
+  const abs = Math.abs(roll);
+  let steps;
+  if (abs < RULES.rollLevel) {
+    steps = ['The pupillary line is already level (' + roll.toFixed(2) + '°). No rotation needed.'];
+  } else {
+    const dir = roll > 0 ? 'counter-clockwise' : 'clockwise';
+    steps = [
+      'Draw a line through the centers of both pupils.',
+      `Measure its angle against a true horizontal baseline: ${abs.toFixed(1)}°.`,
+      `Rotate the image ${abs.toFixed(1)} degrees ${dir} to level the pupillary line.`,
+      'Re-check that both pupils now sit on the same horizontal line.'
+    ];
+  }
+  return { ok: true, stats, steps, correctionDeg: abs < RULES.rollLevel ? 0 : -roll, head: 'APPROVED',
+    reason: abs < RULES.rollLevel
+      ? 'Single human subject, front-facing, pitch within tolerance.'
+      : 'Single human subject, front-facing, pitch within tolerance. A minor roll tilt was found, so a Smart Correction is provided.' };
+}
+
+function renderVerdict(r) {
+  const box = $('verdict');
+  box.style.display = 'block';
+  if (r.error) {
+    box.className = 'verdict bad';
+    box.innerHTML = '<div class="verdict-head">Analysis failed</div><p></p>';
+    box.querySelector('p').textContent = r.error;
+    return;
+  }
+  box.className = 'verdict ' + (r.ok ? 'ok' : 'bad');
+  const fmt = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '°';
+  const stats = r.stats ? `<div class="verdict-stats">
+      <div class="verdict-stat"><div class="val">${fmt(r.stats.yaw)}</div><div class="lbl">Yaw</div></div>
+      <div class="verdict-stat"><div class="val">${fmt(r.stats.pitch)}</div><div class="lbl">Pitch</div></div>
+      <div class="verdict-stat"><div class="val">${fmt(r.stats.roll)}</div><div class="lbl">Roll (pupils)</div></div></div>` : '';
+  const steps = r.steps ? '<ol class="verdict-steps">' + r.steps.map(x => `<li>${x}</li>`).join('') + '</ol>' : '';
+  const refs = r.ok ? `<div class="verdict-refs">Pitch balance: Frankfort Horizontal Plane · Thirds: Leonardo da Vinci's Divine Proportion (lower-third = Subnasale → Menton) · Symmetry: Powell &amp; Humphreys, <i>Facial Aesthetic Analysis</i></div>` : '';
+  box.innerHTML = `<div class="verdict-head"></div><p></p>${stats}${steps}${refs}`;
+  box.querySelector('.verdict-head').textContent = r.head;
+  box.querySelector('p').textContent = r.reason;
+  if (r.ok) { $('continueNav').style.display = 'flex'; $('continueBtn').disabled = false; }
+}
+
 /* ── UPLOADER ── */
-let currentImage = null;   // HTMLImageElement of the uploaded photo (for whatever you build next)
+let currentImage = null;   // HTMLImageElement of the uploaded photo
+let validation = null;     // last verdict — { ok, stats, correctionDeg, ... }
 
 function showMsg(text) {
   const el = $('toolMsg');
@@ -188,28 +330,52 @@ function showMsg(text) {
 function loadImage(src) {
   return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
 }
+function resetVerdict() {
+  validation = null;
+  $('verdict').style.display = 'none';
+  $('continueNav').style.display = 'none';
+  $('continueBtn').disabled = true;
+}
 async function handleFile(file) {
   if (!file || !file.type.startsWith('image/')) { showMsg('Please choose an image file.'); return; }
-  try { currentImage = await loadImage(URL.createObjectURL(file)); }
+  let img;
+  try { img = await loadImage(URL.createObjectURL(file)); }
   catch (e) { showMsg('Could not read this image.'); return; }
-  $('previewImg').src = currentImage.src;
+  currentImage = img; resetVerdict();
+  $('previewImg').src = img.src;
   $('fileName').textContent = file.name;
   $('uploader').style.display = 'none';
   $('previewBox').style.display = 'block';
   showMsg('');
+
+  const box = $('verdict');
+  box.className = 'verdict'; box.style.display = 'block';
+  box.innerHTML = '<div class="verdict-loading"><span class="mini-spinner"></span>Analyzing facial geometry…</div>';
+  const r = await analyze(img);
+  if (img !== currentImage) return;            // user swapped the photo mid-analysis
+  validation = r;
+  renderVerdict(r);
 }
 $('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
 $('changeBtn').addEventListener('click', () => {
-  currentImage = null;
+  currentImage = null; resetVerdict();
   $('fileInput').value = '';
   $('uploader').style.display = 'flex';
   $('previewBox').style.display = 'none';
   $('fileInput').click();
 });
+$('continueBtn').addEventListener('click', () => {
+  if (!validation?.ok) return;
+  $('previewBox').style.display = 'none';
+  $('continueNav').style.display = 'none';
+  $('nextPanel').style.display = 'block';
+  scrollTo({ top: 0, behavior: 'smooth' });
+});
 const up = $('uploader');
 ['dragenter', 'dragover'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.add('drag'); }));
 ['dragleave', 'drop'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.remove('drag'); }));
 up.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
+getLandmarker();   // warm the model up while the user picks a photo
 </script>
 </body>
 </html>

@@ -212,7 +212,6 @@ export const dict = {
     tool_pt_ls: 'Ls — Labrale Superius (lip top)',
     tool_pt_li: 'Li — Labrale Inferius (lip bottom)',
     tool_guide_title: 'Reference guide — where these points go, per standard anthropometric landmarks',
-    tool_guide_ref_caption: 'Full clinical landmark map — for reference only, we use eight of these points',
     tool_result_chin_philtrum_ratio: 'Chin : Philtrum',
     tool_result_gonial_angle: 'Gonial Angle',
     tool_result_growth_pattern: 'Growth Pattern',
@@ -270,6 +269,8 @@ export const dict = {
     s2_left: 'Move left',
     s2_right: 'Move right',
 
+    tool_ref_cap_dots: 'Reference: the six points we use. Tr, N, Sn, Ls, Li, Me.',
+    tool_ref_cap_thirds: 'Reference: how the face divides into three equal thirds.',
     /* ── gender gate + step 3 ── */
     g_title: 'Select Your Gender',
     g_text: 'Ideal proportions and the rating scale differ for men and women. Choose one to unlock the photo upload.',
@@ -551,7 +552,6 @@ export const dict = {
     tool_pt_ls: 'Ls — أعلى الشفة العليا',
     tool_pt_li: 'Li — أسفل الشفة السفلى',
     tool_guide_title: 'دليل مرجعي — أين توضع هذه النقاط وفق معايير القياسات التشريحية القياسية',
-    tool_guide_ref_caption: 'خريطة كاملة للمعالم السريرية — للاطلاع فقط، نستخدم ثماني نقاط منها',
     tool_result_chin_philtrum_ratio: 'الذقن : الفلتروم',
     tool_result_gonial_angle: 'زاوية الفك',
     tool_result_growth_pattern: 'نمط النمو',
@@ -609,6 +609,8 @@ export const dict = {
     s2_left: 'تحريك لليسار',
     s2_right: 'تحريك لليمين',
 
+    tool_ref_cap_dots: 'مرجع: النقاط الست التي نستخدمها. Tr, N, Sn, Ls, Li, Me.',
+    tool_ref_cap_thirds: 'مرجع: كيف ينقسم الوجه إلى ثلاثة أثلاث متساوية.',
     /* ── gender gate + step 3 ── */
     g_title: 'اختر جنسك',
     g_text: 'تختلف النسب المثالية ومقياس التقييم بين الرجال والنساء. اختر أحدهما لتفعيل رفع الصورة.',

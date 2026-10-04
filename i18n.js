@@ -324,7 +324,6 @@ export const dict = {
     s3_hard_phil: 'Long nose-to-lip distance: a lip lift is the standard surgical option for shortening it.',
     s3_hard_none: 'No surgical indicators from frontal proportions alone.',
     s3_disclaimer: 'A community-style estimate from six landmarks, not medical advice. Consult a qualified facial plastic or maxillofacial surgeon before any procedure.',
-    s3_save: 'Save Image',
     s3_restart: 'Start Over',
 
     /* ── privacy-policy.html ── */
@@ -664,7 +663,6 @@ export const dict = {
     s3_hard_phil: 'مسافة أنف-شفة طويلة: رفع الشفة هو الخيار الجراحي المعتاد لتقصيرها.',
     s3_hard_none: 'لا توجد مؤشرات جراحية من النسب الأمامية وحدها.',
     s3_disclaimer: 'تقدير بأسلوب المجتمعات الجمالية من ست نقاط، وليس نصيحة طبية. استشر جرّاح تجميل وجه أو فكين مؤهلاً قبل أي إجراء.',
-    s3_save: 'حفظ الصورة',
     s3_restart: 'البدء من جديد',
 
     /* ── privacy-policy.html ── */

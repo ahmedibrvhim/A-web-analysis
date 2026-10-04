@@ -310,7 +310,6 @@ html[dir=rtl] .lm-side{direction:rtl}
     <p class="s3-disc" data-i18n="s3_disclaimer"></p>
     <div class="tool-nav">
       <button class="btn-ghost" type="button" id="s3Back" data-i18n="tool_back">← Back</button>
-      <button class="btn-ghost" type="button" id="s3Save" data-i18n="s3_save">Save Image</button>
       <button class="btn-solid" type="button" id="s3Restart" data-i18n="s3_restart">Start Over</button>
     </div>
   </section>
@@ -1028,10 +1027,6 @@ $('s3Back').addEventListener('click', () => {
   $('step2').classList.add('active');
   layoutStage(); renderStep2();
   scrollTo({ top: 0, behavior: 'smooth' });
-});
-$('s3Save').addEventListener('click', () => {
-  const a = document.createElement('a');
-  a.download = 'lower-third-analysis.png'; a.href = $('s3Canvas').toDataURL('image/png'); a.click();
 });
 $('s3Restart').addEventListener('click', () => location.reload());
 

@@ -8,22 +8,36 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-/* ── mobile nav (same pattern as home.html) ── */
-.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:1px solid var(--blood);padding:8px 10px;cursor:pointer;margin-left:auto;flex-shrink:0}
-.hamburger span{display:block;width:22px;height:2px;background:var(--blood);transition:all .3s}
-.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-.hamburger.open span:nth-child(2){opacity:0}
-.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-@media(max-width:768px){
-  nav{flex-wrap:wrap;padding:0 14px;gap:0;height:auto;min-height:58px}
-  .nav-logo{padding:10px 0;flex:1}
-  .hamburger{display:flex}
-  .nav-links{display:none;flex-direction:column;width:100%;order:3;border-top:1px solid var(--border);padding:8px 0}
-  .nav-links.mobile-open{display:flex}
-  .nav-links a{display:block;padding:12px 4px;font-size:10px;letter-spacing:3px}
-  .nav-right{display:none;flex-direction:column;width:100%;order:4;padding:10px 0 14px;gap:8px;border-top:1px solid var(--border)}
-  .nav-right.mobile-open{display:flex}
-  .user-pill{flex-wrap:wrap;width:100%;gap:8px}
+/* ── NAV BRANDING (same as home.html) ── */
+.nav-logo .logo-mark {
+  font-size:16px; letter-spacing:1px; white-space:nowrap;
+}
+.nav-logo .logo-tag { display:block; }
+body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weight:700; }
+
+/* ── MOBILE NAV (same as home.html) ── */
+.hamburger {
+  display: none; flex-direction: column; justify-content: center;
+  gap: 5px; background: none; border: 1px solid var(--blood);
+  padding: 8px 10px; cursor: pointer; margin-left: auto; flex-shrink: 0;
+}
+.hamburger span { display: block; width: 22px; height: 2px; background: var(--blood); transition: all .3s; }
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+@media (max-width: 768px) {
+  nav { flex-wrap: wrap; padding: 0 14px; gap: 0; height: auto; min-height: 58px; }
+  .nav-logo { padding: 10px 0; flex: 1; }
+  .hamburger { display: flex; }
+  .nav-links { display: none; flex-direction: column; width: 100%; order: 3; border-top: 1px solid var(--border); padding: 8px 0; gap: 0; }
+  .nav-links.mobile-open { display: flex; }
+  .nav-links li { width: 100%; }
+  .nav-links a { display: block; padding: 12px 4px; border-bottom: 1px solid rgba(255,255,255,.04); font-size: 10px; letter-spacing: 3px; }
+  .nav-right { display: none; flex-direction: column; width: 100%; order: 4; padding: 10px 0 14px; gap: 8px; border-top: 1px solid var(--border); }
+  .nav-right.mobile-open { display: flex; }
+  .btn-ghost { width: 100%; text-align: center; justify-content: center; }
+  .user-pill { flex-wrap: wrap; width: 100%; gap: 8px; }
 }
 
 /* ── layout ── */
@@ -86,7 +100,7 @@
     </div>
   </a>
   <ul class="nav-links" id="navLinks">
-    <li><a href="home.html" data-i18n="nav_home">Home</a></li>
+    <li><a href="index.html" data-i18n="nav_home">Home</a></li>
     <li><a href="privacy-policy.html" data-i18n="nav_privacy">Privacy Policy</a></li>
   </ul>
   <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu"><span></span><span></span><span></span></button>
@@ -158,6 +172,9 @@ wireLangToggle($('navLang'), lang, onLangChange);
 window.toggleMobileNav = () => {
   ['hamburger', 'navLinks', 'navRight'].forEach(id => $(id).classList.toggle(id === 'hamburger' ? 'open' : 'mobile-open'));
 };
+$('navLinks').addEventListener('click', e => {
+  if (e.target.tagName === 'A') ['hamburger', 'navLinks', 'navRight'].forEach(id => $(id).classList.remove('open', 'mobile-open'));
+});
 renderStatic();
 
 /* ── UPLOADER ── */

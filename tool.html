@@ -95,33 +95,6 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
 .tool-nav button:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
 .next-panel{border:1px dashed var(--smoke);background:var(--panel);padding:60px 24px;text-align:center;font-size:10px;letter-spacing:3px;color:var(--ash);text-transform:uppercase}
 
-
-/* ── dashboard ── */
-#toolWrap.wide{max-width:1080px}
-.dash{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:start;margin-top:26px}
-@media(max-width:860px){.dash{grid-template-columns:1fr}}
-.dash-canvas{border:1px solid var(--border);background:var(--black);line-height:0}
-.dash-canvas canvas{display:block;width:100%;height:auto}
-.dash-panel{display:flex;flex-direction:column;gap:14px}
-.dash-card{background:var(--panel);border:1px solid var(--border);padding:16px 18px}
-.dash-card h3{font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--blood);margin-bottom:12px;font-weight:400}
-.dash-status{display:flex;align-items:center;gap:10px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--white)}
-.live-dot{width:8px;height:8px;border-radius:50%;background:#00E5FF;box-shadow:0 0 10px #00E5FF;animation:pulse 1.8s ease-in-out infinite;flex-shrink:0}
-@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
-.calc-box{text-align:center;border-color:#0e6a78;background:rgba(0,229,255,.05)}
-.calc-pct{font-size:42px;font-weight:700;color:var(--white);direction:ltr;line-height:1.1}
-.calc-lbl{font-size:10px;letter-spacing:1px;color:var(--text);margin-top:6px}
-.calc-sub{font-size:9px;letter-spacing:1px;color:var(--ash);margin-top:3px}
-.calc-row{display:flex;justify-content:center;gap:34px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
-.metric .val{font-size:16px;color:var(--white);font-weight:700;direction:ltr;text-align:center}
-.metric .lbl{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-top:3px;text-align:center}
-.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.coord-table{width:100%;border-collapse:collapse;font-size:10px}
-.coord-table td{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);color:var(--text)}
-.coord-table td:last-child{text-align:right;direction:ltr;color:var(--white);font-variant-numeric:tabular-nums;white-space:nowrap}
-.coord-table .sw{display:inline-block;width:8px;height:8px;border-radius:50%;background:#00E5FF;border:1px solid #fff;margin-inline-end:8px}
-.dash-src p{font-size:10px;line-height:1.8;color:var(--text)}
-.dash-src .note{color:var(--ash);margin-top:8px}
 /* ── auth gate ── */
 .auth-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#150000 0%,#000 70%);display:flex;align-items:center;justify-content:center;transition:opacity .3s,visibility .3s}
 .auth-gate.auth-gate-hidden{opacity:0;visibility:hidden;pointer-events:none}
@@ -181,13 +154,7 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
   <div class="tool-nav" id="continueNav" style="display:none">
     <button class="btn-solid" id="continueBtn" type="button" disabled data-i18n="tool_continue">Continue →</button>
   </div>
-  <div id="dash" style="display:none">
-    <div class="dash">
-      <div class="dash-canvas"><canvas id="dashCanvas"></canvas></div>
-      <div class="dash-panel" id="dashPanel"></div>
-    </div>
-    <div class="tool-nav"><button class="btn-ghost" id="dashReset" type="button" data-i18n="tool_change_photo">Change Photo</button></div>
-  </div>
+  <div class="next-panel" id="nextPanel" style="display:none">Next step goes here</div>
 </div>
 </div>
 
@@ -226,7 +193,7 @@ function renderStatic() {
   $('uploaderCta').innerHTML = `${t('tool_drop_prefix', lang)} <span class="browse-word">${t('tool_drop_browse', lang)}</span>`;
   const lb = $('logoutBtn'); if (lb) lb.textContent = t('sign_out', lang);
 }
-function onLangChange(next) { lang = next; applyDocumentDirection(next); applyTranslations(next); renderStatic(); if (validation) renderVerdict(validation); if (dash) renderDash(); }
+function onLangChange(next) { lang = next; applyDocumentDirection(next); applyTranslations(next); renderStatic(); if (validation) renderVerdict(validation); }
 wireLangToggle($('navLang'), lang, onLangChange);
 window.toggleMobileNav = () => {
   ['hamburger', 'navLinks', 'navRight'].forEach(id => $(id).classList.toggle(id === 'hamburger' ? 'open' : 'mobile-open'));
@@ -394,113 +361,20 @@ async function handleFile(file) {
   renderVerdict(r);
 }
 $('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
-/* ── DASHBOARD (static: no drag / hover / drop listeners on the canvas) ── */
-const DOT = '#00E5FF';
-let dash = null;   // { img, pts, m }
-
-function pickPoints(lm, W, H) {
-  const P = i => ({ x: lm[i].x * W, y: lm[i].y * H });
-  const pair = (a, b) => { const A = P(a), B = P(b); return A.x <= B.x ? { r: A, l: B } : { r: B, l: A }; }; // image-left = subject's right
-  const mid = (a, b) => ({ x: (P(a).x + P(b).x) / 2, y: (P(a).y + P(b).y) / 2 });
-  let pupil;
-  if (lm.length > 473) pupil = pair(468, 473);
-  else { const A = mid(33, 133), B = mid(263, 362); pupil = A.x <= B.x ? { r: A, l: B } : { r: B, l: A }; }
-  const n = P(168), top = P(10);
-  const cheeks = [P(234).x, P(454).x].sort((a, b) => a - b);
-  return { pupil, exo: pair(33, 263), endo: pair(133, 362), sn: P(2), me: P(152), n,
-           tr: { x: top.x + (top.x - n.x) * 0.15, y: top.y + (top.y - n.y) * 0.15 },   // hairline estimate
-           faceX: cheeks };
-}
-function metrics(p) {
-  const total = p.me.y - p.tr.y, lower = p.me.y - p.sn.y;
-  const xm = y => p.n.x + (p.me.x - p.n.x) * (y - p.n.y) / (p.me.y - p.n.y);   // midline N → Me
-  const diffs = [p.pupil, p.exo, p.endo].map(q => {
-    const dR = Math.abs(xm(q.r.y) - q.r.x), dL = Math.abs(q.l.x - xm(q.l.y));
-    return Math.abs(dL - dR) / ((dL + dR) / 2 || 1);
-  });
-  return {
-    total, lower, ratio: lower / total * 100,
-    sym: Math.max(0, Math.min(100, 100 * (1 - diffs.reduce((a, b) => a + b, 0) / diffs.length))),
-    tilt: Math.atan2(p.pupil.l.y - p.pupil.r.y, p.pupil.l.x - p.pupil.r.x) * 180 / Math.PI
-  };
-}
-function drawDash() {
-  if (!dash) return;
-  const cv = $('dashCanvas'), g = cv.getContext('2d'), { img, pts: p } = dash;
-  cv.width = img.naturalWidth; cv.height = img.naturalHeight;
-  const s = (cv.clientWidth / cv.width) || 1, px = v => v / s;      // px() → 1 screen pixel
-  g.drawImage(img, 0, 0);
-  // lower-third shaded zone: Subnasale → Menton
-  g.fillStyle = 'rgba(0,229,255,.14)'; g.strokeStyle = 'rgba(0,229,255,.55)'; g.lineWidth = px(1);
-  g.fillRect(p.faceX[0], p.sn.y, p.faceX[1] - p.faceX[0], p.me.y - p.sn.y);
-  g.strokeRect(p.faceX[0], p.sn.y, p.faceX[1] - p.faceX[0], p.me.y - p.sn.y);
-  // dashed helper lines
-  g.setLineDash([px(6), px(5)]); g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = px(1);
-  const a = p.pupil.r, b = p.pupil.l, k = (b.y - a.y) / (b.x - a.x);        // pupillary line through both pupils
-  g.beginPath(); g.moveTo(0, a.y - k * a.x); g.lineTo(cv.width, a.y + k * (cv.width - a.x)); g.stroke();
-  g.beginPath(); [p.tr, p.n, p.sn, p.me].forEach((q, i) => i ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y)); g.stroke();   // vertical midline
-  g.setLineDash([]);
-  // landmark dots: r = 4px, 1px white border
-  const dots = [p.pupil.r, p.pupil.l, p.exo.r, p.exo.l, p.endo.r, p.endo.l, p.sn, p.me, p.tr, p.n];
-  dots.forEach(q => {
-    g.beginPath(); g.arc(q.x, q.y, px(4), 0, Math.PI * 2);
-    g.fillStyle = DOT; g.fill(); g.lineWidth = px(1); g.strokeStyle = '#fff'; g.stroke();
-  });
-}
-function renderDash() {
-  if (!dash) return;
-  const { pts: p, m } = dash, N = v => Math.round(v);
-  const row = (key, q, side) => `<tr><td><span class="sw"></span>${T(key)}${side ? ' · ' + T('db_side_' + side) : ''}</td><td>${N(q.x)}, ${N(q.y)}</td></tr>`;
-  const rows = row('db_pupil', p.pupil.r, 'r') + row('db_pupil', p.pupil.l, 'l') + row('db_exo', p.exo.r, 'r') + row('db_exo', p.exo.l, 'l')
-    + row('db_endo', p.endo.r, 'r') + row('db_endo', p.endo.l, 'l') + row('db_sn', p.sn) + row('db_me', p.me) + row('db_tr', p.tr) + row('db_n', p.n);
-  const d = m.ratio - 33.3;
-  $('dashPanel').innerHTML = `
-    <div class="dash-card"><div class="dash-status"><span class="live-dot"></span>${T('db_status')}</div></div>
-    <div class="dash-card calc-box">
-      <div class="calc-pct">${m.ratio.toFixed(1)}%</div>
-      <div class="calc-lbl">${T('db_lower')}</div><div class="calc-sub">${T('db_calc_sub')}</div>
-      <div class="calc-row">
-        <div class="metric"><div class="val">33.3%</div><div class="lbl">${T('db_ideal')}</div></div>
-        <div class="metric"><div class="val">${d > 0 ? '+' : ''}${d.toFixed(1)}%</div><div class="lbl">${T('db_delta')}</div></div>
-      </div>
-    </div>
-    <div class="dash-card"><h3>${T('db_metrics')}</h3><div class="metric-grid">
-      <div class="metric"><div class="val">${m.sym.toFixed(1)}%</div><div class="lbl">${T('db_sym')}</div></div>
-      <div class="metric"><div class="val">${m.tilt.toFixed(2)}°</div><div class="lbl">${T('db_tilt')}</div></div>
-      <div class="metric"><div class="val">${N(m.total)} px</div><div class="lbl">${T('db_total')}</div></div>
-    </div></div>
-    <div class="dash-card"><h3>${T('db_coords')}</h3><table class="coord-table">${rows}</table></div>
-    <div class="dash-card dash-src"><h3>${T('db_sources')}</h3><p>${T('db_source_text')}</p><p class="note">${T('db_note')}</p></div>`;
-}
-async function openDashboard() {
-  $('previewBox').style.display = 'none'; $('continueNav').style.display = 'none';
-  $('toolWrap').classList.add('wide'); $('dash').style.display = 'block';
-  $('dashPanel').innerHTML = `<div class="dash-card"><div class="verdict-loading"><span class="mini-spinner"></span>${T('db_loading')}</div></div>`;
-  scrollTo({ top: 0, behavior: 'smooth' });
-  try {
-    const img = validation.cropped || await loadImage(validation.cropUrl);
-    const lmk = await getLandmarker();
-    const res = lmk && lmk.detect(img);
-    if (!res?.faceLandmarks?.length) throw new Error('no face');
-    const pts = pickPoints(res.faceLandmarks[0], img.naturalWidth, img.naturalHeight);
-    dash = { img, pts, m: metrics(pts) };
-    renderDash(); drawDash();
-  } catch (e) {
-    console.error(e); dash = null;
-    $('dashPanel').innerHTML = `<div class="verdict bad"><div class="verdict-head">${T('tv_failed')}</div><p>${T('db_err')}</p></div>`;
-  }
-}
-function startOver() {
-  currentImage = null; dash = null; resetVerdict();
-  $('toolWrap').classList.remove('wide'); $('dash').style.display = 'none';
+$('changeBtn').addEventListener('click', () => {
+  currentImage = null; resetVerdict();
   $('fileInput').value = '';
   $('uploader').style.display = 'flex';
   $('previewBox').style.display = 'none';
-}
-$('changeBtn').addEventListener('click', () => { startOver(); $('fileInput').click(); });
-$('dashReset').addEventListener('click', () => { startOver(); scrollTo({ top: 0, behavior: 'smooth' }); });
-$('continueBtn').addEventListener('click', () => { if (validation?.ok) openDashboard(); });
-addEventListener('resize', drawDash);
+  $('fileInput').click();
+});
+$('continueBtn').addEventListener('click', () => {
+  if (!validation?.ok) return;
+  $('previewBox').style.display = 'none';
+  $('continueNav').style.display = 'none';
+  $('nextPanel').style.display = 'block';
+  scrollTo({ top: 0, behavior: 'smooth' });
+});
 const up = $('uploader');
 ['dragenter', 'dragover'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.add('drag'); }));
 ['dragleave', 'drop'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.remove('drag'); }));

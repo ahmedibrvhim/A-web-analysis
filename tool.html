@@ -821,7 +821,8 @@ $('s2Confirm').addEventListener('click', () => {
   if (!s2 || LM.some(m => !s2.pts[m.id].seen)) return;
   const out = {};
   LM.forEach(m => { const p = s2.pts[m.id]; out[m.id] = { x: +p.x.toFixed(2), y: +p.y.toFixed(2) }; });
-  window.lowerThirdLandmarks = { front: { width: s2.W, height: s2.H, points: out, image: s2.img } };
+  const tr = s2.pts.Tr, trMoved = Math.hypot(tr.x - tr.ax, tr.y - tr.ay) > 0.5;      // user dragged the hairline → trusted
+  window.lowerThirdLandmarks = { front: { width: s2.W, height: s2.H, points: out, image: s2.img, trLowConfidence: !!s2.hairEst && !trMoved } };
   document.dispatchEvent(new CustomEvent('landmarks:confirmed', { detail: window.lowerThirdLandmarks }));
   $('step2').classList.remove('active');
   $('step3').classList.add('active');
@@ -852,28 +853,67 @@ const TIERS = {
 };
 let s3 = null, s3cal = null;   // s3 = latest measurement, s3cal = optional real Tr–Me height in mm
 
+/* ── calculation module ─────────────────────────────────────────────
+   All heights are FLAT VERTICAL projections: abs(y2 - y1). No Euclidean
+   distance, so head roll / tilt cannot inflate a segment.
+   Stomion is not tracked, so it is the midpoint of the lip points.        */
+const CALC = {
+  IDEAL_THIRD: 100 / 3,
+  IDEAL_SPLIT_X: 2,                 // nose-to-lip : lip-to-chin = 1 : 2
+  THIRD_TOL: 0.08,                  // ±8 % (relative) around 33.3 % counts as "ok"
+  SPLIT_TOL: 0.15,                  // ±15 % (relative) around x = 2 counts as "ok"
+  HAIR_RATIO: [0.35, 0.75],         // plausible (N–Tr)/(Me–N); outside → hairline treated as unreliable
+  PROXY_K: 1.5                      // proxy face height = abs(Me – N) × 1.5
+};
+
+const vDist = (P, a, b) => Math.abs(P[b].y - P[a].y);
+
+function computeFacialThirds(P, { trLowConfidence = false } = {}) {
+  // order sanity (Tr above N above Sn ... above Me); abs() alone would hide a swapped point
+  const order = ['Tr', 'N', 'Sn', 'Ls', 'Li', 'Me'];
+  if (order.some((id, i) => i && !(P[id].y > P[order[i - 1]].y))) return { bad: true };
+
+  const yStm = (P.Ls.y + P.Li.y) / 2;                                   // 1. estimated stomion
+  const Pm = { ...P, Stm: { x: (P.Ls.x + P.Li.x) / 2, y: yStm } };
+  const h = (a, b) => vDist(Pm, a, b);
+
+  const nMe = h('N', 'Me');
+  const hairRatio = h('Tr', 'N') / nMe;
+  const trEst = trLowConfidence || hairRatio < CALC.HAIR_RATIO[0] || hairRatio > CALC.HAIR_RATIO[1];   // 3. fallback gate
+
+  const tot = trEst ? nMe * CALC.PROXY_K : h('Tr', 'Me');               // face-height baseline
+  const v = {
+    up: trEst ? tot - nMe : h('Tr', 'N'),                               // proxy mode: derived, not measured
+    mid: h('N', 'Sn'), low: h('Sn', 'Me'),
+    phil: h('Sn', 'Ls'), lips: h('Ls', 'Li'), chin: h('Li', 'Me'),
+    snStm: h('Sn', 'Stm'), stmMe: h('Stm', 'Me')
+  };
+  const pct = {}; Object.keys(v).forEach(k => pct[k] = v[k] / tot * 100);
+  const x = v.stmMe / v.snStm;                                          // 4. split is 1 : x
+
+  const T_ = CALC.IDEAL_THIRD, ok = CALC.THIRD_TOL, sOk = CALC.SPLIT_TOL;
+  const gates = {
+    bal: pct.low > T_ * (1 + ok) ? 's3_bal_long' : pct.low < T_ * (1 - ok) ? 's3_bal_short' : 's3_bal_ok',
+    split: x < CALC.IDEAL_SPLIT_X * (1 - sOk) ? 's3_split_long' : x > CALC.IDEAL_SPLIT_X * (1 + sOk) ? 's3_split_short' : 's3_split_ok'
+  };
+  const dev = {
+    up: trEst ? 0 : Math.abs(pct.up - T_) / T_,                         // not scored when it is only a proxy
+    mid: Math.abs(pct.mid - T_) / T_, low: Math.abs(pct.low - T_) / T_,
+    split: Math.abs(x - CALC.IDEAL_SPLIT_X) / CALC.IDEAL_SPLIT_X
+  };
+  return { v, tot, pct, x, dev, gates, trEst, yStm };
+}
+
 function s3Measure() {
   const d = window.lowerThirdLandmarks?.front;
   if (!d) return null;
-  const P = d.points, y = id => P[id].y;
-  const stm = y('Ls') + 0.42 * (y('Li') - y('Ls'));          // stomion ≈ mouth line, just under the upper vermilion
-  const v = {
-    up: y('N') - y('Tr'), mid: y('Sn') - y('N'), low: y('Me') - y('Sn'),
-    phil: y('Ls') - y('Sn'), lips: y('Li') - y('Ls'), chin: y('Me') - y('Li'),
-    snStm: stm - y('Sn'), stmMe: y('Me') - stm
-  };
-  const tot = y('Me') - y('Tr');
-  if (tot <= 0 || Object.values(v).some(n => n <= 0)) return { bad: true };
-  const pct = {}; Object.keys(v).forEach(k => pct[k] = v[k] / tot * 100);
-  const r = v.snStm / v.low, x = v.stmMe / v.snStm;           // r ideal 1/3 · split is 1 : x, ideal 1 : 2
-  const dev = {
-    up: Math.abs(pct.up - IDEAL) / IDEAL, mid: Math.abs(pct.mid - IDEAL) / IDEAL,
-    low: Math.abs(pct.low - IDEAL) / IDEAL, split: Math.abs(r - 1 / 3) / (1 / 3)
-  };
-  const penalty = 0.5 * (dev.up + dev.mid + dev.low) / 3 + 0.5 * dev.split;
+  const c = computeFacialThirds(d.points, { trLowConfidence: !!d.trLowConfidence });
+  if (c.bad) return c;
+  const thirds = c.trEst ? (c.dev.mid + c.dev.low) / 2 : (c.dev.up + c.dev.mid + c.dev.low) / 3;
+  const penalty = 0.5 * thirds + 0.5 * c.dev.split;
   const psl = clamp(7.8 - 22 * penalty, 2, 7.8);
   const tier = psl < 4 ? 'sub5' : psl < 4.5 ? 'lt' : psl < 5.5 ? 'mt' : psl < 6.5 ? 'ht' : psl < 7.5 ? 'htplus' : 'elite';
-  return { v, tot, pct, r, x, dev, psl, tier, stm };
+  return { ...c, stm: c.yStm, psl, tier };
 }
 
 const fmtPct = n => nf(n.toFixed(1)) + '%';
@@ -892,12 +932,11 @@ function renderS3() {
   const m = s3, g = gender || 'male', male = g === 'male';
   const row = (label, val, ideal, dev) =>
     `<tr><td>${label}</td><td class="v">${val}</td><td class="i">${ideal}</td><td><span class="s3-chip ${chipOf(dev)}">${T('s3_' + chipOf(dev))}</span></td></tr>`;
-  const withMm = k => fmtPct(m.pct[k]) + (s3cal ? ' · ' + mmOf(m.v[k], m.tot) : '');
+  const withMm = k => (k === 'up' && m.trEst ? '~' : '') + fmtPct(m.pct[k]) + (s3cal ? ' · ' + mmOf(m.v[k], m.tot) : '');
 
   // verdict paragraphs
   const ltTxt = fmtPct(m.pct.low);
-  const balKey = m.pct.low > IDEAL * 1.08 ? 's3_bal_long' : m.pct.low < IDEAL * 0.92 ? 's3_bal_short' : 's3_bal_ok';
-  const splitKey = m.r > (1 / 3) * 1.12 ? 's3_split_long' : m.r < (1 / 3) * 0.88 ? 's3_split_short' : 's3_split_ok';
+  const balKey = m.gates.bal, splitKey = m.gates.split;
   const xTxt = nf(m.x.toFixed(2));
 
   // limiting factor
@@ -910,12 +949,12 @@ function renderS3() {
 
   // fixes
   const soft = [male ? 's3_soft_bf_m' : 's3_soft_bf_f', 's3_soft_posture', male ? 's3_soft_groom_m' : 's3_soft_groom_f'];
-  if (m.pct.up > IDEAL * 1.08) soft.push('s3_soft_hair');
+  if (!m.trEst && m.pct.up > IDEAL * (1 + CALC.THIRD_TOL)) soft.push('s3_soft_hair');
   const hard = [];
   if (m.tier === 'sub5' || m.tier === 'lt') {
-    if (m.pct.low > IDEAL * 1.08) hard.push('s3_hard_long');
-    if (m.pct.low < IDEAL * 0.92) hard.push('s3_hard_short');
-    if (m.r > (1 / 3) * 1.12) hard.push('s3_hard_phil');
+    if (m.gates.bal === 's3_bal_long') hard.push('s3_hard_long');
+    if (m.gates.bal === 's3_bal_short') hard.push('s3_hard_short');
+    if (m.gates.split === 's3_split_long') hard.push('s3_hard_phil');
   }
   if (!hard.length) hard.push('s3_hard_none');
   const li = a => a.map(k => `<li>${T(k)}</li>`).join('');
@@ -928,7 +967,9 @@ function renderS3() {
   <div class="s3-card">
     <div class="s3-h">${T('s3_h1')}</div>
     <table class="s3-tbl"><thead><tr><th>${T('s3_col_metric')}</th><th>${T('s3_col_value')}</th><th>${T('s3_col_ideal')}</th><th></th></tr></thead><tbody>
-      ${row(T('s3_m_up'), withMm('up'), '33.3%', m.dev.up)}
+      ${m.trEst
+        ? `<tr><td>${T('s3_m_up')}</td><td class="v">${withMm('up')}</td><td class="i">33.3%</td><td><span class="s3-chip warn">${T('s3_est')}</span></td></tr>`
+        : row(T('s3_m_up'), withMm('up'), '33.3%', m.dev.up)}
       ${row(T('s3_m_mid'), withMm('mid'), '33.3%', m.dev.mid)}
       ${row(T('s3_m_low'), withMm('low'), '33.3%', m.dev.low)}
       ${row(T('s3_m_split'), '1 : ' + xTxt, '1 : 2', m.dev.split)}
@@ -936,6 +977,7 @@ function renderS3() {
     <div class="s3-bar-cap">Tr–N · N–Sn · Sn–Me</div><div class="s3-bar">${bar}</div>
     <div class="s3-bar-cap">Sn–Stm : Stm–Me</div><div class="s3-bar">${bar2}</div>
     <p class="s3-p dim">${T('s3_split_note')}</p>
+    ${m.trEst ? `<p class="s3-p dim">${T('s3_tr_est')}</p>` : ''}
     <p class="s3-p">${T(balKey, { lt: ltTxt })}</p>
     <p class="s3-p">${T(splitKey, { x: xTxt })}</p>
     <p class="s3-p">${T(male ? 's3_dim_m' : 's3_dim_f')}</p>
@@ -1016,7 +1058,7 @@ function drawS3() {
     });
   }
   const lines = (name, key) => {
-    const a = [name, fmtPct(m.pct[key])]; const mm = mmOf(m.v[key], m.tot); if (mm) a.push(mm); return a;
+    const a = [name, (key === 'up' && m.trEst ? '~' : '') + fmtPct(m.pct[key])]; const mm = mmOf(m.v[key], m.tot); if (mm) a.push(mm); return a;
   };
   ruler(xL, 'L', [Y('Tr'), Y('N'), Y('Sn'), Y('Me')], [
     { ya: Y('Tr'), yb: Y('N'),  col: S3C.up,  lines: lines(T('s3_l_up'), 'up') },

@@ -254,6 +254,26 @@ export const dict = {
     explain_bullet_confidence_low: 'Several landmarks were low-confidence or estimated — treat this score as a rough read.',
     explain_bullet_confidence_high: 'Every landmark was detected or confirmed with high confidence.',
 
+    /* ── Step 2: landmark review ── */
+    s2_eyebrow: 'Step 2 · Landmarks',
+    s2_text: 'Six points were placed on your face. Select a point, then move it with the arrow pad only — the magnifier shows the exact spot. Review every point to continue.',
+    s2_lower_note: 'Sn · Ls · Li · Me measure your lower third. Tr and N complete the facial thirds.',
+    s2_detecting: 'Placing landmarks…',
+    s2_fallback: 'Automatic detection was not possible — points start at average positions. Review each one carefully.',
+    s2_hairline_est: 'Hairline was estimated — check Tr carefully.',
+    s2_step_label: 'Step size',
+    s2_loupe: 'Magnifier',
+    s2_next_point: 'Next point',
+    s2_reset_point: 'Reset point',
+    s2_reset_all: 'Reset all',
+    s2_progress: '{n} / {total} reviewed',
+    s2_confirm: 'Confirm Landmarks →',
+    s2_keys_tip: 'Keyboard arrows also work (hold Shift for coarse).',
+    s2_up: 'Move up',
+    s2_down: 'Move down',
+    s2_left: 'Move left',
+    s2_right: 'Move right',
+
     /* ── privacy-policy.html ── */
     legal_eyebrow: 'Legal',
     legal_title: 'Privacy Policy',
@@ -520,6 +540,26 @@ export const dict = {
     explain_bullet_harmony_poor: 'بعض الملامح تتعارض مع بعضها، مما يقلل من الانسجام.',
     explain_bullet_confidence_low: 'عدة نقاط مرجعية كانت منخفضة الموثوقية أو تقديرية — تعامل مع هذه النتيجة كتقدير تقريبي.',
     explain_bullet_confidence_high: 'تم رصد أو تأكيد كل نقطة مرجعية بموثوقية عالية.',
+
+    /* ── الخطوة ٢: مراجعة النقاط ── */
+    s2_eyebrow: 'الخطوة ٢ · النقاط المرجعية',
+    s2_text: 'تم وضع ست نقاط على وجهك. اختر نقطة ثم حرّكها بلوحة الأسهم فقط — العدسة المكبّرة تُظهر الموضع بدقة. راجع كل نقطة للمتابعة.',
+    s2_lower_note: 'النقاط Sn · Ls · Li · Me تقيس الثلث السفلي. أما Tr وN فتكمّلان أثلاث الوجه.',
+    s2_detecting: 'جارٍ وضع النقاط…',
+    s2_fallback: 'تعذّر الكشف التلقائي — بدأت النقاط من مواضع متوسطة. راجع كل نقطة بعناية.',
+    s2_hairline_est: 'تم تقدير خط الشعر — تحقق من نقطة Tr بعناية.',
+    s2_step_label: 'حجم الخطوة',
+    s2_loupe: 'العدسة المكبّرة',
+    s2_next_point: 'النقطة التالية',
+    s2_reset_point: 'إعادة النقطة',
+    s2_reset_all: 'إعادة الكل',
+    s2_progress: 'تمت مراجعة {n} / {total}',
+    s2_confirm: 'تأكيد النقاط ←',
+    s2_keys_tip: 'أسهم لوحة المفاتيح تعمل أيضاً (اضغط Shift للخطوة الكبيرة).',
+    s2_up: 'تحريك للأعلى',
+    s2_down: 'تحريك للأسفل',
+    s2_left: 'تحريك لليسار',
+    s2_right: 'تحريك لليمين',
 
     /* ── privacy-policy.html ── */
     legal_eyebrow: 'قانوني',

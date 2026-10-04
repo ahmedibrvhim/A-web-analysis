@@ -95,6 +95,43 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
 .tool-nav button:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
 .next-panel{border:1px dashed var(--smoke);background:var(--panel);padding:60px 24px;text-align:center;font-size:10px;letter-spacing:3px;color:var(--ash);text-transform:uppercase}
 
+
+/* ── STEP 2 · landmark review ── */
+#step2{display:none}
+#step2.active{display:block;animation:stepIn .45s ease}
+.lm-stage{position:relative;background:#000;border:1px solid var(--border);display:flex;justify-content:center;overflow:hidden}
+.lm-stage canvas{display:block;max-width:100%;pointer-events:none;user-select:none;-webkit-user-select:none}
+.lm-busy{position:absolute;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;gap:12px;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.lm-chips{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:16px}
+.lm-chip{position:relative;padding:10px 12px;font-size:10px;letter-spacing:.5px;line-height:1.5;text-align:start;color:var(--text);background:var(--panel);border:1px solid var(--border);cursor:pointer;font-family:inherit;transition:all .2s}
+.lm-chip.lower{border-inline-start:2px solid var(--blood)}
+.lm-chip:hover{border-color:var(--blood)}
+.lm-chip.sel{border-color:var(--crimson);background:rgba(139,0,0,.16);color:var(--white);box-shadow:0 0 14px rgba(220,20,60,.25)}
+.lm-chip.seen::after{content:'✓';position:absolute;top:8px;inset-inline-end:10px;color:#5ecb96;font-size:11px}
+.lm-chip bdi{unicode-bidi:isolate}
+.lm-desc{min-height:3.6em;margin:14px auto 0;max-width:460px;text-align:center;font-size:11px;line-height:1.8;color:var(--bone)}
+.lm-note{margin:6px auto 0;max-width:460px;text-align:center;font-size:9px;letter-spacing:.5px;line-height:1.8;color:var(--ash)}
+.lm-dash{display:flex;gap:22px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:18px;padding:20px 16px;border:1px solid var(--border);background:var(--panel);direction:ltr}
+.lm-loupe-box{text-align:center}
+.lm-loupe-box canvas{display:block;width:156px;height:156px;border:1px solid var(--smoke);background:#000}
+.lm-cap{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-top:7px}
+.lm-pad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:5px}
+.lm-pad button{display:flex;align-items:center;justify-content:center;background:rgba(139,0,0,.12);border:1px solid var(--smoke);color:var(--crimson);cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;transition:background .15s,border-color .15s}
+.lm-pad button:hover{border-color:var(--crimson)}
+.lm-pad button:active,.lm-pad button.hold{background:var(--blood);color:var(--white);border-color:var(--crimson)}
+.lm-pad svg{width:20px;height:20px}
+.lm-pad .c{display:flex;align-items:center;justify-content:center}
+.lm-pad .c i{width:5px;height:5px;border-radius:50%;background:var(--smoke)}
+.lm-side{display:flex;flex-direction:column;gap:12px;min-width:150px;direction:inherit}
+html[dir=rtl] .lm-side{direction:rtl}
+.lm-seg{display:flex;border:1px solid var(--smoke)}
+.lm-seg button{flex:1;padding:8px 6px;font-size:9px;letter-spacing:1px;background:none;border:0;color:var(--ash);cursor:pointer;font-family:inherit}
+.lm-seg button+button{border-inline-start:1px solid var(--smoke)}
+.lm-seg button.on{background:var(--blood);color:var(--white)}
+.lm-side .btn-ghost{width:100%;text-align:center;justify-content:center}
+.lm-progress{text-align:center;font-size:10px;letter-spacing:2px;color:var(--muted);margin-top:16px;text-transform:uppercase}
+@media (max-width:520px){.lm-chips{grid-template-columns:1fr}.lm-dash{gap:16px}}
+
 /* ── auth gate ── */
 .auth-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#150000 0%,#000 70%);display:flex;align-items:center;justify-content:center;transition:opacity .3s,visibility .3s}
 .auth-gate.auth-gate-hidden{opacity:0;visibility:hidden;pointer-events:none}
@@ -155,6 +192,49 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
     <button class="btn-solid" id="continueBtn" type="button" disabled data-i18n="tool_continue">Continue →</button>
   </div>
   <div class="next-panel" id="nextPanel" style="display:none">Next step goes here</div>
+
+  <section id="step2" aria-live="polite">
+    <div class="tool-eyebrow" data-i18n="s2_eyebrow">Step 2 · Landmarks</div>
+    <h2 class="tool-title" data-i18n="tool_step_adjust_title">Confirm The Landmarks</h2>
+    <p class="tool-text" style="margin-bottom:22px" data-i18n="s2_text"></p>
+    <div class="msg-bar" id="s2Msg"></div>
+    <div class="lm-stage" id="lmStage">
+      <canvas id="lmCanvas"></canvas>
+      <div class="lm-busy" id="lmBusy"><span class="mini-spinner"></span><span id="lmBusyTxt"></span></div>
+    </div>
+    <div class="lm-chips" id="lmChips"></div>
+    <p class="lm-desc" id="lmDesc"></p>
+    <p class="lm-note" data-i18n="s2_lower_note"></p>
+    <div class="lm-dash">
+      <div class="lm-loupe-box"><canvas id="lmLoupe"></canvas><div class="lm-cap" id="lmLoupeCap"></div></div>
+      <div class="lm-pad" id="lmPad">
+        <span></span><button type="button" data-dx="0" data-dy="-1" data-k="up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button><span></span>
+        <button type="button" data-dx="-1" data-dy="0" data-k="left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <span class="c"><i></i></span>
+        <button type="button" data-dx="1" data-dy="0" data-k="right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        <span></span><button type="button" data-dx="0" data-dy="1" data-k="down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><span></span>
+      </div>
+      <div class="lm-side">
+        <div>
+          <div class="lm-cap" style="margin:0 0 6px" id="lmStepLbl"></div>
+          <div class="lm-seg" id="lmSeg">
+            <button type="button" data-step="fine" data-i18n="tool_dash_step_fine">Fine</button>
+            <button type="button" data-step="normal" class="on" data-i18n="tool_dash_step_normal">Normal</button>
+            <button type="button" data-step="coarse" data-i18n="tool_dash_step_coarse">Coarse</button>
+          </div>
+        </div>
+        <button class="btn-ghost" type="button" id="lmNext" data-i18n="s2_next_point">Next point</button>
+        <button class="btn-ghost" type="button" id="lmResetPt" data-i18n="s2_reset_point">Reset point</button>
+      </div>
+    </div>
+    <p class="lm-note" style="margin-top:12px" data-i18n="s2_keys_tip"></p>
+    <div class="lm-progress" id="lmProgress"></div>
+    <div class="tool-nav">
+      <button class="btn-ghost" type="button" id="s2Back" data-i18n="tool_back">← Back</button>
+      <button class="btn-ghost" type="button" id="lmResetAll" data-i18n="s2_reset_all">Reset all</button>
+      <button class="btn-solid" type="button" id="s2Confirm" disabled data-i18n="s2_confirm">Confirm Landmarks →</button>
+    </div>
+  </section>
 </div>
 </div>
 
@@ -193,7 +273,7 @@ function renderStatic() {
   $('uploaderCta').innerHTML = `${t('tool_drop_prefix', lang)} <span class="browse-word">${t('tool_drop_browse', lang)}</span>`;
   const lb = $('logoutBtn'); if (lb) lb.textContent = t('sign_out', lang);
 }
-function onLangChange(next) { lang = next; applyDocumentDirection(next); applyTranslations(next); renderStatic(); if (validation) renderVerdict(validation); }
+function onLangChange(next) { lang = next; applyDocumentDirection(next); applyTranslations(next); renderStatic(); if (validation && $('previewBox').style.display !== 'none') renderVerdict(validation); renderStep2(); }
 wireLangToggle($('navLang'), lang, onLangChange);
 window.toggleMobileNav = () => {
   ['hamburger', 'navLinks', 'navRight'].forEach(id => $(id).classList.toggle(id === 'hamburger' ? 'open' : 'mobile-open'));
@@ -344,7 +424,7 @@ async function handleFile(file) {
   let img;
   try { img = await loadImage(URL.createObjectURL(file)); }
   catch (e) { showMsg('tv_err_read'); return; }
-  currentImage = img; resetVerdict();
+  currentImage = img; resetVerdict(); s2 = null;
   $('previewImg').src = img.src;
   $('fileName').textContent = file.name;
   $('uploader').style.display = 'none';
@@ -362,7 +442,7 @@ async function handleFile(file) {
 }
 $('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
 $('changeBtn').addEventListener('click', () => {
-  currentImage = null; resetVerdict();
+  currentImage = null; resetVerdict(); s2 = null;
   $('fileInput').value = '';
   $('uploader').style.display = 'flex';
   $('previewBox').style.display = 'none';
@@ -372,13 +452,268 @@ $('continueBtn').addEventListener('click', () => {
   if (!validation?.ok) return;
   $('previewBox').style.display = 'none';
   $('continueNav').style.display = 'none';
-  $('nextPanel').style.display = 'block';
+  $('verdict').style.display = 'none';
+  openStep2();
   scrollTo({ top: 0, behavior: 'smooth' });
 });
 const up = $('uploader');
 ['dragenter', 'dragover'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.add('drag'); }));
 ['dragleave', 'drop'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.remove('drag'); }));
 up.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
+
+/* ══════════════════════════════════════════════════════════
+   STEP 2 · LANDMARK REVIEW
+   Six points: Tr, N (facial thirds) + Sn, Ls, Li, Me (lower third).
+   Points are auto-placed from the face mesh and can ONLY be moved
+   with the arrow pad (or keyboard arrows) — never dragged or clicked.
+══════════════════════════════════════════════════════════ */
+const LM = [
+  { id: 'Tr', pt: 'tool_pt_tr', desc: 'tool_guide_desc_tr' },
+  { id: 'N',  pt: 'tool_pt_n',  desc: 'tool_guide_desc_n' },
+  { id: 'Sn', pt: 'tool_pt_sn', desc: 'tool_guide_desc_sn', lower: true },
+  { id: 'Ls', pt: 'tool_pt_ls', desc: 'tool_guide_desc_ls', lower: true },
+  { id: 'Li', pt: 'tool_pt_li', desc: 'tool_guide_desc_li', lower: true },
+  { id: 'Me', pt: 'tool_pt_me', desc: 'tool_guide_desc_me', lower: true }
+];
+const STEP_PX = { fine: 0.5, normal: 2, coarse: 8 };   // image px per 1000 px of image height
+const DOT_R = 1.5;                                      // css px — deliberately tiny
+const LOUPE_WIN = 44;                                   // source px visible in the magnifier (per 1000 px height)
+let s2 = null;   // { src, img, W, H, k, dpr, pts:{id:{x,y,ax,ay,seen}}, sel, stepKey, detected, hairEst }
+const nf = n => lang === 'ar' ? String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+/* Hairline: scan up the forehead midline until skin turns to (dark) hair. */
+function findHairline(img, p10, p9, fw, fh) {
+  try {
+    const W = img.naturalWidth, H = img.naturalHeight;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
+    const band = Math.max(2, Math.round(0.035 * fw));
+    const x0 = clamp(Math.round(p10.x - band), 0, W - 1), bw = Math.max(1, Math.min(W - x0, band * 2));
+    const yEnd = clamp(Math.round(p9.y), 1, H - 1);
+    const d = g.getImageData(x0, 0, bw, yEnd).data;
+    const col = new Float32Array(yEnd);
+    for (let y = 0; y < yEnd; y++) {
+      let sum = 0;
+      for (let x = 0; x < bw; x++) { const k = (y * bw + x) * 4; sum += 0.299 * d[k] + 0.587 * d[k + 1] + 0.114 * d[k + 2]; }
+      col[y] = sum / bw;
+    }
+    const sm = new Float32Array(yEnd);                        // 5-row smoothing
+    for (let y = 0; y < yEnd; y++) { let s = 0, n = 0; for (let k = -2; k <= 2; k++) { const i = y + k; if (i >= 0 && i < yEnd) { s += col[i]; n++; } } sm[y] = s / n; }
+    const y10 = Math.round(p10.y), yTo = yEnd - Math.round(0.05 * fh);
+    if (yTo - y10 < 3) return null;
+    const skinArr = Array.from(sm.slice(y10, yTo)).sort((a, b) => a - b);
+    const skin = skinArr[skinArr.length >> 1];
+    if (skin < 25) return null;                               // too dark to trust
+    const thr = skin * 0.62, run = Math.max(3, Math.round(0.012 * fh));
+    const top = Math.max(run, Math.round(p10.y - 0.6 * fh));
+    for (let y = y10; y > top; y--) {
+      let all = true;
+      for (let k = 1; k <= run; k++) if (sm[y - k] >= thr) { all = false; break; }
+      if (all) return y;
+    }
+  } catch (e) { console.warn('hairline scan failed', e); }
+  return null;
+}
+
+async function detectLandmarks(img) {
+  const W = img.naturalWidth, H = img.naturalHeight;
+  const lmk = await getLandmarker();
+  if (lmk) {
+    try {
+      const lm = lmk.detect(img)?.faceLandmarks?.[0];
+      if (lm && lm.length >= 468) {
+        const P = i => ({ x: lm[i].x * W, y: lm[i].y * H });
+        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+        for (let i = 0; i < 468; i++) { const p = P(i); x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); }
+        const fw = x1 - x0, fh = y1 - y0;
+        const p10 = P(10), p9 = P(9), p168 = P(168), p2 = P(2), p164 = P(164);
+        const hl = findHairline(img, p10, p9, fw, fh);
+        const mix = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+        return {
+          detected: true, hairEst: hl === null,
+          pts: {
+            Tr: { x: p10.x, y: hl ?? p10.y - 0.14 * fh },   // true hairline (scan) — mesh top sits mid-forehead
+            N:  mix(p9, p168, 0.5),                         // brow dip, between glabella and bridge
+            Sn: mix(p2, p164, 0.35),                        // where the nose base meets the upper lip
+            Ls: { x: P(0).x, y: P(0).y - 0.004 * fh },      // upper-lip vermilion border (mesh sits ~3px low at the cupid's-bow dip)
+            Li: P(17),                                      // lower-lip vermilion border
+            Me: P(152)                                      // chin bottom
+          }
+        };
+      }
+    } catch (e) { console.error(e); }
+  }
+  const f = (y) => ({ x: W / 2, y: H * y });                // average positions for a cropped portrait
+  return { detected: false, hairEst: false, pts: { Tr: f(.20), N: f(.45), Sn: f(.70), Ls: f(.76), Li: f(.82), Me: f(.91) } };
+}
+
+async function openStep2() {
+  const step = $('step2');
+  step.classList.add('active');
+  $('s2Msg').className = 'msg-bar';
+  if (s2 && s2.src === validation) { layoutStage(); renderStep2(); return; }
+  const src = validation;
+  s2 = null;
+  $('lmBusy').style.display = 'flex';
+  $('lmBusyTxt').textContent = T('s2_detecting');
+  $('s2Confirm').disabled = true;
+  let img = src.cropped;
+  if (!img) { try { img = await loadImage(src.cropUrl); } catch (e) { return; } }
+  const r = await detectLandmarks(img);
+  if (validation !== src) return;                           // photo was swapped meanwhile
+  const pts = {};
+  LM.forEach((m, i) => { const p = r.pts[m.id]; pts[m.id] = { x: p.x, y: p.y, ax: p.x, ay: p.y, seen: i === 0 }; });   // first point is on screen in the magnifier
+  s2 = { src, img, W: img.naturalWidth, H: img.naturalHeight, pts, sel: 0, stepKey: 'normal', detected: r.detected, hairEst: r.hairEst };
+  $('lmBusy').style.display = 'none';
+  const bar = $('s2Msg');
+  if (!r.detected) { bar.className = 'msg-bar info'; bar.textContent = T('s2_fallback'); }
+  else if (r.hairEst) { bar.className = 'msg-bar info'; bar.textContent = T('s2_hairline_est'); }
+  layoutStage(); renderStep2();
+}
+
+function layoutStage() {
+  if (!s2) return;
+  const wrap = $('lmStage'), cv = $('lmCanvas');
+  const maxW = wrap.clientWidth || 600, maxH = Math.min(innerHeight * 0.72, 780);
+  const k = Math.min(maxW / s2.W, maxH / s2.H), dpr = window.devicePixelRatio || 1;
+  const cw = Math.round(s2.W * k), ch = Math.round(s2.H * k);
+  cv.style.width = cw + 'px'; cv.style.height = ch + 'px';
+  cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
+  s2.k = k; s2.dpr = dpr;
+  const lp = $('lmLoupe'), ls = 156;
+  lp.width = Math.round(ls * dpr); lp.height = Math.round(ls * dpr);
+  draw();
+}
+
+function draw() {
+  if (!s2 || !s2.k) return;
+  const cv = $('lmCanvas'), g = cv.getContext('2d'), sc = s2.k * s2.dpr, d = s2.dpr;
+  g.clearRect(0, 0, cv.width, cv.height);
+  g.drawImage(s2.img, 0, 0, s2.W * sc, s2.H * sc);
+  const cur = LM[s2.sel].id, cp = s2.pts[cur];
+  // faint level guide through the selected point
+  g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = d; g.beginPath();
+  g.moveTo(0, cp.y * sc); g.lineTo(cv.width, cp.y * sc); g.stroke();
+  LM.forEach(m => {
+    const p = s2.pts[m.id], x = p.x * sc, y = p.y * sc, on = m.id === cur;
+    if (on) {                                               // thin ring + ticks so the tiny dot is findable
+      const R = 9 * d, gap = 3 * d;
+      g.strokeStyle = 'rgba(255,60,90,.9)'; g.lineWidth = d;
+      g.beginPath(); g.arc(x, y, R, 0, 7); g.stroke();
+      g.beginPath();
+      g.moveTo(x - R - 4 * d, y); g.lineTo(x - gap, y); g.moveTo(x + gap, y); g.lineTo(x + R + 4 * d, y);
+      g.moveTo(x, y - R - 4 * d); g.lineTo(x, y - gap); g.moveTo(x, y + gap); g.lineTo(x, y + R + 4 * d);
+      g.stroke();
+    }
+    g.fillStyle = on ? '#ff3c5a' : (m.lower ? '#ffc933' : '#ffffff');
+    g.strokeStyle = 'rgba(0,0,0,.75)'; g.lineWidth = .8 * d;
+    g.beginPath(); g.arc(x, y, (on ? DOT_R + .3 : DOT_R) * d, 0, 7); g.fill(); g.stroke();
+  });
+  drawLoupe();
+}
+
+function drawLoupe() {
+  const lp = $('lmLoupe'), g = lp.getContext('2d'), S = lp.width;
+  const p = s2.pts[LM[s2.sel].id], win = LOUPE_WIN * Math.max(1, s2.H / 1000), z = S / win;
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  g.fillStyle = '#000'; g.fillRect(0, 0, S, S);
+  g.drawImage(s2.img, p.x - win / 2, p.y - win / 2, win, win, 0, 0, S, S);
+  const d = s2.dpr, c = S / 2, gap = 6 * d;
+  g.strokeStyle = 'rgba(255,60,90,.85)'; g.lineWidth = d; g.beginPath();
+  g.moveTo(0, c); g.lineTo(c - gap, c); g.moveTo(c + gap, c); g.lineTo(S, c);
+  g.moveTo(c, 0); g.lineTo(c, c - gap); g.moveTo(c, c + gap); g.lineTo(c, S); g.stroke();
+  g.fillStyle = '#ff3c5a'; g.beginPath(); g.arc(c, c, 1.6 * d, 0, 7); g.fill();
+  LM.forEach(m => {                                         // neighbours, if they fall inside the window
+    if (m.id === LM[s2.sel].id) return;
+    const q = s2.pts[m.id], x = (q.x - p.x) * z + c, y = (q.y - p.y) * z + c;
+    if (x > 0 && x < S && y > 0 && y < S) { g.fillStyle = 'rgba(242,232,213,.8)'; g.beginPath(); g.arc(x, y, 1.4 * d, 0, 7); g.fill(); }
+  });
+}
+
+function renderStep2() {
+  const box = $('lmChips');
+  if (!box) return;
+  $('lmStepLbl').textContent = T('s2_step_label');
+  $('lmLoupeCap').textContent = T('s2_loupe');
+  const keys = { up: 's2_up', down: 's2_down', left: 's2_left', right: 's2_right' };
+  $('lmPad').querySelectorAll('button').forEach(b => { b.setAttribute('aria-label', T(keys[b.dataset.k])); b.title = T(keys[b.dataset.k]); });
+  if (!s2) { box.innerHTML = ''; return; }
+  const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  box.innerHTML = LM.map((m, i) =>
+    `<button type="button" class="lm-chip${m.lower ? ' lower' : ''}${i === s2.sel ? ' sel' : ''}${s2.pts[m.id].seen ? ' seen' : ''}" data-i="${i}"><bdi>${esc(T(m.pt))}</bdi></button>`).join('');
+  $('lmDesc').textContent = T(LM[s2.sel].desc);
+  const n = LM.filter(m => s2.pts[m.id].seen).length;
+  $('lmProgress').textContent = T('s2_progress', { n: nf(n), total: nf(LM.length) });
+  $('s2Confirm').disabled = n < LM.length;
+  $('lmSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.step === s2.stepKey));
+}
+
+function select(i) {
+  if (!s2) return;
+  s2.sel = (i + LM.length) % LM.length;
+  s2.pts[LM[s2.sel].id].seen = true;                        // viewing a point in the loupe counts as reviewing it
+  renderStep2(); draw();
+}
+function nudge(dx, dy, coarse) {
+  if (!s2) return;
+  const p = s2.pts[LM[s2.sel].id], u = s2.H / 1000;
+  const step = STEP_PX[coarse ? 'coarse' : s2.stepKey] * u;
+  p.x = clamp(p.x + dx * step, 0, s2.W); p.y = clamp(p.y + dy * step, 0, s2.H);
+  if (!p.seen) { p.seen = true; renderStep2(); }
+  draw();
+}
+
+/* arrow pad — press, or press-and-hold to repeat. No pointer interaction with the photo itself. */
+(() => {
+  let to = null, iv = null, btn = null;
+  const stop = () => { clearTimeout(to); clearInterval(iv); if (btn) btn.classList.remove('hold'); btn = null; };
+  $('lmPad').addEventListener('pointerdown', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    e.preventDefault(); stop(); btn = b; b.classList.add('hold');
+    const go = () => nudge(+b.dataset.dx, +b.dataset.dy, false);
+    go(); to = setTimeout(() => { iv = setInterval(go, 60); }, 380);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('lmPad').addEventListener(ev, stop));
+  window.addEventListener('blur', stop);
+  $('lmPad').addEventListener('contextmenu', e => e.preventDefault());
+})();
+
+document.addEventListener('keydown', e => {
+  if (!s2 || !$('step2').classList.contains('active')) return;
+  const m = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
+  if (!m) return;
+  e.preventDefault(); nudge(m[0], m[1], e.shiftKey);
+});
+
+$('lmChips').addEventListener('click', e => { const c = e.target.closest('.lm-chip'); if (c) select(+c.dataset.i); });
+$('lmSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && s2) { s2.stepKey = b.dataset.step; renderStep2(); } });
+$('lmNext').addEventListener('click', () => select(s2 ? s2.sel + 1 : 0));
+$('lmResetPt').addEventListener('click', () => { if (!s2) return; const p = s2.pts[LM[s2.sel].id]; p.x = p.ax; p.y = p.ay; draw(); });
+$('lmResetAll').addEventListener('click', () => {
+  if (!s2) return;
+  LM.forEach(m => { const p = s2.pts[m.id]; p.x = p.ax; p.y = p.ay; p.seen = false; });
+  s2.sel = 0; s2.pts[LM[0].id].seen = true; renderStep2(); draw();
+});
+$('s2Back').addEventListener('click', () => {
+  $('step2').classList.remove('active');
+  $('previewBox').style.display = 'block';
+  $('continueNav').style.display = 'flex';
+  $('verdict').style.display = 'block';
+  scrollTo({ top: 0, behavior: 'smooth' });
+});
+$('s2Confirm').addEventListener('click', () => {
+  if (!s2 || LM.some(m => !s2.pts[m.id].seen)) return;
+  const out = {};
+  LM.forEach(m => { const p = s2.pts[m.id]; out[m.id] = { x: +p.x.toFixed(2), y: +p.y.toFixed(2) }; });
+  window.lowerThirdLandmarks = { front: { width: s2.W, height: s2.H, points: out, image: s2.img } };
+  document.dispatchEvent(new CustomEvent('landmarks:confirmed', { detail: window.lowerThirdLandmarks }));
+  $('step2').classList.remove('active');
+  $('nextPanel').style.display = 'block';
+  scrollTo({ top: 0, behavior: 'smooth' });
+});
+let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(layoutStage, 120); });
+
 getLandmarker();   // warm the model up while the user picks a photo
 </script>
 </body>

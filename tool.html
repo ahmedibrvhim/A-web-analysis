@@ -134,6 +134,56 @@ html[dir=rtl] .lm-side{direction:rtl}
 .lm-progress{text-align:center;font-size:10px;letter-spacing:2px;color:var(--muted);margin-top:16px;text-transform:uppercase}
 @media (max-width:520px){.lm-dash{gap:16px}.lm-chip{font-size:11px;letter-spacing:0}}
 
+
+/* ── gender gate ── */
+.gender-box{margin-bottom:22px;text-align:center}
+.gender-box .gb-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--white);margin-bottom:8px}
+.gender-box .gb-text{font-size:11px;line-height:1.8;color:var(--text);max-width:440px;margin:0 auto 16px}
+.gender-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:380px;margin:0 auto}
+.gender-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 10px 14px;background:var(--panel);border:1px solid var(--border);color:var(--text);cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:2px;text-transform:uppercase;transition:all .25s}
+.gender-btn .sym{font-size:30px;line-height:1;color:var(--ash);transition:color .25s}
+.gender-btn:hover{border-color:var(--blood)}
+.gender-btn.on{border-color:var(--crimson);background:rgba(139,0,0,.18);color:var(--white);box-shadow:0 0 16px rgba(220,20,60,.25)}
+.gender-btn.on .sym{color:var(--crimson)}
+.uploader.locked{opacity:.35;pointer-events:none;filter:grayscale(1)}
+.lock-hint{text-align:center;font-size:10px;letter-spacing:1px;color:var(--ash);margin:-8px 0 0}
+
+/* ── STEP 3 · analysis ── */
+#step3{display:none}
+#step3.active{display:block;animation:stepIn .45s ease}
+#s3Stage{padding:0}
+.s3-cal{margin-top:14px;padding:14px 16px;border:1px solid var(--border);background:var(--panel);display:flex;flex-direction:column;align-items:center;gap:8px}
+.s3-cal label{font-size:9px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;text-align:center}
+.s3-cal input{width:130px;padding:9px 10px;text-align:center;font-size:13px;font-family:inherit;color:var(--white);background:var(--black);border:1px solid var(--smoke);outline:none;direction:ltr}
+.s3-cal input:focus{border-color:var(--crimson)}
+.s3-cal .lm-note{margin:0}
+.s3-card{margin-top:16px;padding:18px 18px 16px;border:1px solid var(--border);background:var(--panel)}
+.s3-h{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--white);margin-bottom:14px}
+.s3-tbl{width:100%;border-collapse:collapse;font-size:11px;color:var(--text)}
+.s3-tbl th{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;font-weight:400;padding:0 6px 8px;text-align:start}
+.s3-tbl td{padding:9px 6px;border-top:1px solid var(--border);vertical-align:middle}
+.s3-tbl td.v{direction:ltr;text-align:start;color:var(--white);font-weight:700;white-space:nowrap}
+.s3-tbl td.i{direction:ltr;text-align:start;color:var(--ash);white-space:nowrap}
+.s3-chip{display:inline-block;padding:3px 8px;font-size:9px;letter-spacing:1px;border:1px solid;white-space:nowrap}
+.s3-chip.ok{color:#5ecb96;border-color:#0a5;background:rgba(0,160,90,.08)}
+.s3-chip.warn{color:#ffc933;border-color:#8a6d00;background:rgba(255,201,51,.07)}
+.s3-chip.bad{color:#ff8080;border-color:var(--blood);background:rgba(220,20,60,.08)}
+.s3-bar{display:flex;height:24px;margin:14px 0 4px;direction:ltr;border:1px solid var(--border)}
+.s3-bar span{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#000;overflow:hidden;white-space:nowrap}
+.s3-bar-cap{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-top:10px}
+.s3-p{font-size:11px;line-height:1.85;color:var(--text);margin:10px 0 0}
+.s3-p.dim{color:var(--ash);font-size:10px}
+.s3-tier{text-align:center;padding:6px 0 4px}
+.s3-tier .name{font-family:'Cinzel Decorative',cursive;font-size:clamp(26px,6vw,38px);letter-spacing:3px;color:var(--crimson);text-shadow:0 0 18px rgba(220,20,60,.35)}
+.s3-tier .score{font-size:11px;letter-spacing:2px;color:var(--white);margin-top:6px;direction:ltr}
+.s3-tier .desc{font-size:11px;line-height:1.8;color:var(--bone);max-width:460px;margin:10px auto 0}
+.s3-sub{font-size:9px;letter-spacing:3px;color:var(--blood);text-transform:uppercase;margin:16px 0 6px}
+.s3-sub:first-of-type{margin-top:0}
+.s3-list{margin:0;padding-inline-start:18px;font-size:11px;line-height:1.85;color:var(--text)}
+.s3-list li{margin-bottom:5px}
+.s3-disc{text-align:center;font-size:9px;line-height:1.8;letter-spacing:.4px;color:var(--ash);max-width:480px;margin:16px auto 0}
+#step3 .tool-nav{flex-wrap:wrap}
+
 /* ── auth gate ── */
 .auth-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#150000 0%,#000 70%);display:flex;align-items:center;justify-content:center;transition:opacity .3s,visibility .3s}
 .auth-gate.auth-gate-hidden{opacity:0;visibility:hidden;pointer-events:none}
@@ -176,8 +226,18 @@ html[dir=rtl] .lm-side{direction:rtl}
 <div id="toolWrap">
   <div class="msg-bar" id="toolMsg"></div>
 
-  <label class="uploader" id="uploader">
-    <input type="file" accept="image/*" id="fileInput">
+  <div class="gender-box" id="genderBox">
+    <div class="gb-title" data-i18n="g_title">Select Your Gender</div>
+    <p class="gb-text" data-i18n="g_text"></p>
+    <div class="gender-opts" role="group">
+      <button type="button" class="gender-btn" data-g="male" aria-pressed="false"><span class="sym">♂</span><span data-i18n="g_male">Male</span></button>
+      <button type="button" class="gender-btn" data-g="female" aria-pressed="false"><span class="sym">♀</span><span data-i18n="g_female">Female</span></button>
+    </div>
+  </div>
+  <p class="lock-hint" id="lockHint" data-i18n="g_locked"></p>
+
+  <label class="uploader locked" id="uploader">
+    <input type="file" accept="image/*" id="fileInput" disabled>
     <span class="uploader-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span>
     <p class="uploader-cta" id="uploaderCta"></p>
     <p class="uploader-sub">JPG · PNG · HEIC</p>
@@ -193,7 +253,6 @@ html[dir=rtl] .lm-side{direction:rtl}
   <div class="tool-nav" id="continueNav" style="display:none">
     <button class="btn-solid" id="continueBtn" type="button" disabled data-i18n="tool_continue">Continue →</button>
   </div>
-  <div class="next-panel" id="nextPanel" style="display:none">Next step goes here</div>
 
   <section id="step2" aria-live="polite">
     <div class="tool-eyebrow" data-i18n="s2_eyebrow">Step 2 · Landmarks</div>
@@ -235,6 +294,26 @@ html[dir=rtl] .lm-side{direction:rtl}
       <button class="btn-solid" type="button" id="s2Confirm" disabled data-i18n="s2_confirm">Confirm Landmarks →</button>
     </div>
   </section>
+
+  <section id="step3" aria-live="polite">
+    <div class="tool-eyebrow" data-i18n="s3_eyebrow">Step 3 · Analysis</div>
+    <h2 class="tool-title" data-i18n="s3_title">Lower Third Analysis</h2>
+    <p class="tool-text" style="margin-bottom:22px" data-i18n="s3_text"></p>
+    <div class="msg-bar" id="s3Msg"></div>
+    <div class="lm-stage" id="s3Stage"><canvas id="s3Canvas"></canvas></div>
+    <div class="s3-cal">
+      <label for="s3Cal" data-i18n="s3_cal_label"></label>
+      <input id="s3Cal" type="number" inputmode="decimal" min="1" max="400" step="0.1" placeholder="mm">
+      <p class="lm-note" data-i18n="s3_cal_note"></p>
+    </div>
+    <div id="s3Report"></div>
+    <p class="s3-disc" data-i18n="s3_disclaimer"></p>
+    <div class="tool-nav">
+      <button class="btn-ghost" type="button" id="s3Back" data-i18n="tool_back">← Back</button>
+      <button class="btn-ghost" type="button" id="s3Save" data-i18n="s3_save">Save Image</button>
+      <button class="btn-solid" type="button" id="s3Restart" data-i18n="s3_restart">Start Over</button>
+    </div>
+  </section>
 </div>
 </div>
 
@@ -273,7 +352,7 @@ function renderStatic() {
   $('uploaderCta').innerHTML = `${t('tool_drop_prefix', lang)} <span class="browse-word">${t('tool_drop_browse', lang)}</span>`;
   const lb = $('logoutBtn'); if (lb) lb.textContent = t('sign_out', lang);
 }
-function onLangChange(next) { lang = next; applyDocumentDirection(next); applyTranslations(next); renderStatic(); if (validation && $('previewBox').style.display !== 'none') renderVerdict(validation); renderStep2(); }
+function onLangChange(next) { lang = next; applyDocumentDirection(next); applyTranslations(next); renderStatic(); if (validation && $('previewBox').style.display !== 'none') renderVerdict(validation); renderStep2(); if ($('step3').classList.contains('active')) renderS3(); }
 wireLangToggle($('navLang'), lang, onLangChange);
 window.toggleMobileNav = () => {
   ['hamburger', 'navLinks', 'navRight'].forEach(id => $(id).classList.toggle(id === 'hamburger' ? 'open' : 'mobile-open'));
@@ -401,6 +480,19 @@ function renderVerdict(r) {
   if (r.ok) { $('continueNav').style.display = 'flex'; $('continueBtn').disabled = false; }
 }
 
+/* ── GENDER GATE (must be chosen before a photo can be picked) ── */
+let gender = null;   // 'male' | 'female'
+function setGender(g) {
+  gender = g;
+  document.querySelectorAll('.gender-btn').forEach(b => { const on = b.dataset.g === g; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  $('uploader').classList.remove('locked');
+  $('fileInput').disabled = false;
+  $('lockHint').style.display = 'none';
+  showMsg('');
+  if ($('step3').classList.contains('active')) renderS3();
+}
+document.querySelectorAll('.gender-btn').forEach(b => b.addEventListener('click', () => setGender(b.dataset.g)));
+
 /* ── UPLOADER ── */
 let currentImage = null;   // HTMLImageElement of the uploaded photo
 let validation = null;     // last verdict — { ok, stats, correctionDeg, cropUrl, cropped (leveled Image), ... }
@@ -420,6 +512,7 @@ function resetVerdict() {
   $('continueBtn').disabled = true;
 }
 async function handleFile(file) {
+  if (!gender) { showMsg('g_err'); return; }
   if (!file || !file.type.startsWith('image/')) { showMsg('tv_err_not_image'); return; }
   let img;
   try { img = await loadImage(URL.createObjectURL(file)); }
@@ -453,6 +546,7 @@ $('continueBtn').addEventListener('click', () => {
   $('previewBox').style.display = 'none';
   $('continueNav').style.display = 'none';
   $('verdict').style.display = 'none';
+  $('genderBox').style.display = 'none';
   openStep2();
   scrollTo({ top: 0, behavior: 'smooth' });
 });
@@ -708,6 +802,7 @@ $('s2Back').addEventListener('click', () => {
   $('previewBox').style.display = 'block';
   $('continueNav').style.display = 'flex';
   $('verdict').style.display = 'block';
+  $('genderBox').style.display = 'block';
   scrollTo({ top: 0, behavior: 'smooth' });
 });
 $('s2Confirm').addEventListener('click', () => {
@@ -717,10 +812,228 @@ $('s2Confirm').addEventListener('click', () => {
   window.lowerThirdLandmarks = { front: { width: s2.W, height: s2.H, points: out, image: s2.img } };
   document.dispatchEvent(new CustomEvent('landmarks:confirmed', { detail: window.lowerThirdLandmarks }));
   $('step2').classList.remove('active');
-  $('nextPanel').style.display = 'block';
+  $('step3').classList.add('active');
+  renderS3();
   scrollTo({ top: 0, behavior: 'smooth' });
 });
-let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(layoutStage, 120); });
+let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { layoutStage(); if ($('step3').classList.contains('active')) drawS3(); }, 120); });
+
+/* ══════════════════════════════════════════════════════════
+   STEP 3 · LOWER THIRD ANALYSIS
+   Measures the confirmed landmarks, draws dimension lines
+   (extension lines + rulers with labels) and builds the report.
+   Gender picks the tier names and the fix recommendations.
+══════════════════════════════════════════════════════════ */
+const IDEAL = 100 / 3;
+const S3C = { up: '#8ab4ff', mid: '#c3a6ff', low: '#ffffff', phil: '#ffc933', lips: '#ff7a8c', chin: '#5ecb96' };
+const TIERS = {
+  male:   { sub5: 'Sub-5', lt: 'LTN', mt: 'MTN', ht: 'HTN', htplus: 'HTN+ · Chadlite',   elite: 'Chad'  },
+  female: { sub5: 'Sub-5', lt: 'LTB', mt: 'MTB', ht: 'HTB', htplus: 'HTB+ · Stacylite', elite: 'Stacy' }
+};
+let s3 = null, s3cal = null;   // s3 = latest measurement, s3cal = optional real Tr–Me height in mm
+
+function s3Measure() {
+  const d = window.lowerThirdLandmarks?.front;
+  if (!d) return null;
+  const P = d.points, y = id => P[id].y;
+  const stm = y('Ls') + 0.42 * (y('Li') - y('Ls'));          // stomion ≈ mouth line, just under the upper vermilion
+  const v = {
+    up: y('N') - y('Tr'), mid: y('Sn') - y('N'), low: y('Me') - y('Sn'),
+    phil: y('Ls') - y('Sn'), lips: y('Li') - y('Ls'), chin: y('Me') - y('Li'),
+    snStm: stm - y('Sn'), stmMe: y('Me') - stm
+  };
+  const tot = y('Me') - y('Tr');
+  if (tot <= 0 || Object.values(v).some(n => n <= 0)) return { bad: true };
+  const pct = {}; Object.keys(v).forEach(k => pct[k] = v[k] / tot * 100);
+  const r = v.snStm / v.low, x = v.stmMe / v.snStm;           // r ideal 1/3 · split is 1 : x, ideal 1 : 2
+  const dev = {
+    up: Math.abs(pct.up - IDEAL) / IDEAL, mid: Math.abs(pct.mid - IDEAL) / IDEAL,
+    low: Math.abs(pct.low - IDEAL) / IDEAL, split: Math.abs(r - 1 / 3) / (1 / 3)
+  };
+  const penalty = 0.5 * (dev.up + dev.mid + dev.low) / 3 + 0.5 * dev.split;
+  const psl = clamp(7.8 - 22 * penalty, 2, 7.8);
+  const tier = psl < 4 ? 'sub5' : psl < 4.5 ? 'lt' : psl < 5.5 ? 'mt' : psl < 6.5 ? 'ht' : psl < 7.5 ? 'htplus' : 'elite';
+  return { v, tot, pct, r, x, dev, psl, tier, stm };
+}
+
+const fmtPct = n => nf(n.toFixed(1)) + '%';
+const mmOf = (len, tot) => s3cal ? nf((len / tot * s3cal).toFixed(1)) + ' ' + T('s3_mm') : '';
+const chipOf = d => d <= 0.10 ? 'ok' : d <= 0.20 ? 'warn' : 'bad';
+
+function renderS3() {
+  s3 = s3Measure();
+  const box = $('s3Report'), msg = $('s3Msg');
+  msg.className = 'msg-bar'; msg.textContent = '';
+  if (!s3 || s3.bad) {
+    box.innerHTML = '';
+    if (s3) { msg.className = 'msg-bar error'; msg.textContent = T('s3_err_order'); }
+    drawS3(); return;
+  }
+  const m = s3, g = gender || 'male', male = g === 'male';
+  const row = (label, val, ideal, dev) =>
+    `<tr><td>${label}</td><td class="v">${val}</td><td class="i">${ideal}</td><td><span class="s3-chip ${chipOf(dev)}">${T('s3_' + chipOf(dev))}</span></td></tr>`;
+  const withMm = k => fmtPct(m.pct[k]) + (s3cal ? ' · ' + mmOf(m.v[k], m.tot) : '');
+
+  // verdict paragraphs
+  const ltTxt = fmtPct(m.pct.low);
+  const balKey = m.pct.low > IDEAL * 1.08 ? 's3_bal_long' : m.pct.low < IDEAL * 0.92 ? 's3_bal_short' : 's3_bal_ok';
+  const splitKey = m.r > (1 / 3) * 1.12 ? 's3_split_long' : m.r < (1 / 3) * 0.88 ? 's3_split_short' : 's3_split_ok';
+  const xTxt = nf(m.x.toFixed(2));
+
+  // limiting factor
+  const names = { up: 's3_m_up', mid: 's3_m_mid', low: 's3_m_low', split: 's3_m_split' };
+  const worst = Object.keys(m.dev).reduce((a, b) => m.dev[a] >= m.dev[b] ? a : b);
+  const valOf = k => k === 'split' ? '1 : ' + xTxt : fmtPct(m.pct[k]);
+  const limit = m.dev[worst] > 0.10
+    ? T('s3_limit', { m: T(names[worst]), v: valOf(worst), i: worst === 'split' ? '1 : 2' : '33.3%' })
+    : T('s3_limit_none');
+
+  // fixes
+  const soft = [male ? 's3_soft_bf_m' : 's3_soft_bf_f', 's3_soft_posture', male ? 's3_soft_groom_m' : 's3_soft_groom_f'];
+  if (m.pct.up > IDEAL * 1.08) soft.push('s3_soft_hair');
+  const hard = [];
+  if (m.tier === 'sub5' || m.tier === 'lt') {
+    if (m.pct.low > IDEAL * 1.08) hard.push('s3_hard_long');
+    if (m.pct.low < IDEAL * 0.92) hard.push('s3_hard_short');
+    if (m.r > (1 / 3) * 1.12) hard.push('s3_hard_phil');
+  }
+  if (!hard.length) hard.push('s3_hard_none');
+  const li = a => a.map(k => `<li>${T(k)}</li>`).join('');
+
+  const bar = [['up', S3C.up], ['mid', S3C.mid], ['low', S3C.low]]
+    .map(([k, c]) => `<span style="width:${m.pct[k].toFixed(2)}%;background:${c}">${fmtPct(m.pct[k])}</span>`).join('');
+  const bar2 = `<span style="width:${(m.v.snStm / m.v.low * 100).toFixed(2)}%;background:${S3C.phil}">1</span><span style="width:${(m.v.stmMe / m.v.low * 100).toFixed(2)}%;background:${S3C.chin}">${nf(m.x.toFixed(2))}</span>`;
+
+  box.innerHTML = `
+  <div class="s3-card">
+    <div class="s3-h">${T('s3_h1')}</div>
+    <table class="s3-tbl"><thead><tr><th>${T('s3_col_metric')}</th><th>${T('s3_col_value')}</th><th>${T('s3_col_ideal')}</th><th></th></tr></thead><tbody>
+      ${row(T('s3_m_up'), withMm('up'), '33.3%', m.dev.up)}
+      ${row(T('s3_m_mid'), withMm('mid'), '33.3%', m.dev.mid)}
+      ${row(T('s3_m_low'), withMm('low'), '33.3%', m.dev.low)}
+      ${row(T('s3_m_split'), '1 : ' + xTxt, '1 : 2', m.dev.split)}
+    </tbody></table>
+    <div class="s3-bar-cap">Tr–N · N–Sn · Sn–Me</div><div class="s3-bar">${bar}</div>
+    <div class="s3-bar-cap">Sn–Stm : Stm–Me</div><div class="s3-bar">${bar2}</div>
+    <p class="s3-p dim">${T('s3_split_note')}</p>
+    <p class="s3-p">${T(balKey, { lt: ltTxt })}</p>
+    <p class="s3-p">${T(splitKey, { x: xTxt })}</p>
+    <p class="s3-p">${T(male ? 's3_dim_m' : 's3_dim_f')}</p>
+    <p class="s3-p dim">${T('s3_dim_need')}</p>
+  </div>
+  <div class="s3-card">
+    <div class="s3-h">${T('s3_h2')}</div>
+    <div class="s3-tier">
+      <div class="name">${TIERS[g][m.tier]}</div>
+      <div class="score">${T('s3_score', { psl: nf(m.psl.toFixed(1)) })}</div>
+      <p class="desc">${T('s3_tier_' + m.tier)}</p>
+    </div>
+    <p class="s3-p" style="text-align:center">${limit}</p>
+  </div>
+  <div class="s3-card">
+    <div class="s3-h">${T('s3_h3')}</div>
+    <div class="s3-sub">${T('s3_soft_title')}</div><ul class="s3-list">${li(soft)}</ul>
+    <div class="s3-sub">${T('s3_hard_title')}</div><ul class="s3-list">${li(hard)}</ul>
+  </div>`;
+  drawS3();
+}
+
+function drawS3() {
+  const cv = $('s3Canvas'), d = window.lowerThirdLandmarks?.front;
+  if (!d || !s3 || s3.bad) { cv.style.display = 'none'; return; }
+  cv.style.display = 'block';
+  const cw = Math.min($('s3Stage').clientWidth || 640, 720);
+  const small = cw < 480, gut = small ? 72 : 126, iw = cw - 2 * gut, k = iw / d.width, ch = Math.round(d.height * k);
+  const dpr = window.devicePixelRatio || 1;
+  cv.style.width = cw + 'px'; cv.style.height = ch + 'px';
+  cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
+  const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.direction = 'ltr';   // keep "33.8%" in the right order on the RTL (Arabic) page
+  c.fillStyle = '#0a0a0a'; c.fillRect(0, 0, cw, ch);
+  c.drawImage(d.image, gut, 0, iw, ch);
+  c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(gut, 0, iw, ch);   // dim the photo so the overlay reads cleanly
+
+  const P = d.points, X = id => gut + P[id].x * k, Y = id => P[id].y * k;
+  const fam = lang === 'ar' ? "'Tajawal','Segoe UI',Arial,sans-serif" : "'Segoe UI',Arial,sans-serif";
+  const fs1 = small ? 8 : 9.5, fs2 = small ? 10 : 12.5, lh = small ? 11 : 14;
+  const xL = gut - 6, xR = gut + iw + 6;
+  const m = s3;
+
+  // extension lines: landmark → ruler
+  const ext = (id, xr, col) => {
+    c.save(); c.setLineDash([3, 3]); c.strokeStyle = col || 'rgba(255,255,255,.45)'; c.lineWidth = .8;
+    c.beginPath(); c.moveTo(X(id), Y(id)); c.lineTo(xr, Y(id)); c.stroke(); c.restore();
+  };
+  ['Tr', 'N', 'Sn', 'Me'].forEach(id => ext(id, xL));
+  ['Sn', 'Ls', 'Li', 'Me'].forEach(id => ext(id, xR));
+
+  // midline segments between the related dots
+  const seg = (a, b, col) => { c.strokeStyle = col; c.lineWidth = 1.8; c.beginPath(); c.moveTo(X(a), Y(a)); c.lineTo(X(b), Y(b)); c.stroke(); };
+  seg('Tr', 'N', S3C.up); seg('N', 'Sn', S3C.mid); seg('Sn', 'Ls', S3C.phil); seg('Ls', 'Li', S3C.lips); seg('Li', 'Me', S3C.chin);
+
+  // rulers with labels
+  function ruler(x, side, ticks, items) {
+    c.strokeStyle = 'rgba(255,255,255,.8)'; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(x, ticks[0]); c.lineTo(x, ticks[ticks.length - 1]); c.stroke();
+    ticks.forEach(t => { c.beginPath(); c.moveTo(x - 4, t); c.lineTo(x + 4, t); c.stroke(); });
+    items.forEach(it => { c.strokeStyle = it.col; c.lineWidth = 2.6; c.beginPath(); c.moveTo(x, it.ya); c.lineTo(x, it.yb); c.stroke(); });
+    const L = items.map(it => ({ it, mid: (it.ya + it.yb) / 2, y: (it.ya + it.yb) / 2, h: it.lines.length * lh + 4 }));
+    for (let pass = 0; pass < 24; pass++) for (let i = 1; i < L.length; i++) {      // push overlapping labels apart
+      const need = (L[i - 1].h + L[i].h) / 2, gap = L[i].y - L[i - 1].y;
+      if (gap < need) { const sh = (need - gap) / 2; L[i - 1].y -= sh; L[i].y += sh; }
+    }
+    L.forEach(o => { o.y = clamp(o.y, o.h / 2, ch - o.h / 2); });
+    const tx = side === 'L' ? x - 8 : x + 8;
+    c.textAlign = side === 'L' ? 'right' : 'left'; c.textBaseline = 'middle';
+    L.forEach(o => {
+      if (Math.abs(o.y - o.mid) > 3) { c.strokeStyle = o.it.col; c.lineWidth = .8; c.beginPath(); c.moveTo(x, o.mid); c.lineTo(x + (side === 'L' ? -5 : 5), o.y); c.stroke(); }
+      const top = o.y - (o.it.lines.length * lh) / 2 + lh / 2;
+      o.it.lines.forEach((ln, j) => {
+        c.font = (j === 0 ? '600 ' + fs1 : j === 1 ? '700 ' + fs2 : '500 ' + fs1) + 'px ' + fam;
+        c.fillStyle = j === 0 ? o.it.col : j === 1 ? '#fff' : '#bdbdbd';
+        c.fillText(ln, tx, top + j * lh);
+      });
+    });
+  }
+  const lines = (name, key) => {
+    const a = [name, fmtPct(m.pct[key])]; const mm = mmOf(m.v[key], m.tot); if (mm) a.push(mm); return a;
+  };
+  ruler(xL, 'L', [Y('Tr'), Y('N'), Y('Sn'), Y('Me')], [
+    { ya: Y('Tr'), yb: Y('N'),  col: S3C.up,  lines: lines(T('s3_l_up'), 'up') },
+    { ya: Y('N'),  yb: Y('Sn'), col: S3C.mid, lines: lines(T('s3_l_mid'), 'mid') },
+    { ya: Y('Sn'), yb: Y('Me'), col: S3C.low, lines: lines(T('s3_l_lower'), 'low') }
+  ]);
+  ruler(xR, 'R', [Y('Sn'), Y('Ls'), Y('Li'), Y('Me')], [
+    { ya: Y('Sn'), yb: Y('Ls'), col: S3C.phil, lines: lines(T('s3_l_phil'), 'phil') },
+    { ya: Y('Ls'), yb: Y('Li'), col: S3C.lips, lines: lines(T('s3_l_lips'), 'lips') },
+    { ya: Y('Li'), yb: Y('Me'), col: S3C.chin, lines: lines(T('s3_l_chin'), 'chin') }
+  ]);
+
+  // landmark dots + estimated stomion ring
+  const stmX = (X('Ls') + X('Li')) / 2;
+  c.strokeStyle = '#ffc933'; c.lineWidth = 1.2; c.beginPath(); c.arc(stmX, m.stm * k, 2.6, 0, 7); c.stroke();
+  ['Tr', 'N', 'Sn', 'Ls', 'Li', 'Me'].forEach(id => {
+    c.fillStyle = '#fff'; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1;
+    c.beginPath(); c.arc(X(id), Y(id), 2.5, 0, 7); c.fill(); c.stroke();
+  });
+}
+
+$('s3Cal').addEventListener('input', e => {
+  const n = parseFloat(e.target.value);
+  s3cal = n > 0 && n < 400 ? n : null;
+  renderS3();
+});
+$('s3Back').addEventListener('click', () => {
+  $('step3').classList.remove('active');
+  $('step2').classList.add('active');
+  layoutStage(); renderStep2();
+  scrollTo({ top: 0, behavior: 'smooth' });
+});
+$('s3Save').addEventListener('click', () => {
+  const a = document.createElement('a');
+  a.download = 'lower-third-analysis.png'; a.href = $('s3Canvas').toDataURL('image/png'); a.click();
+});
+$('s3Restart').addEventListener('click', () => location.reload());
 
 getLandmarker();   // warm the model up while the user picks a photo
 </script>

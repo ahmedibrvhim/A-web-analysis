@@ -303,7 +303,7 @@ async function analyze(img) {
   return { ok: true, stats, steps, level,
     cropUrl: levelAndCrop(img, lm, level ? 0 : roll, eyes.mid),
     correctionDeg: level ? 0 : -roll,
-    head: ['tv_ok_head'], reason: [level ? 'tv_ok_level' : 'tv_ok_tilt'] };
+    head: ['tv_ok_head'], reason: level ? ['tv_ok_level'] : ['tv_ok_tilt', { deg }] };
 }
 
 const txt = a => T(a[0], a[1] ? Object.fromEntries(Object.entries(a[1]).map(([k, v]) => [k, (k === 'dir') ? T(v) : v])) : {});
@@ -317,14 +317,7 @@ function renderVerdict(r) {
     return;
   }
   box.className = 'verdict ' + (r.ok ? 'ok' : 'bad');
-  const fmt = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '°';
-  const stats = r.stats ? `<div class="verdict-stats">
-      <div class="verdict-stat"><div class="val">${fmt(r.stats.yaw)}</div><div class="lbl">${esc(T('tv_stat_yaw'))}</div></div>
-      <div class="verdict-stat"><div class="val">${fmt(r.stats.roll)}</div><div class="lbl">${esc(T('tv_stat_roll'))}</div></div></div>` : '';
-  const steps = r.steps ? '<ol class="verdict-steps">' + r.steps.map(x => `<li>${esc(txt(x))}</li>`).join('') + '</ol>' : '';
-  const note = r.ok ? `<p>${esc(T(r.level ? 'tv_crop_only' : 'tv_crop_leveled'))}</p>` : '';
-  const refs = r.ok ? `<div class="verdict-refs">${esc(T('tv_refs'))}</div>` : '';
-  box.innerHTML = `<div class="verdict-head">${esc(txt(r.head))}</div><p>${esc(txt(r.reason))}</p>${stats}${steps}${note}${refs}`;
+  box.innerHTML = `<div class="verdict-head">${esc(txt(r.head))}</div><p>${esc(txt(r.reason))}</p>`;
   if (r.ok) { $('continueNav').style.display = 'flex'; $('continueBtn').disabled = false; }
 }
 

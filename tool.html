@@ -206,7 +206,6 @@ renderStatic();
 /* ── FACE ANALYSIS (runs fully in the browser with MediaPipe) ── */
 const RULES = {
   yawMax: 15,       // deg — beyond this the head is turned (¾ view / profile)
-  pitchMax: 3,      // deg — pitch tolerance. "Any" pitch is impossible to measure at 0.0, so this is the noise floor. Lower = stricter.
   rollLevel: 0.5    // deg — below this the pupillary line counts as already level
 };
 let landmarker = null, modelFailed = false;
@@ -229,15 +228,11 @@ async function getLandmarker() {
   return landmarker;
 }
 
-// Head pose (deg) from MediaPipe's 4x4 column-major transform. +pitch = chin up.
+// Head yaw (deg) from MediaPipe's 4x4 column-major transform.
 function headPose(result) {
   const m = result.facialTransformationMatrixes?.[0]?.data;
   if (!m) return null;
-  const deg = r => r * 180 / Math.PI;
-  return {
-    pitch: deg(Math.atan2(m[6], m[10])),
-    yaw:   deg(Math.asin(Math.max(-1, Math.min(1, -m[2])))),
-  };
+  return { yaw: Math.asin(Math.max(-1, Math.min(1, -m[2]))) * 180 / Math.PI };
 }
 
 // Pupillary line angle vs true horizontal. Image y points down, so a positive
@@ -247,6 +242,28 @@ function pupilRoll(lm, w, h) {
   const A = hasIris ? lm[468] : lm[33], B = hasIris ? lm[473] : lm[263];
   const [L, R] = A.x <= B.x ? [A, B] : [B, A];     // L = left in the picture
   return Math.atan2((R.y - L.y) * h, (R.x - L.x) * w) * 180 / Math.PI;
+}
+
+// Crop to the head incl. hair. The mesh only covers the face (forehead→chin), so the
+// box is the face extents padded for hair/ears, forced to 4:5 and kept inside the photo.
+const CROP = { top: 0.65, bottom: 0.22, side: 0.5, aspect: 4 / 5, maxSide: 1600 };
+function cropHead(img, lm) {
+  const W = img.naturalWidth, H = img.naturalHeight;
+  let x0 = 1, x1 = 0, y0 = 1, y1 = 0;
+  lm.forEach(p => { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); });
+  const fw = (x1 - x0) * W, fh = (y1 - y0) * H, cx = (x0 + x1) / 2 * W;
+  let top = y0 * H - fh * CROP.top, bottom = y1 * H + fh * CROP.bottom;
+  let h = bottom - top, w = Math.max(fw * (1 + 2 * CROP.side), h * CROP.aspect);
+  h = Math.max(h, w / CROP.aspect);                          // keep the 4:5 shape
+  if (w > W) { w = W; h = w / CROP.aspect; }
+  if (h > H) { h = H; w = h * CROP.aspect; }
+  let x = cx - w / 2, y = top - (h - (bottom - top)) / 2;    // extra height split top/bottom
+  x = Math.max(0, Math.min(W - w, x)); y = Math.max(0, Math.min(H - h, y));
+  const k = Math.min(1, CROP.maxSide / Math.max(w, h));
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * k); c.height = Math.round(h * k);
+  c.getContext('2d').drawImage(img, x, y, w, h, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.92);
 }
 
 async function analyze(img) {
@@ -263,19 +280,12 @@ async function analyze(img) {
   const pose = headPose(res);
   if (!pose) return { error: 'Could not read the head pose from this image.' };
   const roll = pupilRoll(res.faceLandmarks[0], img.naturalWidth, img.naturalHeight);
-  const stats = { yaw: pose.yaw, pitch: pose.pitch, roll };
+  const stats = { yaw: pose.yaw, roll };
 
   if (Math.abs(pose.yaw) > RULES.yawMax) return { ok: false, stats, head: 'REJECTED: Image must be a direct, front-facing portrait.',
     reason: `The head is turned ${Math.abs(pose.yaw).toFixed(1)}° (limit ${RULES.yawMax}°). A profile or three-quarters view breaks the bilateral symmetry that Powell & Humphreys' Facial Aesthetic Analysis relies on.` };
 
-  // 2. Pitch & vertical alignment (the lower-third rule)
-  if (Math.abs(pose.pitch) > RULES.pitchMax) {
-    const dir = pose.pitch > 0 ? 'Chin Up' : 'Chin Down';
-    return { ok: false, stats, head: `REJECTED: Excessive pitch deviation detected (Chin Up/Down).`,
-      reason: `Detected: ${dir}, ${Math.abs(pose.pitch).toFixed(1)}° from level. Vertical head tilting distorts the calculation of the facial lower-third. Accurate structural mapping requires the Frankfort Horizontal Plane to be parallel to the ground.` };
-  }
-
-  // 3. Smart geometric correction (roll)
+  // 2. Smart geometric correction (roll)
   const abs = Math.abs(roll);
   let steps;
   if (abs < RULES.rollLevel) {
@@ -289,10 +299,10 @@ async function analyze(img) {
       'Re-check that both pupils now sit on the same horizontal line.'
     ];
   }
-  return { ok: true, stats, steps, correctionDeg: abs < RULES.rollLevel ? 0 : -roll, head: 'APPROVED',
+  return { ok: true, stats, steps, cropUrl: cropHead(img, res.faceLandmarks[0]), correctionDeg: abs < RULES.rollLevel ? 0 : -roll, head: 'APPROVED',
     reason: abs < RULES.rollLevel
-      ? 'Single human subject, front-facing, pitch within tolerance.'
-      : 'Single human subject, front-facing, pitch within tolerance. A minor roll tilt was found, so a Smart Correction is provided.' };
+      ? 'Single human subject, front-facing.'
+      : 'Single human subject, front-facing. A minor roll tilt was found, so a Smart Correction is provided.' };
 }
 
 function renderVerdict(r) {
@@ -308,11 +318,11 @@ function renderVerdict(r) {
   const fmt = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '°';
   const stats = r.stats ? `<div class="verdict-stats">
       <div class="verdict-stat"><div class="val">${fmt(r.stats.yaw)}</div><div class="lbl">Yaw</div></div>
-      <div class="verdict-stat"><div class="val">${fmt(r.stats.pitch)}</div><div class="lbl">Pitch</div></div>
       <div class="verdict-stat"><div class="val">${fmt(r.stats.roll)}</div><div class="lbl">Roll (pupils)</div></div></div>` : '';
   const steps = r.steps ? '<ol class="verdict-steps">' + r.steps.map(x => `<li>${x}</li>`).join('') + '</ol>' : '';
-  const refs = r.ok ? `<div class="verdict-refs">Pitch balance: Frankfort Horizontal Plane · Thirds: Leonardo da Vinci's Divine Proportion (lower-third = Subnasale → Menton) · Symmetry: Powell &amp; Humphreys, <i>Facial Aesthetic Analysis</i></div>` : '';
-  box.innerHTML = `<div class="verdict-head"></div><p></p>${stats}${steps}${refs}`;
+  const cropNote = r.ok ? '<p>The photo was automatically cropped to your head and hair.</p>' : '';
+  const refs = r.ok ? `<div class="verdict-refs">Thirds: Leonardo da Vinci's Divine Proportion (lower-third = Subnasale → Menton) · Symmetry: Powell &amp; Humphreys, <i>Facial Aesthetic Analysis</i></div>` : '';
+  box.innerHTML = `<div class="verdict-head"></div><p></p>${stats}${steps}${cropNote}${refs}`;
   box.querySelector('.verdict-head').textContent = r.head;
   box.querySelector('p').textContent = r.reason;
   if (r.ok) { $('continueNav').style.display = 'flex'; $('continueBtn').disabled = false; }
@@ -320,7 +330,7 @@ function renderVerdict(r) {
 
 /* ── UPLOADER ── */
 let currentImage = null;   // HTMLImageElement of the uploaded photo
-let validation = null;     // last verdict — { ok, stats, correctionDeg, ... }
+let validation = null;     // last verdict — { ok, stats, correctionDeg, cropUrl, cropped (Image), ... }
 
 function showMsg(text) {
   const el = $('toolMsg');
@@ -354,6 +364,7 @@ async function handleFile(file) {
   const r = await analyze(img);
   if (img !== currentImage) return;            // user swapped the photo mid-analysis
   validation = r;
+  if (r.ok && r.cropUrl) { $('previewImg').src = r.cropUrl; try { validation.cropped = await loadImage(r.cropUrl); } catch (e) {} }
   renderVerdict(r);
 }
 $('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));

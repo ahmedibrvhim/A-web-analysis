@@ -2,7 +2,7 @@
 <html lang="en" id="htmlRoot">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>A | Lower Third</title>
 <link rel="stylesheet" href="style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -97,7 +97,7 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
 
 
 /* ── STEP 2 · landmark review ── */
-#step2{display:none}
+#step2{display:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 #step2.active{display:block;animation:stepIn .45s ease}
 .lm-stage{position:relative;background:#000;border:1px solid var(--border);display:flex;justify-content:center;overflow:hidden}
 .lm-stage canvas{display:block;max-width:100%;pointer-events:none;user-select:none;-webkit-user-select:none}
@@ -118,7 +118,7 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
 .lm-dash{display:flex;gap:22px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:18px;padding:20px 16px;border:1px solid var(--border);background:var(--panel);direction:ltr}
 .lm-cap{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-top:7px}
 .lm-pad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:5px}
-.lm-pad button{display:flex;align-items:center;justify-content:center;background:rgba(139,0,0,.12);border:1px solid var(--smoke);color:var(--crimson);cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;transition:background .15s,border-color .15s}
+.lm-pad button{touch-action:none;-webkit-touch-callout:none;display:flex;align-items:center;justify-content:center;background:rgba(139,0,0,.12);border:1px solid var(--smoke);color:var(--crimson);cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;transition:background .15s,border-color .15s}
 .lm-pad button:hover{border-color:var(--crimson)}
 .lm-pad button:active,.lm-pad button.hold{background:var(--blood);color:var(--white);border-color:var(--crimson)}
 .lm-pad svg{width:20px;height:20px}
@@ -226,15 +226,12 @@ html[dir=rtl] .lm-side{direction:rtl}
             <button type="button" data-step="coarse" data-i18n="tool_dash_step_coarse">Coarse</button>
           </div>
         </div>
-        <button class="btn-ghost" type="button" id="lmNext" data-i18n="s2_next_point">Next point</button>
-        <button class="btn-ghost" type="button" id="lmResetPt" data-i18n="s2_reset_point">Reset point</button>
       </div>
     </div>
     <p class="lm-note" style="margin-top:12px" data-i18n="s2_keys_tip"></p>
     <div class="lm-progress" id="lmProgress"></div>
     <div class="tool-nav">
       <button class="btn-ghost" type="button" id="s2Back" data-i18n="tool_back">← Back</button>
-      <button class="btn-ghost" type="button" id="lmResetAll" data-i18n="s2_reset_all">Reset all</button>
       <button class="btn-solid" type="button" id="s2Confirm" disabled data-i18n="s2_confirm">Confirm Landmarks →</button>
     </div>
   </section>
@@ -518,6 +515,40 @@ function findHairline(img, p10, p9, fw, fh) {
   return null;
 }
 
+
+/* Upper-lip border (Ls): the mesh runs low on the upper lip, so look for the thin bright
+   vermilion ridge just above the dark mouth line, on the midline. Returns null if not clear. */
+function findUpperLip(img, p0, p13, p14, fw, fh) {
+  try {
+    const W = img.naturalWidth, H = img.naturalHeight;
+    const band = Math.max(2, Math.round(0.02 * fw));
+    const x0 = clamp(Math.round(p0.x - band), 0, W - 1), bw = Math.max(1, Math.min(W - x0, band * 2));
+    const yA = clamp(Math.round(p0.y - 0.10 * fh), 0, H - 2), yB = clamp(Math.round(p14.y + 0.04 * fh), yA + 2, H - 1);
+    const c = document.createElement('canvas'); c.width = bw; c.height = yB - yA;
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.drawImage(img, x0, yA, bw, yB - yA, 0, 0, bw, yB - yA);
+    const d = g.getImageData(0, 0, bw, yB - yA).data, n = yB - yA, L = new Float32Array(n);
+    for (let y = 0; y < n; y++) { let sum = 0; for (let x = 0; x < bw; x++) { const k = (y * bw + x) * 4; sum += 0.299 * d[k] + 0.587 * d[k + 1] + 0.114 * d[k + 2]; } L[y] = sum / bw; }
+    const sm = new Float32Array(n);
+    for (let y = 0; y < n; y++) { let s = 0, m = 0; for (let k = -1; k <= 1; k++) { const i = y + k; if (i >= 0 && i < n) { s += L[i]; m++; } } sm[y] = s / m; }
+    // mouth line = darkest row near the inner-lip landmarks
+    const mid = (p13.y + p14.y) / 2 - yA, r = Math.round(0.04 * fh);
+    let S = -1, best = Infinity;
+    for (let y = Math.max(1, Math.round(mid - r)); y < Math.min(n - 1, Math.round(mid + r)); y++) if (sm[y] < best) { best = sm[y]; S = y; }
+    if (S < 0) return null;
+    // brightest local ridge between 1.2% and 7.5% of the face height above the mouth line
+    const lo = Math.max(1, S - Math.round(0.075 * fh)), hi = S - Math.round(0.012 * fh);
+    let peak = -1, pv = -Infinity, mn = Infinity;
+    for (let y = lo; y <= hi; y++) {
+      mn = Math.min(mn, sm[y]);
+      if (sm[y] > pv && sm[y] >= sm[y - 1] && sm[y] >= sm[y + 1]) { pv = sm[y]; peak = y; }
+    }
+    if (peak < 0 || pv - mn < 18) return null;                // not a clear ridge → keep the fallback
+    return yA + peak;
+  } catch (e) { console.warn('upper-lip scan failed', e); }
+  return null;
+}
+
 async function detectLandmarks(img) {
   const W = img.naturalWidth, H = img.naturalHeight;
   const lmk = await getLandmarker();
@@ -531,14 +562,15 @@ async function detectLandmarks(img) {
         const fw = x1 - x0, fh = y1 - y0;
         const p10 = P(10), p9 = P(9), p168 = P(168), p2 = P(2), p164 = P(164);
         const hl = findHairline(img, p10, p9, fw, fh);
+        const lsY = findUpperLip(img, P(0), P(13), P(14), fw, fh);
         const mix = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
         return {
           detected: true, hairEst: hl === null,
           pts: {
             Tr: { x: p10.x, y: hl ?? p10.y - 0.14 * fh },   // true hairline (scan) — mesh top sits mid-forehead
             N:  mix(p9, p168, 0.5),                         // brow dip, between glabella and bridge
-            Sn: mix(p2, p164, 0.35),                        // where the nose base meets the upper lip
-            Ls: { x: P(0).x, y: P(0).y - 0.004 * fh },      // upper-lip vermilion border (mesh sits ~3px low at the cupid's-bow dip)
+            Sn: p2,                                         // base of the nose where the columella meets the lip
+            Ls: { x: P(0).x, y: lsY ?? P(0).y - 0.012 * fh },  // upper-lip vermilion border (snapped to the bright ridge; mesh runs low here)
             Li: P(17),                                      // lower-lip vermilion border
             Me: P(152)                                      // chin bottom
           }
@@ -658,6 +690,8 @@ function nudge(dx, dy, coarse) {
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('lmPad').addEventListener(ev, stop));
   window.addEventListener('blur', stop);
   $('lmPad').addEventListener('contextmenu', e => e.preventDefault());
+  ['touchstart', 'touchend', 'touchmove'].forEach(ev => $('lmPad').addEventListener(ev, e => e.preventDefault(), { passive: false }));
+  ['dblclick', 'gesturestart', 'gesturechange'].forEach(ev => document.addEventListener(ev, e => { if ($('step2').classList.contains('active')) e.preventDefault(); }, { passive: false }));
 })();
 
 document.addEventListener('keydown', e => {
@@ -669,13 +703,6 @@ document.addEventListener('keydown', e => {
 
 $('lmChips').addEventListener('click', e => { const c = e.target.closest('.lm-chip'); if (c) select(+c.dataset.i); });
 $('lmSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && s2) { s2.stepKey = b.dataset.step; renderStep2(); } });
-$('lmNext').addEventListener('click', () => select(s2 ? s2.sel + 1 : 0));
-$('lmResetPt').addEventListener('click', () => { if (!s2) return; const p = s2.pts[LM[s2.sel].id]; p.x = p.ax; p.y = p.ay; draw(); });
-$('lmResetAll').addEventListener('click', () => {
-  if (!s2) return;
-  LM.forEach(m => { const p = s2.pts[m.id]; p.x = p.ax; p.y = p.ay; p.seen = false; });
-  s2.sel = 0; s2.pts[LM[0].id].seen = true; renderStep2(); draw();
-});
 $('s2Back').addEventListener('click', () => {
   $('step2').classList.remove('active');
   $('previewBox').style.display = 'block';

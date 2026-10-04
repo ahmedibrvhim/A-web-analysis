@@ -193,7 +193,7 @@ function renderStatic() {
   $('uploaderCta').innerHTML = `${t('tool_drop_prefix', lang)} <span class="browse-word">${t('tool_drop_browse', lang)}</span>`;
   const lb = $('logoutBtn'); if (lb) lb.textContent = t('sign_out', lang);
 }
-function onLangChange(next) { lang = next; applyDocumentDirection(next); applyTranslations(next); renderStatic(); }
+function onLangChange(next) { lang = next; applyDocumentDirection(next); applyTranslations(next); renderStatic(); if (validation) renderVerdict(validation); }
 wireLangToggle($('navLang'), lang, onLangChange);
 window.toggleMobileNav = () => {
   ['hamburger', 'navLinks', 'navRight'].forEach(id => $(id).classList.toggle(id === 'hamburger' ? 'open' : 'mobile-open'));
@@ -204,6 +204,7 @@ $('navLinks').addEventListener('click', e => {
 renderStatic();
 
 /* ── FACE ANALYSIS (runs fully in the browser with MediaPipe) ── */
+const T = (key, params = {}) => t(key, lang).replace(/\{(\w+)\}/g, (_, k) => params[k] ?? '');
 const RULES = {
   yawMax: 15,       // deg — beyond this the head is turned (¾ view / profile)
   rollLevel: 0.5    // deg — below this the pupillary line counts as already level
@@ -229,113 +230,112 @@ async function getLandmarker() {
 }
 
 // Head yaw (deg) from MediaPipe's 4x4 column-major transform.
-function headPose(result) {
+function headYaw(result) {
   const m = result.facialTransformationMatrixes?.[0]?.data;
-  if (!m) return null;
-  return { yaw: Math.asin(Math.max(-1, Math.min(1, -m[2]))) * 180 / Math.PI };
+  return m ? Math.asin(Math.max(-1, Math.min(1, -m[2]))) * 180 / Math.PI : null;
 }
 
-// Pupillary line angle vs true horizontal. Image y points down, so a positive
-// angle means the line slopes down to the right (visually clockwise).
-function pupilRoll(lm, w, h) {
+// Pupil centers in pixels + the line angle vs true horizontal.
+// Image y points down, so a positive angle = line slopes down to the right (visually clockwise).
+function pupils(lm, w, h) {
   const hasIris = lm.length > 473;
   const A = hasIris ? lm[468] : lm[33], B = hasIris ? lm[473] : lm[263];
   const [L, R] = A.x <= B.x ? [A, B] : [B, A];     // L = left in the picture
-  return Math.atan2((R.y - L.y) * h, (R.x - L.x) * w) * 180 / Math.PI;
+  const l = { x: L.x * w, y: L.y * h }, r = { x: R.x * w, y: R.y * h };
+  return { angle: Math.atan2(r.y - l.y, r.x - l.x) * 180 / Math.PI, mid: { x: (l.x + r.x) / 2, y: (l.y + r.y) / 2 } };
 }
 
-// Crop to the head incl. hair. The mesh only covers the face (forehead→chin), so the
-// box is the face extents padded for hair/ears, forced to 4:5 and kept inside the photo.
-const CROP = { top: 0.65, bottom: 0.22, side: 0.5, aspect: 4 / 5, maxSide: 1600 };
-function cropHead(img, lm) {
-  const W = img.naturalWidth, H = img.naturalHeight;
-  let x0 = 1, x1 = 0, y0 = 1, y1 = 0;
-  lm.forEach(p => { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); });
-  const fw = (x1 - x0) * W, fh = (y1 - y0) * H, cx = (x0 + x1) / 2 * W;
-  let top = y0 * H - fh * CROP.top, bottom = y1 * H + fh * CROP.bottom;
+// Level the photo (rotate so the pupil line is horizontal), then crop to head + hair.
+// The mesh only covers the face (forehead→chin), so the box is the face extents padded for hair/ears.
+const CROP = { top: 0.5, bottom: 0.12, side: 0.32, aspect: 4 / 5, maxSide: 1600 };
+function levelAndCrop(img, lm, rollDeg, pivot) {
+  const W = img.naturalWidth, H = img.naturalHeight, r = rollDeg * Math.PI / 180;
+  const cos = Math.cos(r), sin = Math.sin(r);
+  // landmarks in the LEVELED frame: rotate by -roll around the pivot
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  lm.forEach(p => {
+    const dx = p.x * W - pivot.x, dy = p.y * H - pivot.y;
+    const x = pivot.x + dx * cos + dy * sin, y = pivot.y - dx * sin + dy * cos;
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+  });
+  const fw = x1 - x0, fh = y1 - y0, cx = (x0 + x1) / 2;
+  const top = y0 - fh * CROP.top, bottom = y1 + fh * CROP.bottom;
   let h = bottom - top, w = Math.max(fw * (1 + 2 * CROP.side), h * CROP.aspect);
-  h = Math.max(h, w / CROP.aspect);                          // keep the 4:5 shape
-  if (w > W) { w = W; h = w / CROP.aspect; }
-  if (h > H) { h = H; w = h * CROP.aspect; }
-  let x = cx - w / 2, y = top - (h - (bottom - top)) / 2;    // extra height split top/bottom
-  x = Math.max(0, Math.min(W - w, x)); y = Math.max(0, Math.min(H - h, y));
+  h = Math.max(h, w / CROP.aspect);
+  const bx = cx - w / 2, by = top - (h - (bottom - top)) / 2;
   const k = Math.min(1, CROP.maxSide / Math.max(w, h));
   const c = document.createElement('canvas');
   c.width = Math.round(w * k); c.height = Math.round(h * k);
-  c.getContext('2d').drawImage(img, x, y, w, h, 0, 0, c.width, c.height);
+  const g = c.getContext('2d');
+  g.fillStyle = '#0b0b0b'; g.fillRect(0, 0, c.width, c.height);   // only visible if the box leaves the photo
+  g.scale(k, k); g.translate(-bx, -by);
+  g.translate(pivot.x, pivot.y); g.rotate(-r); g.translate(-pivot.x, -pivot.y);
+  g.drawImage(img, 0, 0);
   return c.toDataURL('image/jpeg', 0.92);
 }
 
 async function analyze(img) {
   const lmk = await getLandmarker();
-  if (!lmk) return { error: 'The face model could not be loaded. Check your connection and try again.' };
+  if (!lmk) return { error: 'tv_err_model' };
   let res;
-  try { res = lmk.detect(img); } catch (e) { console.error(e); return { error: 'Could not analyze this image.' }; }
+  try { res = lmk.detect(img); } catch (e) { console.error(e); return { error: 'tv_err_analyze' }; }
   const faces = res?.faceLandmarks?.length || 0;
 
   // 1. Object detection & strict compliance
-  if (faces !== 1) return { ok: false, head: 'REJECTED: Subject must be a single human being.',
-    reason: faces === 0 ? 'No human face was detected in this image.' : 'More than one person was detected in this image.' };
+  if (faces !== 1) return { ok: false, head: ['tv_rej_human'], reason: [faces === 0 ? 'tv_rej_human_none' : 'tv_rej_human_multi'] };
 
-  const pose = headPose(res);
-  if (!pose) return { error: 'Could not read the head pose from this image.' };
-  const roll = pupilRoll(res.faceLandmarks[0], img.naturalWidth, img.naturalHeight);
-  const stats = { yaw: pose.yaw, roll };
+  const yaw = headYaw(res);
+  if (yaw === null) return { error: 'tv_err_pose' };
+  const lm = res.faceLandmarks[0];
+  const eyes = pupils(lm, img.naturalWidth, img.naturalHeight);
+  const roll = eyes.angle, abs = Math.abs(roll);
+  const stats = { yaw, roll };
 
-  if (Math.abs(pose.yaw) > RULES.yawMax) return { ok: false, stats, head: 'REJECTED: Image must be a direct, front-facing portrait.',
-    reason: `The head is turned ${Math.abs(pose.yaw).toFixed(1)}° (limit ${RULES.yawMax}°). A profile or three-quarters view breaks the bilateral symmetry that Powell & Humphreys' Facial Aesthetic Analysis relies on.` };
+  if (Math.abs(yaw) > RULES.yawMax) return { ok: false, stats, head: ['tv_rej_front'],
+    reason: ['tv_rej_front_why', { deg: Math.abs(yaw).toFixed(1), max: RULES.yawMax }] };
 
-  // 2. Smart geometric correction (roll)
-  const abs = Math.abs(roll);
-  let steps;
-  if (abs < RULES.rollLevel) {
-    steps = ['The pupillary line is already level (' + roll.toFixed(2) + '°). No rotation needed.'];
-  } else {
-    const dir = roll > 0 ? 'counter-clockwise' : 'clockwise';
-    steps = [
-      'Draw a line through the centers of both pupils.',
-      `Measure its angle against a true horizontal baseline: ${abs.toFixed(1)}°.`,
-      `Rotate the image ${abs.toFixed(1)} degrees ${dir} to level the pupillary line.`,
-      'Re-check that both pupils now sit on the same horizontal line.'
-    ];
-  }
-  return { ok: true, stats, steps, cropUrl: cropHead(img, res.faceLandmarks[0]), correctionDeg: abs < RULES.rollLevel ? 0 : -roll, head: 'APPROVED',
-    reason: abs < RULES.rollLevel
-      ? 'Single human subject, front-facing.'
-      : 'Single human subject, front-facing. A minor roll tilt was found, so a Smart Correction is provided.' };
+  // 2. Smart geometric correction — actually applied to the image
+  const level = abs < RULES.rollLevel;
+  const deg = abs.toFixed(1);
+  const steps = level
+    ? [['tv_step_level', { deg: roll.toFixed(2) }]]
+    : [['tv_step1'], ['tv_step2', { deg }], ['tv_step3', { deg, dir: roll > 0 ? 'tv_ccw' : 'tv_cw' }], ['tv_step4']];
+  return { ok: true, stats, steps, level,
+    cropUrl: levelAndCrop(img, lm, level ? 0 : roll, eyes.mid),
+    correctionDeg: level ? 0 : -roll,
+    head: ['tv_ok_head'], reason: [level ? 'tv_ok_level' : 'tv_ok_tilt'] };
 }
 
+const txt = a => T(a[0], a[1] ? Object.fromEntries(Object.entries(a[1]).map(([k, v]) => [k, (k === 'dir') ? T(v) : v])) : {});
 function renderVerdict(r) {
   const box = $('verdict');
   box.style.display = 'block';
+  const esc = v => String(v).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   if (r.error) {
     box.className = 'verdict bad';
-    box.innerHTML = '<div class="verdict-head">Analysis failed</div><p></p>';
-    box.querySelector('p').textContent = r.error;
+    box.innerHTML = `<div class="verdict-head">${esc(T('tv_failed'))}</div><p>${esc(T(r.error))}</p>`;
     return;
   }
   box.className = 'verdict ' + (r.ok ? 'ok' : 'bad');
   const fmt = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '°';
   const stats = r.stats ? `<div class="verdict-stats">
-      <div class="verdict-stat"><div class="val">${fmt(r.stats.yaw)}</div><div class="lbl">Yaw</div></div>
-      <div class="verdict-stat"><div class="val">${fmt(r.stats.roll)}</div><div class="lbl">Roll (pupils)</div></div></div>` : '';
-  const steps = r.steps ? '<ol class="verdict-steps">' + r.steps.map(x => `<li>${x}</li>`).join('') + '</ol>' : '';
-  const cropNote = r.ok ? '<p>The photo was automatically cropped to your head and hair.</p>' : '';
-  const refs = r.ok ? `<div class="verdict-refs">Thirds: Leonardo da Vinci's Divine Proportion (lower-third = Subnasale → Menton) · Symmetry: Powell &amp; Humphreys, <i>Facial Aesthetic Analysis</i></div>` : '';
-  box.innerHTML = `<div class="verdict-head"></div><p></p>${stats}${steps}${cropNote}${refs}`;
-  box.querySelector('.verdict-head').textContent = r.head;
-  box.querySelector('p').textContent = r.reason;
+      <div class="verdict-stat"><div class="val">${fmt(r.stats.yaw)}</div><div class="lbl">${esc(T('tv_stat_yaw'))}</div></div>
+      <div class="verdict-stat"><div class="val">${fmt(r.stats.roll)}</div><div class="lbl">${esc(T('tv_stat_roll'))}</div></div></div>` : '';
+  const steps = r.steps ? '<ol class="verdict-steps">' + r.steps.map(x => `<li>${esc(txt(x))}</li>`).join('') + '</ol>' : '';
+  const note = r.ok ? `<p>${esc(T(r.level ? 'tv_crop_only' : 'tv_crop_leveled'))}</p>` : '';
+  const refs = r.ok ? `<div class="verdict-refs">${esc(T('tv_refs'))}</div>` : '';
+  box.innerHTML = `<div class="verdict-head">${esc(txt(r.head))}</div><p>${esc(txt(r.reason))}</p>${stats}${steps}${note}${refs}`;
   if (r.ok) { $('continueNav').style.display = 'flex'; $('continueBtn').disabled = false; }
 }
 
 /* ── UPLOADER ── */
 let currentImage = null;   // HTMLImageElement of the uploaded photo
-let validation = null;     // last verdict — { ok, stats, correctionDeg, cropUrl, cropped (Image), ... }
+let validation = null;     // last verdict — { ok, stats, correctionDeg, cropUrl, cropped (leveled Image), ... }
 
-function showMsg(text) {
+function showMsg(key) {
   const el = $('toolMsg');
-  el.textContent = text;
-  el.className = 'msg-bar' + (text ? ' error' : '');
+  el.textContent = key ? T(key) : '';
+  el.className = 'msg-bar' + (key ? ' error' : '');
 }
 function loadImage(src) {
   return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
@@ -347,10 +347,10 @@ function resetVerdict() {
   $('continueBtn').disabled = true;
 }
 async function handleFile(file) {
-  if (!file || !file.type.startsWith('image/')) { showMsg('Please choose an image file.'); return; }
+  if (!file || !file.type.startsWith('image/')) { showMsg('tv_err_not_image'); return; }
   let img;
   try { img = await loadImage(URL.createObjectURL(file)); }
-  catch (e) { showMsg('Could not read this image.'); return; }
+  catch (e) { showMsg('tv_err_read'); return; }
   currentImage = img; resetVerdict();
   $('previewImg').src = img.src;
   $('fileName').textContent = file.name;
@@ -360,11 +360,11 @@ async function handleFile(file) {
 
   const box = $('verdict');
   box.className = 'verdict'; box.style.display = 'block';
-  box.innerHTML = '<div class="verdict-loading"><span class="mini-spinner"></span>Analyzing facial geometry…</div>';
+  box.innerHTML = `<div class="verdict-loading"><span class="mini-spinner"></span>${T('tv_analyzing')}</div>`;
   const r = await analyze(img);
   if (img !== currentImage) return;            // user swapped the photo mid-analysis
   validation = r;
-  if (r.ok && r.cropUrl) { $('previewImg').src = r.cropUrl; try { validation.cropped = await loadImage(r.cropUrl); } catch (e) {} }
+  if (r.ok && r.cropUrl) { $('previewImg').src = r.cropUrl; try { r.cropped = await loadImage(r.cropUrl); } catch (e) {} }
   renderVerdict(r);
 }
 $('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));

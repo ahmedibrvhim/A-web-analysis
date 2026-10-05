@@ -394,8 +394,7 @@ const $ = id => document.getElementById(id);
     s3_tilt_high: 'Your canthal tilt is {v}, very upward. The eyes look sharp and angled.',
     s3_sym_ok: 'Your face is well balanced left to right, with an asymmetry of {v}.',
     s3_sym_bad: 'There is noticeable left to right asymmetry, {v}. A straight, evenly lit photo can help.',
-    s3_say_best: 'Your strongest feature is {m}, at {v}.',
-    tv_rej_pitch_why: 'Your head is tilted up or down by {deg}° (max {max}°). Look straight at the camera with the chin level and retake the photo.', s3_m_hollow: 'Cheek hollowness'
+    s3_say_best: 'Your strongest feature is {m}, at {v}.'
   });
   Object.assign(dict.ar, {
     s2_axis_xy: 'تقيس موضع العين',
@@ -416,8 +415,7 @@ const $ = id => document.getElementById(id);
     s3_tilt_high: 'ميل زاوية عينك {v}، مرتفع جداً. تبدو العينان حادتين ومائلتين للأعلى.',
     s3_sym_ok: 'وجهك متوازن من اليمين إلى اليسار، وعدم التناظر {v}.',
     s3_sym_bad: 'هناك عدم تناظر واضح بين اليمين واليسار، {v}. صورة مستقيمة وبإضاءة متساوية قد تساعد.',
-    s3_say_best: 'أقوى ملامحك هي {m}، بقيمة {v}.',
-    tv_rej_pitch_why: 'رأسك مائل للأعلى أو للأسفل بمقدار {deg}° (الحد {max}°). انظر مباشرة للكاميرا مع إبقاء الذقن مستوية وأعد التصوير.', s3_m_hollow: 'غور الخدود'
+    s3_say_best: 'أقوى ملامحك هي {m}، بقيمة {v}.'
   });
 })();
 
@@ -463,7 +461,7 @@ renderStatic();
 /* ── FACE ANALYSIS (runs fully in the browser with MediaPipe) ── */
 const T = (key, params = {}) => String(t(key, lang) ?? key).replace(/\{(\w+)\}/g, (_, k) => params[k] ?? '');
 const RULES = {
-  yawMax: 8, pitchMax: 12,       // deg — beyond this the head is turned (¾ view / profile)
+  yawMax: 15,       // deg — beyond this the head is turned (¾ view / profile)
   rollLevel: 0.5    // deg — below this the pupillary line counts as already level
 };
 let landmarker = null, modelFailed = false;
@@ -489,10 +487,7 @@ async function getLandmarker() {
 // Head yaw (deg) from MediaPipe's 4x4 column-major transform.
 function headYaw(result) {
   const m = result.facialTransformationMatrixes?.[0]?.data;
-  if (!m) return null;
-  const sc = Math.hypot(m[0], m[1], m[2]) || 1;                       // remove the matrix scale
-  return { yaw: Math.asin(Math.max(-1, Math.min(1, -m[2] / sc))) * 180 / Math.PI,
-           pitch: Math.atan2(m[6], m[10]) * 180 / Math.PI };           // chin up / down
+  return m ? Math.asin(Math.max(-1, Math.min(1, -m[2]))) * 180 / Math.PI : null;
 }
 
 // Pupil centers in pixels + the line angle vs true horizontal.
@@ -554,7 +549,7 @@ async function analyze(img) {
   // 1. Object detection & strict compliance
   if (faces !== 1) return { ok: false, head: ['tv_rej_human'], reason: [faces === 0 ? 'tv_rej_human_none' : 'tv_rej_human_multi'] };
 
-  const pose = headYaw(res), yaw = pose ? pose.yaw : null;
+  const yaw = headYaw(res);
   if (yaw === null) return { error: 'tv_err_pose' };
   const lm = res.faceLandmarks[0];
   const eyes = pupils(lm, img.naturalWidth, img.naturalHeight);
@@ -563,9 +558,6 @@ async function analyze(img) {
 
   if (Math.abs(yaw) > RULES.yawMax) return { ok: false, stats, head: ['tv_rej_front'],
     reason: ['tv_rej_front_why', { deg: Math.abs(yaw).toFixed(1), max: RULES.yawMax }] };
-
-  if (Number.isFinite(pose.pitch) && Math.abs(pose.pitch) > RULES.pitchMax) return { ok: false, stats, head: ['tv_rej_front'],
-    reason: ['tv_rej_pitch_why', { deg: Math.abs(pose.pitch).toFixed(1), max: RULES.pitchMax }] };
 
   // 2. Smart geometric correction — actually applied to the image
   const level = abs < RULES.rollLevel;
@@ -806,16 +798,6 @@ async function detectLandmarks(img) {
           return pt;
         };
         [zl, zr, gl, gr].forEach((q, i) => { const sn = snapEdge(q, i % 2 ? 'r' : 'l'); q.x = sn.x; });
-        // mid-cheek contour (half way between cheekbone and jaw level) -> cheek hollowness
-        const OVAL = [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
-        const yK = (zl.y + gl.y) / 2;
-        const kEdge = side => {
-          const c = OVAL.map(P).filter(p => Math.abs(p.y - yK) < 0.03 * fh && (side === 'l' ? p.x < mx : p.x > mx));
-          if (!c.length) return null;
-          const p = side === 'l' ? c.reduce((a, b) => a.x < b.x ? a : b) : c.reduce((a, b) => a.x > b.x ? a : b);
-          return { x: snapEdge({ x: p.x, y: yK }, side).x, y: yK };
-        };
-        const kl = kEdge('l'), kr = kEdge('r');
         // eyes: pupils (iris centers), inner + outer corners; brow top and mouth line on the midline
         const lrp = (a, b) => (a.x <= b.x ? [a, b] : [b, a]).map(q => ({ x: q.x, y: q.y }));
         const hasIris = lm.length > 473;
@@ -823,7 +805,7 @@ async function detectLandmarks(img) {
         const [exl, exr] = lrp(P(33), P(263)), [enl, enr] = lrp(P(133), P(362));
         const brY = (P(105).y + P(334).y) / 2, stY = (P(13).y + P(14).y) / 2;
         return {
-          detected: true, hairEst: hl === null, extra: (kl && kr) ? { Kl: kl, Kr: kr } : {},
+          detected: true, hairEst: hl === null,
           pts: {
             Tr: V(hl ?? p10.y - 0.14 * fh),                 // true hairline (scan) — mesh top sits mid-forehead
             N:  V(mix(p9, p168, 0.5).y),                    // brow dip, between glabella and bridge
@@ -862,7 +844,7 @@ async function openStep2() {
   if (validation !== src) return;                           // photo was swapped meanwhile
   const pts = {};
   LM.forEach((m, i) => { const p = r.pts[m.id]; pts[m.id] = { x: p.x, y: p.y, ax: p.x, ay: p.y, seen: i === 0 }; });   // first point is on screen from the start
-  s2 = { src, img, W: img.naturalWidth, H: img.naturalHeight, pts, sel: 0, stepKey: 'normal', detected: r.detected, hairEst: r.hairEst, extra: r.extra || {} };
+  s2 = { src, img, W: img.naturalWidth, H: img.naturalHeight, pts, sel: 0, stepKey: 'normal', detected: r.detected, hairEst: r.hairEst };
   $('lmBusy').style.display = 'none';
   const bar = $('s2Msg');
   if (!r.detected) { bar.className = 'msg-bar info'; bar.textContent = T('s2_fallback'); }
@@ -1003,7 +985,6 @@ $('s2Confirm').addEventListener('click', () => {
   if (!s2 || LM.some(m => !s2.pts[m.id].seen)) return;
   const out = {};
   LM.forEach(m => { const p = s2.pts[m.id]; out[m.id] = { x: +p.x.toFixed(2), y: +p.y.toFixed(2) }; });
-  if (s2.extra && s2.extra.Kl && s2.extra.Kr) { ['Kl', 'Kr'].forEach(k => out[k] = { x: +s2.extra[k].x.toFixed(2), y: +s2.extra[k].y.toFixed(2) }); }
   window.lowerThirdLandmarks = { front: { width: s2.W, height: s2.H, points: out, image: s2.img } };
   document.dispatchEvent(new CustomEvent('landmarks:confirmed', { detail: window.lowerThirdLandmarks }));
   $('step2').classList.remove('active');
@@ -1062,27 +1043,25 @@ function s3Measure() {
 
   const r = v.snStm / v.low, x = v.stmMe / v.snStm;
   const jaw = wd.gon / wd.zyg, mn = wd.mou / wd.nos;
-  const hollow = (P.Kl && P.Kr) ? (((wd.zyg + wd.gon) / 2 - hx('Kl', 'Kr')) / ((wd.zyg + wd.gon) / 2) * 100) : null;   // >0 = cheeks cut inward (hollow)
   const M = [
     { k: 'up',    name: 's3_m_up',    val: pct.up,  r: [31, 35.7],                    w: G(.6, .8),  f: 'pct' },
     { k: 'mid',   name: 's3_m_mid',   val: pct.mid, r: [31, 35.7],                    w: G(.8, 1),   f: 'pct' },
     { k: 'low',   name: 's3_m_low',   val: pct.low, r: G([32, 36], [30.5, 34.5]),     w: G(1.2, .9), f: 'pct' },
     { k: 'split', name: 's3_m_split', val: r,       r: [0.30, 0.37],                  w: 1,          f: 'split' },
     { k: 'jaw',   name: 's3_m_jaw',   val: jaw,     r: G([.78, .92], [.72, .86]),     w: G(1.6, 1),  f: 'n2' },
-    { k: 'mn',    name: 's3_m_mn',    val: mn,      r: G([1.2, 1.55], [1.25, 1.6]),   w: G(.6, .8),  f: 'n2' },
-    { k: 'fwhr',  name: 's3_m_fwhr',  val: wd.zyg / (y('Ls') - y('Br')), r: G([1.6, 1.9], [1.46, 1.72]), w: G(1.5, .6), f: 'n2' },
+    { k: 'mn',    name: 's3_m_mn',    val: mn,      r: G([1.35, 1.65], [1.4, 1.7]),   w: G(.6, .8),  f: 'n2' },
+    { k: 'fwhr',  name: 's3_m_fwhr',  val: wd.zyg / (y('Ls') - y('Br')), r: G([1.85, 2.2], [1.7, 2.0]), w: G(1.5, .6), f: 'n2' },
     { k: 'fidx',  name: 's3_m_fidx',  val: tot / wd.zyg, r: G([1.3, 1.5], [1.3, 1.52]), w: G(.8, .9), f: 'n2' },
     { k: 'ipdz',  name: 's3_m_ipdz',  val: wd.ipd / wd.zyg, r: [.43, .5],             w: G(.5, .7),  f: 'n2' },
-    { k: 'esp',   name: 's3_m_esp',   val: wd.icd / wd.eye, r: G([.95, 1.3], [.95, 1.2]), w: G(.8, 1.2), f: 'n2' },
+    { k: 'esp',   name: 's3_m_esp',   val: wd.icd / wd.eye, r: G([.95, 1.2], [.95, 1.15]), w: G(.8, 1.2), f: 'n2' },
     { k: 'tilt',  name: 's3_m_tilt',  val: tilt,    r: G([2, 8], [4, 10]),            w: G(1.2, 1.3), f: 'deg', scale: 6 },
     { k: 'midR',  name: 's3_m_midR',  val: wd.ipd / midH, r: G([.92, 1.1], [.95, 1.15]), w: G(1.2, 1.4), f: 'n2' },
     { k: 'nic',   name: 's3_m_nic',   val: wd.nos / wd.icd, r: G([1, 1.25], [.92, 1.15]), w: G(.5, .8), f: 'n2' },
-    { k: 'sym',   name: 's3_m_sym',   val: asym,    r: G([0, 4], [0, 3.5]),           w: G(1.3, 1.5), f: 'asym' },
-    ...(hollow === null ? [] : [{ k: 'hollow', name: 's3_m_hollow', val: hollow, r: [-9, -2], w: G(1.2, 1), f: 'asym', scale: 6 }])
+    { k: 'sym',   name: 's3_m_sym',   val: asym,    r: G([0, 4], [0, 3.5]),           w: G(1.3, 1.5), f: 'asym' }
   ];
   M.forEach(it => {
     const [a, b] = it.r, out = it.val < a ? a - it.val : it.val > b ? it.val - b : 0;
-    it.dev = out > 0 ? out / (it.scale || (it.val < a ? a : b)) : 0.025 * Math.abs(it.val - (a + b) / 2) / ((b - a) / 2);   // small pull toward the centre of the range
+    it.dev = out / (it.scale || (it.val < a ? a : b));
   });
   const dev = {}; M.forEach(it => dev[it.k] = it.dev);
   const penalty = M.reduce((t, it) => t + it.w * it.dev, 0) / M.reduce((t, it) => t + it.w, 0);
@@ -1145,8 +1124,6 @@ const FLAW = {
   sym:  { low:  { en: 'Your face is visibly asymmetric. The two sides do not match and the eye and mouth lines tilt off.', ar: 'وجهك غير متناسق بوضوح. الجانبان لا يتطابقان وخطوط العينين والفم مائلة.' },
           high: { en: 'Your face is visibly asymmetric. The two sides do not match and the eye and mouth lines tilt off.', ar: 'وجهك غير متناسق بوضوح. الجانبان لا يتطابقان وخطوط العينين والفم مائلة.' } }
 };
-FLAW.hollow = { low: { en: 'Cheeks are over-full and round. The jaw and cheekbone lines are hidden under soft tissue.', ar: 'الخدود ممتلئة ومستديرة أكثر من اللازم، وخطوط الفك وعظمة الخد مخفية تحت الأنسجة.' },
-          high: { en: 'Hollow, sunken cheeks. The face is gaunt, with the contour cutting inward under the cheekbones.', ar: 'خدود غائرة. الوجه نحيل والخط الخارجي ينحني للداخل تحت عظمة الخد.' } };
 const flawText = (k, dir, male) => { const e = FLAW[k][dir], o = e.m ? (male ? e.m : e.f) : e; return L(o.en, o.ar); };
 
 const TIER_LINE = {

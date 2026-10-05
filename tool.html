@@ -40,11 +40,6 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
   .user-pill { flex-wrap: wrap; width: 100%; gap: 8px; }
 }
 
-.q-list{margin:8px 0 0;padding-left:18px;text-align:start;line-height:1.7}
-.mt{width:100%;border-collapse:collapse;font-size:12px}.mt th,.mt td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.07);text-align:start;white-space:nowrap}
-.mt .ids{opacity:.6;font-size:11px}
-.lm-legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 12px;margin:12px 0;font-size:11px;opacity:.9}
-.lm-legend .lg.on{color:#ff3c5a}.lm-legend small{opacity:.55}.lm-legend em{color:#ffc933;font-style:normal}
 /* ── layout ── */
 #toolWrap{max-width:720px;margin:0 auto;padding:0 20px 100px}
 .tool-progress{display:flex;align-items:center;justify-content:center;gap:8px;padding:34px 0 6px}
@@ -314,7 +309,6 @@ html[dir=rtl] .lm-side{direction:rtl}
         </div>
       </div>
     </div>
-    <div class="lm-legend" id="lmLegend"></div>
     <div class="lm-progress" id="lmProgress"></div>
     <div class="tool-nav">
       <button class="btn-ghost" type="button" id="s2Back" data-i18n="tool_back">← Back</button>
@@ -344,7 +338,6 @@ html[dir=rtl] .lm-side{direction:rtl}
 <script type="module">
 import { auth, onAuthStateChanged, signOut } from './firebase-config.js';
 import { getLang, applyDocumentDirection, applyTranslations, wireLangToggle, t, dict } from './i18n.js';
-import { SPEC, RATIOS, MEAS, analyzeImage, getLandmarker, measure, scoreFace } from './face-pipeline.js';
 
 const $ = id => document.getElementById(id);
 
@@ -465,59 +458,132 @@ $('navLinks').addEventListener('click', e => {
 });
 renderStatic();
 
-/* ── FACE ANALYSIS ── the pipeline lives in face-pipeline.js (MediaPipe landmarks only, no guessed points) */
+/* ── FACE ANALYSIS (runs fully in the browser with MediaPipe) ── */
 const T = (key, params = {}) => String(t(key, lang) ?? key).replace(/\{(\w+)\}/g, (_, k) => params[k] ?? '');
-let norms = null;   // validated reference data from validate.html; without it NO score is produced
-fetch('norms.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { norms = j; }).catch(() => {});
-Object.assign(dict.en, {
-  q_unreliable: 'Face detection is not reliable enough.',
-  q_none: 'No face was detected.', q_multi: 'More than one face was detected. Use a photo with one person only.',
-  q_mesh: 'The face mesh is incomplete.', q_pose: 'Head pose could not be measured.', q_model: 'The face model could not be loaded. Check your connection and try again.',
-  q_small: 'The face is too small in the photo ({px} px tall). Move closer or use a higher-resolution photo.',
-  q_edge: 'Part of the face is cut off by the edge of the photo.',
-  q_yaw: 'Head is turned left/right ({v}°, max {max}°). Look straight at the camera.',
-  q_pitch: 'Head is tilted up/down ({v}°, max {max}°). Keep the chin level.',
-  q_roll: 'Head is tilted sideways ({v}°, max {max}°).', q_asym: 'The face is not frontal enough (nose offset {v}%).',
-  q_dark: 'The face is too dark.', q_bright: 'The face is overexposed.', q_flat: 'Not enough contrast on the face.',
-  q_uneven: 'Lighting is uneven between the two sides of the face.', q_clip: 'Large parts of the face are blown out or crushed to black.',
-  q_blink: 'Eyes are closed or nearly closed.', q_mouth: 'Mouth is open. Keep a closed, neutral mouth.',
-  q_smile: 'Strong expression detected. Use a neutral face.',
-  q_unstable: 'Landmarks are not stable between two detection passes ({pct}% difference).',
-  q_pass: 'All quality checks passed (yaw {yaw}°, pitch {pitch}°, roll {roll}°).',
-  s2_verify_hint: 'Every point is a real MediaPipe landmark. Check that each label sits on its feature, and correct it with the arrows only if it is clearly off.'
-});
-Object.assign(dict.ar, {
-  q_unreliable: 'اكتشاف الوجه غير موثوق بما يكفي.',
-  q_none: 'لم يتم اكتشاف أي وجه.', q_multi: 'تم اكتشاف أكثر من وجه. استخدم صورة لشخص واحد فقط.',
-  q_mesh: 'شبكة الوجه غير مكتملة.', q_pose: 'تعذّر قياس وضعية الرأس.', q_model: 'تعذّر تحميل نموذج الوجه. تحقق من الاتصال وحاول مجدداً.',
-  q_small: 'الوجه صغير جداً في الصورة (الارتفاع {px} بكسل). اقترب أو استخدم صورة بدقة أعلى.',
-  q_edge: 'جزء من الوجه مقطوع عند حافة الصورة.',
-  q_yaw: 'الرأس مائل يميناً/يساراً ({v}°، الحد {max}°). انظر مباشرة إلى الكاميرا.',
-  q_pitch: 'الرأس مائل للأعلى/للأسفل ({v}°، الحد {max}°). أبقِ الذقن مستوياً.',
-  q_roll: 'الرأس مائل جانبياً ({v}°، الحد {max}°).', q_asym: 'الوجه غير أمامي بما يكفي (انحراف الأنف {v}%).',
-  q_dark: 'الوجه مظلم جداً.', q_bright: 'الوجه مفرط الإضاءة.', q_flat: 'تباين الوجه غير كافٍ.',
-  q_uneven: 'الإضاءة غير متساوية بين جانبي الوجه.', q_clip: 'أجزاء كبيرة من الوجه محروقة أو سوداء تماماً.',
-  q_blink: 'العينان مغمضتان أو شبه مغمضتين.', q_mouth: 'الفم مفتوح. أبقِ الفم مغلقاً وبتعبير محايد.',
-  q_smile: 'تعبير قوي على الوجه. استخدم وجهاً محايداً.',
-  q_unstable: 'النقاط غير مستقرة بين عمليتي اكتشاف ({pct}% فرق).',
-  q_pass: 'اجتازت الصورة كل فحوصات الجودة (الانحراف {yaw}°، الميل {pitch}°، الدوران {roll}°).',
-  s2_verify_hint: 'كل نقطة هي نقطة حقيقية من MediaPipe. تأكد أن كل تسمية على موضعها الصحيح، وصحّحها بالأسهم فقط إذا كانت خاطئة بوضوح.'
-});
+const RULES = {
+  yawMax: 15,       // deg — beyond this the head is turned (¾ view / profile)
+  rollLevel: 0.5    // deg — below this the pupillary line counts as already level
+};
+let landmarker = null, modelFailed = false;
+async function getLandmarker() {
+  if (landmarker || modelFailed) return landmarker;
+  try {
+    const base = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+    const vision = await import(base + '/vision_bundle.mjs');
+    const files = await vision.FilesetResolver.forVisionTasks(base + '/wasm');
+    landmarker = await vision.FaceLandmarker.createFromOptions(files, {
+      baseOptions: {
+        modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+        delegate: 'GPU'
+      },
+      runningMode: 'IMAGE',
+      numFaces: 2,                                  // 2 so a second person can be caught
+      outputFacialTransformationMatrixes: true
+    });
+  } catch (e) { console.error('MediaPipe load failed', e); modelFailed = true; landmarker = null; }
+  return landmarker;
+}
+
+// Head yaw (deg) from MediaPipe's 4x4 column-major transform.
+function headYaw(result) {
+  const m = result.facialTransformationMatrixes?.[0]?.data;
+  return m ? Math.asin(Math.max(-1, Math.min(1, -m[2]))) * 180 / Math.PI : null;
+}
+
+// Pupil centers in pixels + the line angle vs true horizontal.
+// Image y points down, so a positive angle = line slopes down to the right (visually clockwise).
+function pupils(lm, w, h) {
+  const hasIris = lm.length > 473;
+  const A = hasIris ? lm[468] : lm[33], B = hasIris ? lm[473] : lm[263];
+  const [L, R] = A.x <= B.x ? [A, B] : [B, A];     // L = left in the picture
+  const l = { x: L.x * w, y: L.y * h }, r = { x: R.x * w, y: R.y * h };
+  return { angle: Math.atan2(r.y - l.y, r.x - l.x) * 180 / Math.PI, mid: { x: (l.x + r.x) / 2, y: (l.y + r.y) / 2 } };
+}
+
+// Level the photo (rotate so the pupil line is horizontal), then crop to head + hair.
+// The mesh only covers the face (forehead→chin), so the box is the face extents padded for hair/ears.
+// pad = space above AND below the face (as a fraction of face height) -> face sits in the vertical middle.
+// side = extra space left/right of the face (fraction of face width). Raise pad for more hair/shoulders.
+const CROP = { pad: 0.42, side: 0.32, aspect: 4 / 5, maxSide: 1600 };
+function levelAndCrop(img, lm, rollDeg, pivot) {
+  const W = img.naturalWidth, H = img.naturalHeight, r = rollDeg * Math.PI / 180;
+  const cos = Math.cos(r), sin = Math.sin(r);
+  // landmarks in the LEVELED frame: rotate by -roll around the pivot
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  lm.forEach(p => {
+    const dx = p.x * W - pivot.x, dy = p.y * H - pivot.y;
+    const x = pivot.x + dx * cos + dy * sin, y = pivot.y - dx * sin + dy * cos;
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+  });
+  const fw = x1 - x0, fh = y1 - y0;
+  // Horizontal centre = facial midline (forehead, nose bridge, nose tip, chin), not the mesh bbox,
+  // so a slightly turned head or ear landmarks don't push the face off-centre.
+  let mx = 0;
+  [10, 168, 1, 152].forEach(i => {
+    const p = lm[i], dx = p.x * W - pivot.x, dy = p.y * H - pivot.y;
+    mx += pivot.x + dx * cos + dy * sin;
+  });
+  const cx = mx / 4;
+  const cy = (y0 + y1) / 2;                       // vertical centre of the face (forehead -> chin)
+  let h = fh * (1 + 2 * CROP.pad), w = Math.max(fw * (1 + 2 * CROP.side), h * CROP.aspect);
+  h = Math.max(h, w / CROP.aspect);
+  const bx = cx - w / 2, by = cy - h / 2;        // face centred on both axes
+  const k = Math.min(1, CROP.maxSide / Math.max(w, h));
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * k); c.height = Math.round(h * k);
+  const g = c.getContext('2d');
+  g.fillStyle = '#0b0b0b'; g.fillRect(0, 0, c.width, c.height);   // only visible if the box leaves the photo
+  g.scale(k, k); g.translate(-bx, -by);
+  g.translate(pivot.x, pivot.y); g.rotate(-r); g.translate(-pivot.x, -pivot.y);
+  g.drawImage(img, 0, 0);
+  return c.toDataURL('image/jpeg', 0.92);
+}
+
+async function analyze(img) {
+  const lmk = await getLandmarker();
+  if (!lmk) return { error: 'tv_err_model' };
+  let res;
+  try { res = lmk.detect(img); } catch (e) { console.error(e); return { error: 'tv_err_analyze' }; }
+  const faces = res?.faceLandmarks?.length || 0;
+
+  // 1. Object detection & strict compliance
+  if (faces !== 1) return { ok: false, head: ['tv_rej_human'], reason: [faces === 0 ? 'tv_rej_human_none' : 'tv_rej_human_multi'] };
+
+  const yaw = headYaw(res);
+  if (yaw === null) return { error: 'tv_err_pose' };
+  const lm = res.faceLandmarks[0];
+  const eyes = pupils(lm, img.naturalWidth, img.naturalHeight);
+  const roll = eyes.angle, abs = Math.abs(roll);
+  const stats = { yaw, roll };
+
+  if (Math.abs(yaw) > RULES.yawMax) return { ok: false, stats, head: ['tv_rej_front'],
+    reason: ['tv_rej_front_why', { deg: Math.abs(yaw).toFixed(1), max: RULES.yawMax }] };
+
+  // 2. Smart geometric correction — actually applied to the image
+  const level = abs < RULES.rollLevel;
+  const deg = abs.toFixed(1);
+  const steps = level
+    ? [['tv_step_level', { deg: roll.toFixed(2) }]]
+    : [['tv_step1'], ['tv_step2', { deg }], ['tv_step3', { deg, dir: roll > 0 ? 'tv_ccw' : 'tv_cw' }], ['tv_step4']];
+  return { ok: true, stats, steps, level,
+    cropUrl: levelAndCrop(img, lm, level ? 0 : roll, eyes.mid),
+    correctionDeg: level ? 0 : -roll,
+    head: ['tv_ok_head'], reason: level ? ['tv_ok_level'] : ['tv_ok_tilt', { deg }] };
+}
 
 const txt = a => T(a[0], a[1] ? Object.fromEntries(Object.entries(a[1]).map(([k, v]) => [k, (k === 'dir') ? T(v) : v])) : {});
 function renderVerdict(r) {
   const box = $('verdict');
   box.style.display = 'block';
   const esc = v => String(v).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
-  if (!r.ok) {   // Step 2: stop. No fallback points are ever created.
+  if (r.error) {
     box.className = 'verdict bad';
-    box.innerHTML = `<div class="verdict-head">${esc(T('q_unreliable'))}</div><ul class="q-list">${(r.reasons || []).map(x => `<li>${esc(txt(x))}</li>`).join('')}</ul>`;
+    box.innerHTML = `<div class="verdict-head">${esc(T('tv_failed'))}</div><p>${esc(T(r.error))}</p>`;
     return;
   }
-  box.className = 'verdict ok';
-  const f = v => Math.abs(v).toFixed(1);
-  box.innerHTML = `<div class="verdict-head">${esc(T('tv_ok_head'))}</div><p>${esc(T('q_pass', { yaw: f(r.pose.yaw), pitch: f(r.pose.pitch), roll: f(r.pose.roll) }))}</p>`;
-  $('continueNav').style.display = 'flex'; $('continueBtn').disabled = false;
+  box.className = 'verdict ' + (r.ok ? 'ok' : 'bad');
+  box.innerHTML = `<div class="verdict-head">${esc(txt(r.head))}</div><p>${esc(txt(r.reason))}</p>`;
+  if (r.ok) { $('continueNav').style.display = 'flex'; $('continueBtn').disabled = false; }
 }
 
 /* ── GENDER GATE (must be chosen before a photo can be picked) ── */
@@ -567,14 +633,10 @@ async function handleFile(file) {
   const box = $('verdict');
   box.className = 'verdict'; box.style.display = 'block';
   box.innerHTML = `<div class="verdict-loading"><span class="mini-spinner"></span>${T('tv_analyzing')}</div>`;
-  const r = await analyzeImage(img);
+  const r = await analyze(img);
   if (img !== currentImage) return;            // user swapped the photo mid-analysis
-  if (r.ok) {
-    r.cropUrl = r.canvas.toDataURL('image/jpeg', 0.92);
-    try { r.cropped = await loadImage(r.cropUrl); } catch (e) { r.ok = false; r.reasons = [['q_mesh']]; }
-  }
   validation = r;
-  if (r.ok) $('previewImg').src = r.cropUrl;
+  if (r.ok && r.cropUrl) { $('previewImg').src = r.cropUrl; try { r.cropped = await loadImage(r.cropUrl); } catch (e) {} }
   renderVerdict(r);
 }
 $('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
@@ -600,50 +662,193 @@ const up = $('uploader');
 up.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
 
 /* ══════════════════════════════════════════════════════════
-   STEP 2 · VISUAL LANDMARK REVIEW
-   Every point is a real MediaPipe landmark (SPEC in face-pipeline.js), drawn with its label.
-   Points can only be nudged with the arrow pad / keyboard, and by at most 8% of face width.
+   STEP 2 · LANDMARK REVIEW
+   22 points: height (Tr, Br, N, Sn, Ls, St, Li, Me), eyes (pupils + eye corners) and width (cheekbone, jaw, mouth, nose).
+   Points are auto-placed from the face mesh and can ONLY be moved
+   with the arrow pad (or keyboard arrows) — never dragged or clicked.
 ══════════════════════════════════════════════════════════ */
-const LM = SPEC;
+const LM = [
+  { id: 'Tr', pt: 'tool_pt_tr', desc: 'tool_guide_desc_tr' },
+  { id: 'Br', pt: 'tool_pt_br', desc: 'tool_guide_desc_br' },
+  { id: 'N',  pt: 'tool_pt_n',  desc: 'tool_guide_desc_n' },
+  { id: 'Sn', pt: 'tool_pt_sn', desc: 'tool_guide_desc_sn' },
+  { id: 'Ls', pt: 'tool_pt_ls', desc: 'tool_guide_desc_ls' },
+  { id: 'St', pt: 'tool_pt_st', desc: 'tool_guide_desc_st' },
+  { id: 'Li', pt: 'tool_pt_li', desc: 'tool_guide_desc_li' },
+  { id: 'Me', pt: 'tool_pt_me', desc: 'tool_guide_desc_me' },
+  ...['Pl', 'Pr', 'Enl', 'Enr', 'Exl', 'Exr'].map(id => ({ id, pt: 'tool_pt_' + id.toLowerCase(), desc: 'tool_guide_desc_' + id.toLowerCase(), e: true })),
+  ...['Zl', 'Zr', 'Gl', 'Gr', 'Cl', 'Cr', 'Al', 'Ar'].map(id => ({ id, pt: 'tool_pt_' + id.toLowerCase(), desc: 'tool_guide_desc_' + id.toLowerCase(), w: true }))
+];
+LM.forEach(m => m.ax = m.w ? 'x' : m.e ? 'xy' : 'y');   // vertical-proportion points move ↕ only, width points move ↔ only
 const STEP_PX = { fine: 0.5, normal: 2, coarse: 8 };   // image px per 1000 px of image height
-const MAX_MOVE = 0.08;                                  // of face width
-const L = (en, ar) => lang === 'ar' ? ar : en;
+const DOT_R = 1.5;                                      // css px — deliberately tiny
+let s2 = null;   // { src, img, W, H, k, dpr, pts:{id:{x,y,ax,ay,seen}}, sel, stepKey, detected, hairEst }
 const nf = n => lang === 'ar' ? String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-let s2 = null;   // { src, img, W, H, k, dpr, pts:{key:{x,y,ox,oy,seen,moved}}, sel, stepKey, fw }
-const PAIRS_DRAW = [['faceL', 'faceR'], ['cheekL', 'cheekR'], ['foreL', 'foreR'], ['jawL', 'jawR'], ['noseL', 'noseR'], ['mouthL', 'mouthR'], ['eoL', 'eiL'], ['eiR', 'eoR'], ['eiL', 'eiR']];
-const MID = ['top', 'glab', 'nasion', 'subn', 'chin'];
 
-/* paints measurement lines + every landmark with its label (shared by step 2 and step 3) */
-function paint(c, P, k, o) {
-  const X = q => P[q].x * k, Y = q => P[q].y * k;
-  c.lineWidth = o.lw; c.strokeStyle = 'rgba(94,203,255,.45)';
-  PAIRS_DRAW.forEach(([a, b]) => { c.beginPath(); c.moveTo(X(a), Y(a)); c.lineTo(X(b), Y(b)); c.stroke(); });
-  c.strokeStyle = 'rgba(255,255,255,.55)'; c.beginPath();
-  MID.forEach((q, i) => i ? c.lineTo(X(q), Y(q)) : c.moveTo(X(q), Y(q))); c.stroke();
-  c.font = `${o.font}px sans-serif`; c.textBaseline = 'middle';
-  LM.forEach(m => {
-    const x = X(m.k), y = Y(m.k), on = o.sel === m.k, left = /L$/.test(m.k);
-    if (on) { c.strokeStyle = 'rgba(255,60,90,.9)'; c.lineWidth = o.lw; c.beginPath(); c.arc(x, y, o.r * 3, 0, 7); c.stroke(); }
-    c.fillStyle = on ? '#ff3c5a' : P[m.k].moved ? '#ffc933' : /[LR]$/.test(m.k) ? '#5ecbff' : '#ffffff';
-    c.strokeStyle = 'rgba(0,0,0,.8)'; c.lineWidth = o.lw * .8;
-    c.beginPath(); c.arc(x, y, o.r, 0, 7); c.fill(); c.stroke();
-    const tx = x + (left ? -1 : 1) * (o.r + 3 * o.lw);
-    c.textAlign = left ? 'right' : 'left';
-    c.lineWidth = 3 * o.lw; c.strokeStyle = 'rgba(0,0,0,.85)'; c.strokeText(m.code, tx, y);
-    c.fillStyle = '#fff'; c.fillText(m.code, tx, y);
-  });
+/* Hairline: scan up the forehead midline until skin turns to (dark) hair. */
+function findHairline(img, p10, p9, fw, fh) {
+  try {
+    const W = img.naturalWidth, H = img.naturalHeight;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
+    const band = Math.max(2, Math.round(0.035 * fw));
+    const x0 = clamp(Math.round(p10.x - band), 0, W - 1), bw = Math.max(1, Math.min(W - x0, band * 2));
+    const yEnd = clamp(Math.round(p9.y), 1, H - 1);
+    const d = g.getImageData(x0, 0, bw, yEnd).data;
+    const col = new Float32Array(yEnd);
+    for (let y = 0; y < yEnd; y++) {
+      let sum = 0;
+      for (let x = 0; x < bw; x++) { const k = (y * bw + x) * 4; sum += 0.299 * d[k] + 0.587 * d[k + 1] + 0.114 * d[k + 2]; }
+      col[y] = sum / bw;
+    }
+    const sm = new Float32Array(yEnd);                        // 5-row smoothing
+    for (let y = 0; y < yEnd; y++) { let s = 0, n = 0; for (let k = -2; k <= 2; k++) { const i = y + k; if (i >= 0 && i < yEnd) { s += col[i]; n++; } } sm[y] = s / n; }
+    const y10 = Math.round(p10.y), yTo = yEnd - Math.round(0.05 * fh);
+    if (yTo - y10 < 3) return null;
+    const skinArr = Array.from(sm.slice(y10, yTo)).sort((a, b) => a - b);
+    const skin = skinArr[skinArr.length >> 1];
+    if (skin < 25) return null;                               // too dark to trust
+    const thr = skin * 0.62, run = Math.max(3, Math.round(0.012 * fh));
+    const top = Math.max(run, Math.round(p10.y - 0.6 * fh));
+    for (let y = y10; y > top; y--) {
+      let all = true;
+      for (let k = 1; k <= run; k++) if (sm[y - k] >= thr) { all = false; break; }
+      if (all) return y;
+    }
+  } catch (e) { console.warn('hairline scan failed', e); }
+  return null;
 }
 
-function openStep2() {
-  $('step2').classList.add('active');
-  const bar = $('s2Msg'); bar.className = 'msg-bar info'; bar.textContent = T('s2_verify_hint');
+
+/* Upper-lip border (Ls): the mesh runs low on the upper lip, so look for the thin bright
+   vermilion ridge just above the dark mouth line, on the midline. Returns null if not clear. */
+function findUpperLip(img, p0, p13, p14, fw, fh) {
+  try {
+    const W = img.naturalWidth, H = img.naturalHeight;
+    const band = Math.max(2, Math.round(0.02 * fw));
+    const x0 = clamp(Math.round(p0.x - band), 0, W - 1), bw = Math.max(1, Math.min(W - x0, band * 2));
+    const yA = clamp(Math.round(p0.y - 0.10 * fh), 0, H - 2), yB = clamp(Math.round(p14.y + 0.04 * fh), yA + 2, H - 1);
+    const c = document.createElement('canvas'); c.width = bw; c.height = yB - yA;
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.drawImage(img, x0, yA, bw, yB - yA, 0, 0, bw, yB - yA);
+    const d = g.getImageData(0, 0, bw, yB - yA).data, n = yB - yA, L = new Float32Array(n);
+    for (let y = 0; y < n; y++) { let sum = 0; for (let x = 0; x < bw; x++) { const k = (y * bw + x) * 4; sum += 0.299 * d[k] + 0.587 * d[k + 1] + 0.114 * d[k + 2]; } L[y] = sum / bw; }
+    const sm = new Float32Array(n);
+    for (let y = 0; y < n; y++) { let s = 0, m = 0; for (let k = -1; k <= 1; k++) { const i = y + k; if (i >= 0 && i < n) { s += L[i]; m++; } } sm[y] = s / m; }
+    // mouth line = darkest row near the inner-lip landmarks
+    const mid = (p13.y + p14.y) / 2 - yA, r = Math.round(0.04 * fh);
+    let S = -1, best = Infinity;
+    for (let y = Math.max(1, Math.round(mid - r)); y < Math.min(n - 1, Math.round(mid + r)); y++) if (sm[y] < best) { best = sm[y]; S = y; }
+    if (S < 0) return null;
+    // brightest local ridge between 1.2% and 7.5% of the face height above the mouth line
+    const lo = Math.max(1, S - Math.round(0.075 * fh)), hi = S - Math.round(0.012 * fh);
+    let peak = -1, pv = -Infinity, mn = Infinity;
+    for (let y = lo; y <= hi; y++) {
+      mn = Math.min(mn, sm[y]);
+      if (sm[y] > pv && sm[y] >= sm[y - 1] && sm[y] >= sm[y + 1]) { pv = sm[y]; peak = y; }
+    }
+    if (peak < 0 || pv - mn < 18) return null;                // not a clear ridge → keep the fallback
+    return yA + peak;
+  } catch (e) { console.warn('upper-lip scan failed', e); }
+  return null;
+}
+
+async function detectLandmarks(img) {
+  const W = img.naturalWidth, H = img.naturalHeight;
+  const lmk = await getLandmarker();
+  if (lmk) {
+    try {
+      const lm = lmk.detect(img)?.faceLandmarks?.[0];
+      if (lm && lm.length >= 468) {
+        const P = i => ({ x: lm[i].x * W, y: lm[i].y * H });
+        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+        for (let i = 0; i < 468; i++) { const p = P(i); x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); }
+        const fw = x1 - x0, fh = y1 - y0;
+        const p10 = P(10), p9 = P(9), p168 = P(168), p2 = P(2), p164 = P(164);
+        const hl = findHairline(img, p10, p9, fw, fh);
+        const lsY = findUpperLip(img, P(0), P(13), P(14), fw, fh);
+        const mix = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+        const mx = [10, 168, 2, 0, 17, 152].reduce((t, i) => t + P(i).x, 0) / 6;   // one shared facial midline
+        const pr = (i, j) => { const A = P(i), B = P(j), y = (A.y + B.y) / 2, [l, r] = A.x <= B.x ? [A, B] : [B, A]; return [{ x: l.x, y }, { x: r.x, y }]; };
+        const [zl, zr] = pr(234, 454), [gl, gr] = pr(172, 397), [cl, cr] = pr(61, 291), [al, ar] = pr(129, 358);
+        const V = (y) => ({ x: mx, y });
+        // Face-edge snap: in dark/hooded photos the mesh contour can sit outside the face (usually on the shadowed side).
+        // Scan the pixel row from the mesh point toward the midline and stop where skin brightness resumes.
+        const snapEdge = (pt, side) => {
+          try {
+            const c = document.createElement('canvas'); c.width = W; c.height = H;
+            const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
+            const band = Math.max(2, Math.round(0.008 * fh)), y = clamp(Math.round(pt.y), band, H - band - 1);
+            const d = g.getImageData(0, y - band, W, band * 2 + 1).data, n = band * 2 + 1, row = new Float32Array(W);
+            for (let x = 0; x < W; x++) { let t = 0; for (let r = 0; r < n; r++) { const k = (r * W + x) * 4; t += 0.299 * d[k] + 0.587 * d[k + 1] + 0.114 * d[k + 2]; } row[x] = t / n; }
+            const sm = new Float32Array(W);
+            for (let x = 0; x < W; x++) { let t = 0, c2 = 0; for (let k = -3; k <= 3; k++) { const i = x + k; if (i >= 0 && i < W) { t += row[i]; c2++; } } sm[x] = t / c2; }
+            const xa = Math.round(side === 'r' ? mx : pt.x), xb = Math.round(side === 'r' ? pt.x : mx), seg = Array.from(sm.slice(xa, xb)).sort((u, v) => u - v);
+            if (seg.length < 20) return pt;
+            const skin = seg[seg.length >> 1], thr = skin * 0.55, run = Math.max(4, Math.round(0.012 * fw));
+            if (skin < 25) return pt;
+            const dir = side === 'r' ? -1 : 1;
+            for (let x = Math.round(pt.x); x !== Math.round(mx); x += dir) {
+              let ok = true;
+              for (let k = 0; k < run; k++) { const i = x + k * dir; if (i < 0 || i >= W || sm[i] < thr) { ok = false; break; } }
+              if (ok) { const nx = x + dir * Math.round(run / 2); return Math.abs(nx - pt.x) <= 0.12 * fw ? { x: nx, y: pt.y } : pt; }
+            }
+          } catch (e) { console.warn('edge snap failed', e); }
+          return pt;
+        };
+        [zl, zr, gl, gr].forEach((q, i) => { const sn = snapEdge(q, i % 2 ? 'r' : 'l'); q.x = sn.x; });
+        // eyes: pupils (iris centers), inner + outer corners; brow top and mouth line on the midline
+        const lrp = (a, b) => (a.x <= b.x ? [a, b] : [b, a]).map(q => ({ x: q.x, y: q.y }));
+        const hasIris = lm.length > 473;
+        const [pupL, pupR] = lrp(hasIris ? P(468) : mix(P(33), P(133), .5), hasIris ? P(473) : mix(P(362), P(263), .5));
+        const [exl, exr] = lrp(P(33), P(263)), [enl, enr] = lrp(P(133), P(362));
+        const brY = (P(105).y + P(334).y) / 2, stY = (P(13).y + P(14).y) / 2;
+        return {
+          detected: true, hairEst: hl === null,
+          pts: {
+            Tr: V(hl ?? p10.y - 0.14 * fh),                 // true hairline (scan) — mesh top sits mid-forehead
+            N:  V(mix(p9, p168, 0.5).y),                    // brow dip, between glabella and bridge
+            Sn: V(p2.y),                                    // base of the nose where the columella meets the lip
+            Ls: V(lsY ?? P(0).y - 0.012 * fh),              // upper-lip vermilion border (snapped to the bright ridge)
+            Li: V(P(17).y),                                 // lower-lip vermilion border
+            Me: V(P(152).y),                                // chin bottom
+            Br: V(brY), St: V(stY),                         // brow top + mouth line (stomion)
+            Pl: pupL, Pr: pupR, Enl: enl, Enr: enr, Exl: exl, Exr: exr,   // eyes
+            Zl: zl, Zr: zr, Gl: gl, Gr: gr, Cl: cl, Cr: cr, Al: al, Ar: ar   // width pairs share one level height
+          }
+        };
+      }
+    } catch (e) { console.error(e); }
+  }
+  const f = (y) => ({ x: W / 2, y: H * y });                // average positions for a cropped portrait
+  return { detected: false, hairEst: false, pts: { Tr: f(.20), Br: f(.38), N: f(.45), Sn: f(.70), Ls: f(.76), St: f(.79), Li: f(.82), Me: f(.91),
+    Pl: { x: W * .36, y: H * .47 }, Pr: { x: W * .64, y: H * .47 }, Enl: { x: W * .45, y: H * .475 }, Enr: { x: W * .55, y: H * .475 }, Exl: { x: W * .28, y: H * .465 }, Exr: { x: W * .72, y: H * .465 },
+    Zl: { x: W * .22, y: H * .45 }, Zr: { x: W * .78, y: H * .45 }, Gl: { x: W * .28, y: H * .78 }, Gr: { x: W * .72, y: H * .78 },
+    Cl: { x: W * .40, y: H * .78 }, Cr: { x: W * .60, y: H * .78 }, Al: { x: W * .43, y: H * .68 }, Ar: { x: W * .57, y: H * .68 } } };
+}
+
+async function openStep2() {
+  const step = $('step2');
+  step.classList.add('active');
+  $('s2Msg').className = 'msg-bar';
   if (s2 && s2.src === validation) { layoutStage(); renderStep2(); return; }
-  const src = validation, img = src.cropped, pts = {};
-  LM.forEach((m, i) => { const p = src.P[m.k]; pts[m.k] = { x: p.x, y: p.y, ox: p.x, oy: p.y, seen: i === 0, moved: false }; });
-  s2 = { src, img, W: img.naturalWidth, H: img.naturalHeight, pts, sel: 0, stepKey: 'normal', fw: src.raw.faceWidth, refBuilt: false };
+  const src = validation;
+  s2 = null;
+  $('lmBusy').style.display = 'flex';
+  $('lmBusyTxt').textContent = T('s2_detecting');
+  $('s2Confirm').disabled = true;
+  let img = src.cropped;
+  if (!img) { try { img = await loadImage(src.cropUrl); } catch (e) { return; } }
+  const r = await detectLandmarks(img);
+  if (validation !== src) return;                           // photo was swapped meanwhile
+  const pts = {};
+  LM.forEach((m, i) => { const p = r.pts[m.id]; pts[m.id] = { x: p.x, y: p.y, ax: p.x, ay: p.y, seen: i === 0 }; });   // first point is on screen from the start
+  s2 = { src, img, W: img.naturalWidth, H: img.naturalHeight, pts, sel: 0, stepKey: 'normal', detected: r.detected, hairEst: r.hairEst };
   $('lmBusy').style.display = 'none';
+  const bar = $('s2Msg');
+  if (!r.detected) { bar.className = 'msg-bar info'; bar.textContent = T('s2_fallback'); }
+  else if (r.hairEst) { bar.className = 'msg-bar info'; bar.textContent = T('s2_hairline_est'); }
   layoutStage(); renderStep2();
 }
 
@@ -658,33 +863,53 @@ function layoutStage() {
   s2.k = k; s2.dpr = dpr;
   draw();
 }
+
 function draw() {
   if (!s2 || !s2.k) return;
   const cv = $('lmCanvas'), g = cv.getContext('2d'), sc = s2.k * s2.dpr, d = s2.dpr;
   g.clearRect(0, 0, cv.width, cv.height);
   g.drawImage(s2.img, 0, 0, s2.W * sc, s2.H * sc);
-  paint(g, s2.pts, sc, { sel: LM[s2.sel].k, r: 3 * d, font: 10 * d, lw: d });
+  const cur = LM[s2.sel].id, cp = s2.pts[cur];
+  // faint level guide through the selected point
+  g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = d; g.beginPath();
+  const axs = LM[s2.sel].ax;
+  if (axs !== 'y') { g.moveTo(cp.x * sc, 0); g.lineTo(cp.x * sc, cv.height); }   // width + eye points: vertical guide
+  if (axs !== 'x') { g.moveTo(0, cp.y * sc); g.lineTo(cv.width, cp.y * sc); }   // proportion + eye points: level guide
+  g.stroke();
+  g.strokeStyle = 'rgba(94,203,255,.35)';
+  [['Zl', 'Zr'], ['Gl', 'Gr'], ['Cl', 'Cr'], ['Al', 'Ar'], ['Pl', 'Pr'], ['Exl', 'Enl'], ['Enr', 'Exr']].forEach(([a, b]) => { g.beginPath(); g.moveTo(s2.pts[a].x * sc, s2.pts[a].y * sc); g.lineTo(s2.pts[b].x * sc, s2.pts[b].y * sc); g.stroke(); });
+  LM.forEach(m => {
+    const p = s2.pts[m.id], x = p.x * sc, y = p.y * sc, on = m.id === cur;
+    if (on) {                                               // thin ring + ticks so the tiny dot is findable
+      const R = 9 * d, gap = 3 * d;
+      g.strokeStyle = 'rgba(255,60,90,.9)'; g.lineWidth = d;
+      g.beginPath(); g.arc(x, y, R, 0, 7); g.stroke();
+      g.beginPath();
+      g.moveTo(x - R - 4 * d, y); g.lineTo(x - gap, y); g.moveTo(x + gap, y); g.lineTo(x + R + 4 * d, y);
+      g.moveTo(x, y - R - 4 * d); g.lineTo(x, y - gap); g.moveTo(x, y + gap); g.lineTo(x, y + R + 4 * d);
+      g.stroke();
+    }
+    g.fillStyle = on ? '#ff3c5a' : (m.e ? '#6ee7b7' : m.w ? '#5ecbff' : '#ffffff');
+    g.strokeStyle = 'rgba(0,0,0,.75)'; g.lineWidth = .8 * d;
+    g.beginPath(); g.arc(x, y, (on ? DOT_R + .3 : DOT_R) * d, 0, 7); g.fill(); g.stroke();
+  });
 }
 
-/* magnifier: a zoomed crop of the real photo around the selected point (built once, then only re-aimed) */
+/* reference diagram: the supplied labeled face image (landmark-reference-labeled.png, same folder as this file).
+   Coordinates are in image pixels (1650 x 1458). Points are only ringed when selected;
+   all 22 points are printed on the image itself. */
+const REF_IMG = 'landmark-reference-labeled.png', REF_W = 1650, REF_H = 1458;
+const REFPT = { Tr: [825, 198], Br: [813, 553], N: [813, 591], Sn: [813, 1014], Ls: [810, 1104], St: [810, 1146], Li: [810, 1202], Me: [804, 1410],
+  Pl: [560, 630], Pr: [1046, 630], Enl: [683, 640], Enr: [925, 643], Exl: [450, 627], Exr: [1155, 625],
+  Zl: [333, 786], Zr: [1284, 786], Gl: [405, 1152], Gr: [1203, 1152], Cl: [627, 1146], Cr: [981, 1146], Al: [684, 966], Ar: [918, 966] };
 function renderRef() {
   const box = $('lmRefSvg'); if (!box || !s2) return;
-  if (!s2.refBuilt) {
-    box.innerHTML = `<svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" role="img"><image href="${s2.img.src}" x="0" y="0" width="${s2.W}" height="${s2.H}"/><circle id="refC" fill="none" stroke="#ff3c5a"/><path id="refX" fill="none" stroke="#ff3c5a"/></svg>`;
-    s2.refBuilt = true;
-  }
-  const p = s2.pts[LM[s2.sel].k], r = 0.07 * s2.fw, q = r * 0.1, svg = box.firstChild;
-  svg.setAttribute('viewBox', `${p.x - r} ${p.y - r} ${2 * r} ${2 * r}`);
-  const c = svg.querySelector('#refC'), x = svg.querySelector('#refX');
-  c.setAttribute('cx', p.x); c.setAttribute('cy', p.y); c.setAttribute('r', q * 2); c.setAttribute('stroke-width', r * 0.012);
-  x.setAttribute('d', `M${p.x - q * 5} ${p.y}H${p.x - q * 2.5}M${p.x + q * 2.5} ${p.y}H${p.x + q * 5}M${p.x} ${p.y - q * 5}V${p.y - q * 2.5}M${p.x} ${p.y + q * 2.5}V${p.y + q * 5}`);
-  x.setAttribute('stroke-width', r * 0.012);
+  const cur = LM[s2.sel].id;
+  const [cx, cy] = REFPT[cur];
+  const on = `<circle cx="${cx}" cy="${cy}" r="34" fill="rgba(255,214,0,.28)" stroke="#111" stroke-width="5"/><circle cx="${cx}" cy="${cy}" r="34" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 6"/>`;
+  box.innerHTML = `<svg viewBox="0 0 ${REF_W} ${REF_H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Landmark reference"><image href="${REF_IMG}" x="0" y="0" width="${REF_W}" height="${REF_H}"/>${on}</svg>`;
 }
-function renderLegend() {
-  if (!s2) return;
-  $('lmLegend').innerHTML = LM.map(m => { const p = s2.pts[m.k];
-    return `<span class="lg${m.k === LM[s2.sel].k ? ' on' : ''}"><b>● ${m.code}</b> ${esc(L(m.en, m.ar))} <small>#${m.id}</small>${p.moved ? ' <em>✎</em>' : ''}</span>`; }).join('');
-}
+
 function renderStep2() {
   const box = $('lmChips');
   if (!box) return;
@@ -692,31 +917,34 @@ function renderStep2() {
   const keys = { up: 's2_up', down: 's2_down', left: 's2_left', right: 's2_right' };
   $('lmPad').querySelectorAll('button').forEach(b => { b.setAttribute('aria-label', T(keys[b.dataset.k])); b.title = T(keys[b.dataset.k]); });
   if (!s2) { box.innerHTML = ''; return; }
+  const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   box.innerHTML = LM.map((m, i) =>
-    `<button type="button" class="lm-chip${i === s2.sel ? ' sel' : ''}${s2.pts[m.k].seen ? ' seen' : ''}" data-i="${i}" title="${esc(L(m.en, m.ar))}">${m.code}</button>`).join('');
-  const m = LM[s2.sel];
-  $('lmName').textContent = `● ${m.code} — ${L(m.en, m.ar)}`;
-  $('lmDesc').textContent = `MediaPipe landmark #${m.id}` + (s2.pts[m.k].moved ? L(' · corrected by you', ' · صحّحتَها يدوياً') : '');
-  const n = LM.filter(x => s2.pts[x.k].seen).length;
+    `<button type="button" class="lm-chip${i === s2.sel ? ' sel' : ''}${s2.pts[m.id].seen ? ' seen' : ''}" data-i="${i}" title="${esc(T(m.pt))}">${m.id}</button>`).join('');
+  $('lmName').textContent = T(LM[s2.sel].pt);
+  $('lmDesc').textContent = T(LM[s2.sel].desc);
+  const n = LM.filter(m => s2.pts[m.id].seen).length;
   $('lmProgress').textContent = T('s2_progress', { n: nf(n), total: nf(LM.length) });
   $('s2Confirm').disabled = n < LM.length;
   $('lmSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.step === s2.stepKey));
-  renderRef(); renderLegend();
+  const ax = LM[s2.sel].ax;
+  $('lmName').textContent = T(LM[s2.sel].pt) + '   ' + (ax === 'y' ? '↕ ' + T('s2_axis_y') : ax === 'x' ? '↔ ' + T('s2_axis_x') : '✥ ' + T('s2_axis_xy'));
+  renderRef();
+
 }
+
 function select(i) {
   if (!s2) return;
   s2.sel = (i + LM.length) % LM.length;
-  s2.pts[LM[s2.sel].k].seen = true;
+  s2.pts[LM[s2.sel].id].seen = true;                        // selecting a point counts as reviewing it
   renderStep2(); draw();
 }
 function nudge(dx, dy, coarse) {
   if (!s2) return;
-  const p = s2.pts[LM[s2.sel].k], u = s2.H / 1000, step = STEP_PX[coarse ? 'coarse' : s2.stepKey] * u, lim = MAX_MOVE * s2.fw;
-  p.x = clamp(p.x + dx * step, Math.max(0, p.ox - lim), Math.min(s2.W, p.ox + lim));
-  p.y = clamp(p.y + dy * step, Math.max(0, p.oy - lim), Math.min(s2.H, p.oy + lim));
-  p.moved = Math.hypot(p.x - p.ox, p.y - p.oy) > 0.5 * u;
+  const mm = LM[s2.sel], p = s2.pts[mm.id], u = s2.H / 1000;
+  const step = STEP_PX[coarse ? 'coarse' : s2.stepKey] * u;
+  p.x = clamp(p.x + dx * step, 0, s2.W); p.y = clamp(p.y + dy * step, 0, s2.H);
   if (!p.seen) { p.seen = true; renderStep2(); }
-  draw(); renderRef(); renderLegend();
+  draw();
 }
 
 /* arrow pad — press, or press-and-hold to repeat. No pointer interaction with the photo itself. */
@@ -735,12 +963,14 @@ function nudge(dx, dy, coarse) {
   ['touchstart', 'touchend', 'touchmove'].forEach(ev => $('lmPad').addEventListener(ev, e => e.preventDefault(), { passive: false }));
   ['dblclick', 'gesturestart', 'gesturechange'].forEach(ev => document.addEventListener(ev, e => { if ($('step2').classList.contains('active')) e.preventDefault(); }, { passive: false }));
 })();
+
 document.addEventListener('keydown', e => {
   if (!s2 || !$('step2').classList.contains('active')) return;
   const m = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
   if (!m) return;
   e.preventDefault(); nudge(m[0], m[1], e.shiftKey);
 });
+
 $('lmChips').addEventListener('click', e => { const c = e.target.closest('.lm-chip'); if (c) select(+c.dataset.i); });
 $('lmSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && s2) { s2.stepKey = b.dataset.step; renderStep2(); } });
 $('s2Back').addEventListener('click', () => {
@@ -752,9 +982,9 @@ $('s2Back').addEventListener('click', () => {
   scrollTo({ top: 0, behavior: 'smooth' });
 });
 $('s2Confirm').addEventListener('click', () => {
-  if (!s2 || LM.some(m => !s2.pts[m.k].seen)) return;
+  if (!s2 || LM.some(m => !s2.pts[m.id].seen)) return;
   const out = {};
-  LM.forEach(m => { const p = s2.pts[m.k]; out[m.k] = { x: +p.x.toFixed(2), y: +p.y.toFixed(2), id: m.id, moved: p.moved }; });
+  LM.forEach(m => { const p = s2.pts[m.id]; out[m.id] = { x: +p.x.toFixed(2), y: +p.y.toFixed(2) }; });
   window.lowerThirdLandmarks = { front: { width: s2.W, height: s2.H, points: out, image: s2.img } };
   document.dispatchEvent(new CustomEvent('landmarks:confirmed', { detail: window.lowerThirdLandmarks }));
   $('step2').classList.remove('active');
@@ -765,20 +995,155 @@ $('s2Confirm').addEventListener('click', () => {
 });
 let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { layoutStage(); if ($('step3').classList.contains('active')) drawS3(); }, 120); });
 
+
 /* ══════════════════════════════════════════════════════════
-   STEP 3 · MEASUREMENTS → NORMALIZED RATIOS → VALIDATED SCORE
-   No score is produced unless norms.json (from validate.html) is loaded and validated.
+   STEP 3 · FULL FACE ANALYSIS
+   Measures the confirmed landmarks, draws dimension lines
+   (extension lines + rulers with labels) and builds the report.
+   Gender picks the tier names and the fix recommendations.
 ══════════════════════════════════════════════════════════ */
-let s3 = null;
+const IDEAL = 100 / 3;
+const S3C = { up: '#8ab4ff', mid: '#c3a6ff', low: '#ffffff', phil: '#ffc933', lips: '#ff7a8c', chin: '#5ecb96' };
+const TIERS = {
+  male:   { sub5: 'Sub-5', lt: 'LTN', mt: 'MTN', ht: 'HTN', htplus: 'HTN+ · Chadlite',   elite: 'Chad'  },
+  female: { sub5: 'Sub-5', lt: 'LTB', mt: 'MTB', ht: 'HTB', htplus: 'HTB+ · Stacylite', elite: 'Stacy' }
+};
+let s3 = null, s3cal = null;   // s3 = latest measurement, s3cal = optional real Tr–Me height in mm
+
+/* ── FULL-FACE SCORING ──
+   Reference ranges follow common looksmaxxing conventions (looksmax.org and similar) and classical
+   proportion rules. Male and female use different ideal ranges AND different weights. They are
+   conventions, not hard rules, and one flat photo can only approximate them. */
 function s3Measure() {
   const d = window.lowerThirdLandmarks?.front;
   if (!d) return null;
-  const M = measure(d.points);
-  if (!M.ok) return { bad: true };
-  const sc = scoreFace(M.ratios, gender || 'male', norms);
-  return { ...M, sc, moved: Object.values(d.points).filter(p => p.moved).length };
+  const P = d.points, X = id => P[id].x, y = id => P[id].y;
+  const male = (gender || 'male') === 'male', G = (m, f) => male ? m : f;
+  const v = {
+    up: y('N') - y('Tr'), mid: y('Sn') - y('N'), low: y('Me') - y('Sn'),
+    phil: y('Ls') - y('Sn'), lips: y('Li') - y('Ls'), chin: y('Me') - y('Li'),
+    snStm: y('St') - y('Sn'), stmMe: y('Me') - y('St')
+  };
+  const tot = y('Me') - y('Tr');
+  if (tot <= 0 || Object.values(v).some(n => n <= 0) || y('Br') <= y('Tr') || y('Ls') <= y('Br') || y('St') <= y('Ls') || y('Li') <= y('St')) return { bad: true };
+  const pct = {}; Object.keys(v).forEach(k => pct[k] = v[k] / tot * 100);
+  const hx = (a, b) => Math.abs(X(a) - X(b));
+  const wd = { zyg: hx('Zl', 'Zr'), gon: hx('Gl', 'Gr'), mou: hx('Cl', 'Cr'), nos: hx('Al', 'Ar'), ipd: hx('Pl', 'Pr'), icd: hx('Enl', 'Enr'), eyeL: hx('Enl', 'Exl'), eyeR: hx('Enr', 'Exr') };
+  wd.eye = (wd.eyeL + wd.eyeR) / 2;
+  const midH = y('St') - (y('Pl') + y('Pr')) / 2;                    // pupil line → mouth line
+  if (Object.values(wd).some(n => !(n > 0)) || midH <= 0) return { bad: true };
+
+  const tiltOf = (en, ex) => Math.atan2(y(en) - y(ex), Math.abs(X(ex) - X(en))) * 180 / Math.PI;   // + when the outer corner sits higher
+  const tiltL = tiltOf('Enl', 'Exl'), tiltR = tiltOf('Enr', 'Exr'), tilt = (tiltL + tiltR) / 2;
+
+  const x0 = ['Tr', 'Br', 'N', 'Sn', 'Ls', 'St', 'Li', 'Me'].reduce((t, i) => t + X(i), 0) / 8;     // facial midline
+  const lat = p => { const a = x0 - X(p + 'l'), b = X(p + 'r') - x0; return (a + b) > 0 ? Math.abs(a - b) / (a + b) * 100 : 0; };
+  const vert = (['En', 'Ex', 'C'].reduce((t, p) => t + Math.abs(y(p + 'l') - y(p + 'r')), 0) / 3) / wd.zyg * 100;
+  const asym = (['Z', 'G', 'C', 'A', 'En', 'Ex', 'P'].reduce((t, p) => t + lat(p), 0) + vert) / 8;
+
+  const r = v.snStm / v.low, x = v.stmMe / v.snStm;
+  const jaw = wd.gon / wd.zyg, mn = wd.mou / wd.nos;
+  const M = [
+    { k: 'up',    name: 's3_m_up',    val: pct.up,  r: [31, 35.7],                    w: G(.6, .8),  f: 'pct' },
+    { k: 'mid',   name: 's3_m_mid',   val: pct.mid, r: [31, 35.7],                    w: G(.8, 1),   f: 'pct' },
+    { k: 'low',   name: 's3_m_low',   val: pct.low, r: G([32, 36], [30.5, 34.5]),     w: G(1.2, .9), f: 'pct' },
+    { k: 'split', name: 's3_m_split', val: r,       r: [0.30, 0.37],                  w: 1,          f: 'split' },
+    { k: 'jaw',   name: 's3_m_jaw',   val: jaw,     r: G([.78, .92], [.72, .86]),     w: G(1.6, 1),  f: 'n2' },
+    { k: 'mn',    name: 's3_m_mn',    val: mn,      r: G([1.35, 1.65], [1.4, 1.7]),   w: G(.6, .8),  f: 'n2' },
+    { k: 'fwhr',  name: 's3_m_fwhr',  val: wd.zyg / (y('Ls') - y('Br')), r: G([1.85, 2.2], [1.7, 2.0]), w: G(1.5, .6), f: 'n2' },
+    { k: 'fidx',  name: 's3_m_fidx',  val: tot / wd.zyg, r: G([1.3, 1.5], [1.3, 1.52]), w: G(.8, .9), f: 'n2' },
+    { k: 'ipdz',  name: 's3_m_ipdz',  val: wd.ipd / wd.zyg, r: [.43, .5],             w: G(.5, .7),  f: 'n2' },
+    { k: 'esp',   name: 's3_m_esp',   val: wd.icd / wd.eye, r: G([.95, 1.2], [.95, 1.15]), w: G(.8, 1.2), f: 'n2' },
+    { k: 'tilt',  name: 's3_m_tilt',  val: tilt,    r: G([2, 8], [4, 10]),            w: G(1.2, 1.3), f: 'deg', scale: 6 },
+    { k: 'midR',  name: 's3_m_midR',  val: wd.ipd / midH, r: G([.92, 1.1], [.95, 1.15]), w: G(1.2, 1.4), f: 'n2' },
+    { k: 'nic',   name: 's3_m_nic',   val: wd.nos / wd.icd, r: G([1, 1.25], [.92, 1.15]), w: G(.5, .8), f: 'n2' },
+    { k: 'sym',   name: 's3_m_sym',   val: asym,    r: G([0, 4], [0, 3.5]),           w: G(1.3, 1.5), f: 'asym' }
+  ];
+  M.forEach(it => {
+    const [a, b] = it.r, out = it.val < a ? a - it.val : it.val > b ? it.val - b : 0;
+    it.dev = out / (it.scale || (it.val < a ? a : b));
+  });
+  const dev = {}; M.forEach(it => dev[it.k] = it.dev);
+  const penalty = M.reduce((t, it) => t + it.w * it.dev, 0) / M.reduce((t, it) => t + it.w, 0);
+  const psl = clamp(7.8 - 26 * penalty, 2, 7.8);
+  const tier = psl < 4 ? 'sub5' : psl < 4.5 ? 'lt' : psl < 5.5 ? 'mt' : psl < 6.5 ? 'ht' : psl < 7.5 ? 'htplus' : 'elite';
+  return { v, tot, pct, r, x, M, dev, psl, tier, stm: y('St'), wd, jaw, mn, tilt, tiltL, tiltR, asym };
 }
-const fmtR = (k, v) => /^third/.test(k) ? nf((v * 100).toFixed(1)) + '%' : nf(v.toFixed(3));
+
+const fmtPct = n => nf(n.toFixed(1)) + '%';
+const mmOf = (len, tot) => s3cal ? nf((len / tot * s3cal).toFixed(1)) + ' ' + T('s3_mm') : '';
+const chipOf = d => d <= 0.04 ? 'ok' : d <= 0.12 ? 'warn' : 'bad';
+const fmtVal = (it, q) => it.f === 'pct' ? nf(q.toFixed(1)) + '%'
+  : it.f === 'deg' ? (q > 0 ? '+' : q < 0 ? '−' : '') + nf(Math.abs(q).toFixed(1)) + '°'
+  : it.f === 'asym' ? nf(q.toFixed(1)) + '%'
+  : it.f === 'split' ? '1 : ' + nf(((1 - q) / q).toFixed(2))
+  : nf(q.toFixed(2));
+const fmtRange = it => {
+  const [a, b] = it.r;
+  return it.f === 'pct' ? nf(a.toFixed(1)) + ' – ' + nf(b.toFixed(1)) + '%'
+    : it.f === 'deg' ? nf(a) + '° – ' + nf(b) + '°'
+    : it.f === 'asym' ? '< ' + nf(b.toFixed(1)) + '%'
+    : it.f === 'split' ? '1 : ' + nf(((1 - b) / b).toFixed(1)) + ' – ' + nf(((1 - a) / a).toFixed(1))
+    : nf(a.toFixed(2)) + ' – ' + nf(b.toFixed(2));
+};
+
+/* ── BRUTAL TEXT (looksmax-style). No numbers: only weak points, rating and blunt words. ── */
+const L = (en, ar) => lang === 'ar' ? ar : en;
+const FLAW = {
+  up:   { low:  { en: 'Your upper third is cramped. A short forehead squashes the top of your face and throws the thirds off.', ar: 'ثلثك العلوي مضغوط. جبهة قصيرة تكبس أعلى الوجه وتخرّب توازن الأثلاث.' },
+          high: { en: 'Your forehead is too tall. That fivehead drags the face upward and out of proportion.', ar: 'جبهتك طويلة أكثر من اللازم. هذا الـ fivehead يسحب الوجه للأعلى ويكسر التناسب.' } },
+  mid:  { low:  { en: 'Your midface is too short. Everything is crammed together with no room to breathe.', ar: 'منتصف وجهك قصير جداً. الملامح متزاحمة وبلا أي مساحة.' },
+          high: { en: 'Long midface. It stretches the centre of your face and makes it look elongated and off.', ar: 'منتصف وجهك طويل. يمدّ الوجه ويعطيه مظهراً مستطيلاً وغير متناسق.' } },
+  low:  { low:  { en: 'Short lower third. The bottom of your face is stubby and under-supported.', ar: 'الثلث السفلي قصير. أسفل وجهك متقزّم وبلا دعم.' },
+          high: { en: 'Your lower third is too long. The face drags downward and looks stretched.', ar: 'الثلث السفلي طويل جداً. الوجه ينسحب للأسفل ويبدو ممطوطاً.' } },
+  split:{ low:  { en: 'Your mouth sits too high over a long chin segment. The chin dominates the lower face.', ar: 'فمك مرتفع فوق قطعة ذقن طويلة. الذقن تسيطر على أسفل الوجه.' },
+          high: { en: 'Long philtrum. Too much space between nose and lip, which reads aged and weak.', ar: 'فيلترم طويل. مسافة زائدة بين الأنف والشفة تعطي مظهراً أضعف وأكبر سناً.' } },
+  jaw:  { low:  { m: { en: 'Weak, narrow jaw. There is no frame under those cheekbones and the face tapers into nothing.', ar: 'فك ضعيف وضيق. لا يوجد إطار تحت عظام الخد والوجه يتناقص إلى لا شيء.' },
+                  f: { en: 'Your jaw is too narrow. It leaves the lower face looking pinched and undersized.', ar: 'فكك ضيق أكثر من اللازم، ويجعل أسفل الوجه يبدو منكمشاً.' } },
+          high: { m: { en: 'Your jaw is oversized against your cheekbones. Boxy and heavy, like the bottom half belongs to another face.', ar: 'فك أعرض من عظام الخد. صندوقي وثقيل وكأن النصف السفلي لوجه آخر.' },
+                  f: { en: 'Wide, heavy jaw. It reads masculine and overpowers the softness of the upper face.', ar: 'فك عريض وثقيل. يعطي طابعاً ذكورياً ويطغى على نعومة أعلى الوجه.' } } },
+  mn:   { low:  { en: 'Your mouth is small under a wide nose. The balance is off and the lower face looks cramped.', ar: 'فم صغير تحت أنف عريض. التوازن مختل وأسفل الوجه يبدو مزدحماً.' },
+          high: { en: 'Your mouth is too wide for your nose. It stretches the lower face sideways.', ar: 'فمك عريض بالنسبة لأنفك ويمدّ أسفل الوجه جانبياً.' } },
+  fwhr: { low:  { m: { en: 'Low width-to-height ratio. Your face is narrow and long, with no width and no dominance.', ar: 'نسبة عرض الوجه إلى ارتفاعه منخفضة. وجهك ضيق وطويل بلا عرض ولا هيبة.' },
+                  f: { en: 'The midface is too narrow. It lacks the cheek width that makes a face striking.', ar: 'منتصف وجهك ضيق وينقصه عرض الخدود الذي يمنح الوجه جاذبيته.' } },
+          high: { m: { en: 'Very wide, short midface. It looks squashed and heavy.', ar: 'منتصف وجه عريض وقصير جداً. يبدو مسحوقاً وثقيلاً.' },
+                  f: { en: 'The midface is too wide and short. It reads heavy and coarse.', ar: 'منتصف الوجه عريض وقصير أكثر من اللازم. يبدو ثقيلاً وخشناً.' } } },
+  fidx: { low:  { en: 'Your face is too short and wide. Squat and blocky overall.', ar: 'وجهك قصير وعريض أكثر من اللازم. مربّع وثقيل بشكل عام.' },
+          high: { en: 'Your face is too long and narrow. Horse-face territory.', ar: 'وجهك طويل وضيق جداً. أقرب إلى وجه الحصان.' } },
+  ipdz: { low:  { en: 'Eyes set too close together. It gives a pinched, cramped look.', ar: 'عيناك متقاربتان جداً وتعطيان مظهراً ضيقاً ومكتظاً.' },
+          high: { en: 'Eyes set too far apart. The whole face looks off and alien.', ar: 'عيناك متباعدتان جداً وتجعلان الوجه يبدو غريباً.' } },
+  esp:  { low:  { en: 'Inner eye spacing is tight for the size of your eyes. Cramped, close-set eyes.', ar: 'المسافة بين العينين ضيقة بالنسبة لحجمهما. عيون متقاربة ومزدحمة.' },
+          high: { en: 'Inner eye spacing is too wide for your eyes. Wide-set and a bit vacant.', ar: 'المسافة بين العينين واسعة أكثر من اللازم، وتعطي نظرة شاردة.' } },
+  tilt: { low:  { m: { en: 'Negative or flat canthal tilt. Droopy, tired, prey-like eyes.', ar: 'ميل العين سلبي أو مسطّح. عيون ذابلة ومتعبة ومظهر فريسة.' },
+                  f: { en: 'Flat or downturned eyes. They look tired and sad instead of alluring.', ar: 'عيون مسطحة أو منزلة للأسفل، تبدو متعبة وحزينة بدل أن تكون جذابة.' } },
+          high: { en: 'The canthal tilt is exaggerated. The eyes pull up too hard and look unnatural.', ar: 'ميل العين مبالغ فيه. العينان ترتفعان بشكل غير طبيعي.' } },
+  midR: { low:  { en: 'Pupils to mouth is too long. A long midface stretching the centre of your face.', ar: 'المسافة من البؤبؤ إلى الفم طويلة. منتصف وجهك ممطوط.' },
+          high: { en: 'Pupils to mouth is too short, so the centre of your face looks squeezed.', ar: 'المسافة من البؤبؤ إلى الفم قصيرة، فيبدو منتصف الوجه مضغوطاً.' } },
+  nic:  { low:  { en: 'Your nose is narrow against your eye spacing. Pinched and underdeveloped.', ar: 'أنفك ضيق بالنسبة للمسافة بين العينين. مضغوط وغير مكتمل.' },
+          high: { en: 'Your nose is wide against your eye spacing. Broad and bulbous, it dominates the centre of your face.', ar: 'أنفك عريض بالنسبة للمسافة بين العينين. ضخم ويطغى على وسط الوجه.' } },
+  sym:  { low:  { en: 'Your face is visibly asymmetric. The two sides do not match and the eye and mouth lines tilt off.', ar: 'وجهك غير متناسق بوضوح. الجانبان لا يتطابقان وخطوط العينين والفم مائلة.' },
+          high: { en: 'Your face is visibly asymmetric. The two sides do not match and the eye and mouth lines tilt off.', ar: 'وجهك غير متناسق بوضوح. الجانبان لا يتطابقان وخطوط العينين والفم مائلة.' } }
+};
+const flawText = (k, dir, male) => { const e = FLAW[k][dir], o = e.m ? (male ? e.m : e.f) : e; return L(o.en, o.ar); };
+
+const TIER_LINE = {
+  male: {
+    sub5:   { en: 'Sub-5. Be honest with yourself: this face has serious problems and almost nothing is on target. You have a lot of work ahead.', ar: 'Sub-5. صراحة بلا مجاملة: وجه فيه مشاكل جدية وشبه كل شيء خارج المعدل. أمامك عمل كثير.' },
+    lt:     { en: 'Low-tier normie. Your flaws are loud, and people notice them before they notice anything good.', ar: 'مستوى منخفض. عيوبك صارخة، والناس تلاحظها قبل أي شيء جيد.' },
+    mt:     { en: 'Mid-tier. Forgettable. Nobody is hating on you and nobody is looking twice either.', ar: 'متوسط. عادي ومنسي. لا أحد يكرهك ولا أحد يلتفت إليك.' },
+    ht:     { en: 'High-tier normie. Good, but not special. The flaws below are all that stands between you and the top tier.', ar: 'فوق المتوسط. جيد لكنه ليس مميزاً. العيوب أدناه هي الفاصل الوحيد بينك وبين الفئة العليا.' },
+    htplus: { en: 'Chadlite. You are close, which makes the leftover flaws more annoying. Fix them or stay stuck here.', ar: 'Chadlite. قريب جداً من القمة، وهذا يجعل العيوب المتبقية أكثر إزعاجاً. عالجها وإلا ستبقى مكانك.' },
+    elite:  { en: 'Chad. The proportions hold up. Do not get cocky, this is one flat photo.', ar: 'Chad. التناسب ممتاز. المهم ألا يصيبك الغرور، فهذه صورة واحدة مسطحة.' }
+  },
+  female: {
+    sub5:   { en: 'Sub-5. Brutally honest: this face is far from the ideal in too many places, and changing that takes real effort.', ar: 'Sub-5. صراحة قاسية: هذا الوجه بعيد عن المثالي في نقاط كثيرة، وتغييره يحتاج جهداً حقيقياً.' },
+    lt:     { en: 'Low-tier Becky. The flaws shout, and they are the first thing people see.', ar: 'مستوى منخفض. العيوب صارخة وهي أول ما يراه الناس.' },
+    mt:     { en: 'Mid-tier. Plain and forgettable. Not ugly, but not turning any heads either.', ar: 'متوسط. عادي ومنسي، لا قبح ولا لفت للأنظار.' },
+    ht:     { en: 'High-tier. Pretty, but not stunning. The flaws below are what is holding you back.', ar: 'مستوى عالٍ. جميل لكنه ليس مبهراً. العيوب أدناه هي ما يوقفك.' },
+    htplus: { en: 'Stacylite. Very close to the top. The leftover flaws are the only gap to Stacy.', ar: 'Stacylite. قريب جداً من القمة، والعيوب المتبقية هي الفجوة الوحيدة نحو Stacy.' },
+    elite:  { en: 'Stacy. The proportions hold up. Stay humble, this is one flat photo.', ar: 'Stacy. التناسب ممتاز. لكن تذكّر أنها صورة واحدة مسطحة.' }
+  }
+};
 
 function renderS3() {
   s3 = s3Measure();
@@ -789,54 +1154,64 @@ function renderS3() {
     if (s3) { msg.className = 'msg-bar error'; msg.textContent = T('s3_err_order'); }
     drawS3(); return;
   }
-  const m = s3, g = gender || 'male', sc = m.sc;
+  const m = s3, g = gender || 'male', male = g === 'male';
 
-  // score card — only when validated reference data exists for this gender
-  if (sc.ok) {
-    const C = 2 * Math.PI * 54, frac = clamp(sc.score / 100, 0, 1), col = '#5ecbff';
-    $('s3Rating').innerHTML = `<div class="s3-card s3-rate"><div class="s3-h">${L('Validated Score', 'التقييم المعتمد')}</div>
-      <div class="ring"><svg viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9"/>
-      <circle cx="65" cy="65" r="54" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 65 65)"/></svg>
-      <div class="num" style="color:${col}">${nf(sc.score)}<small>/ 100</small></div></div>
-      <div class="s3-tier"><div class="desc">${L(`Percentile within the validated ${g} reference set (norms v${norms.version}, n=${norms.groups[g].n}). Weights were fitted from rated faces.`, `النسبة المئوية ضمن مجموعة المرجع المعتمدة (${g === 'male' ? 'ذكور' : 'إناث'}، n=${norms.groups[g].n}). الأوزان محسوبة من وجوه مقيَّمة.`)}</div></div></div>`;
-  } else {
-    const why = { uncalibrated: ['No validated reference data is loaded (norms.json missing, or it failed a validation gate).', 'لا توجد بيانات مرجعية معتمدة (ملف norms.json مفقود أو لم يجتز اختبارات التحقق).'],
-      small: ['The reference set for your gender is too small.', 'مجموعة المرجع لجنسك صغيرة جداً.'], noweights: ['No weights were fitted from rated faces.', 'لم تُحسب أوزان من وجوه مقيَّمة.'] }[sc.why];
-    $('s3Rating').innerHTML = `<div class="s3-card"><div class="s3-h">${L('Score withheld', 'التقييم غير متاح')}</div>
-      <p class="s3-p">${L(why[0], why[1])} ${L('Only measured, normalized ratios are shown below. A score is shown only after the pipeline is validated on a real dataset.', 'تُعرض أدناه القياسات المُطبَّعة فقط. لا يظهر تقييم إلا بعد التحقق من النظام على بيانات حقيقية.')}</p></div>`;
-  }
+  // weak points: every metric that is outside its range, worst first
+  const flaws = m.M.filter(it => it.dev > 0.04).sort((a, b) => b.w * b.dev - a.w * a.dev).map(it => {
+    const major = it.dev > 0.12, dir = it.val < it.r[0] ? 'low' : 'high';
+    return { major, text: (major ? L('Major flaw: ', 'عيب كبير: ') : L('Noticeable: ', 'ملحوظ: ')) + flawText(it.k, dir, male) };
+  });
 
-  // ratio table (+ z-scores vs the same-gender reference when available)
-  const zc = z => Math.abs(z) <= 1 ? '#6ee7b7' : Math.abs(z) <= 2 ? '#ffc933' : '#ff6b7a';
-  const rows = RATIOS.map(r => `<tr><td>${esc(L(r.en, r.ar))}</td><td class="ids">${r.ids}</td><td>${fmtR(r.k, m.ratios[r.k])}</td>` +
-    (sc.ok ? `<td style="color:${zc(sc.z[r.k])}">${sc.z[r.k] == null ? '—' : (sc.z[r.k] > 0 ? '+' : '') + nf(sc.z[r.k].toFixed(1))}</td>` : '') + '</tr>').join('');
-  const defs = MEAS.map(x => `<tr><td>${esc(L(x.en, x.ar))}</td><td class="ids">${x.ids}</td></tr>`).join('');
-  box.innerHTML = `<div class="s3-card"><div class="s3-h">${L('Normalized Ratios', 'النسب المُطبَّعة')}</div>
-    <div style="overflow-x:auto"><table class="mt"><thead><tr><th>${L('Ratio', 'النسبة')}</th><th>${L('Landmark IDs', 'أرقام النقاط')}</th><th>${L('Value', 'القيمة')}</th>${sc.ok ? '<th>z</th>' : ''}</tr></thead><tbody>${rows}</tbody></table></div>
-    <p class="s3-p" style="margin-top:10px">${L('Ratios are dimensionless, so camera distance does not change them. “Top” is MediaPipe point 10 (forehead mesh top), not the true hairline, so thirds are mesh-based.', 'النسب بلا وحدات، لذلك لا تتأثر بمسافة الكاميرا. «Top» هي نقطة MediaPipe رقم 10 (أعلى شبكة الجبهة) وليست خط الشعر الحقيقي، لذلك الأثلاث مبنية على الشبكة.')}
-    ${m.moved ? L(` You corrected ${m.moved} point(s).`, ` صحّحتَ ${m.moved} نقطة.`) : ''}</p></div>
-    <div class="s3-card"><div class="s3-h">${L('Measurement Definitions', 'تعريف القياسات')}</div>
-    <div style="overflow-x:auto"><table class="mt"><tbody>${defs}</tbody></table></div></div>`;
+  const tierName = TIERS[g][m.tier], TC = { sub5: '#ff5555', lt: '#ff8a4c', mt: '#ffc933', ht: '#9be564', htplus: '#5ecb96', elite: '#5ecbff' }[m.tier];
+  const tl = TIER_LINE[g][m.tier], tierLine = L(tl.en, tl.ar), psl = nf(m.psl.toFixed(1));
+  const intro = L(`Rating: ${tierName.replace('+', ' plus ').replace('·', ',')}, ${psl} out of 8.`, `التقييم: ${tierName.replace('·', '،')}، درجة ${psl} من 8.`);
+  const outro = m.psl < 5.5
+    ? L('That is the truth. Fix the flaws above in order, starting with the worst.', 'هذه هي الحقيقة. عالج العيوب أعلاه بالترتيب، بدءاً بالأسوأ.')
+    : L('Not much left to attack. Polish the small flaws above and keep your grooming sharp.', 'لم يبقَ الكثير لانتقاده. صقل العيوب الصغيرة وإبقاء العناية في أعلى مستوى هو كل ما تبقى.');
+  const none = L('I found no real weak points. Annoying, but fair.', 'لم أجد نقاط ضعف حقيقية. مزعج، لكنه عادل.');
+  m.say = [intro, tierLine, ...(flaws.length ? flaws.slice(0, 3).map(f => f.text) : [none]), outro].join(' ');
 
-  m.say = L(`Quality checks passed. I measured ${RATIOS.length} normalized ratios from ${SPEC.length} verified MediaPipe landmarks. `, `اجتازت الصورة فحوصات الجودة. قست ${RATIOS.length} نسبة مُطبَّعة من ${SPEC.length} نقطة موثقة من MediaPipe. `) +
-    (sc.ok ? L(`Your score is ${sc.score} out of 100, a percentile within the validated reference set. `, `تقييمك ${sc.score} من 100، وهو نسبة مئوية ضمن مجموعة المرجع المعتمدة. `)
-           : L('I will not give a score, because there is no validated reference data yet. ', 'لن أعطي تقييماً لأنه لا توجد بيانات مرجعية معتمدة بعد. ')) +
-    L('This is one flat photo, not a medical exam.', 'هذه صورة واحدة مسطحة وليست فحصاً طبياً.');
+  // rating card (rating + tier + one blunt line, no stats)
+  const C = 2 * Math.PI * 54, frac = clamp(m.psl / 8, 0, 1);
+  $('s3Rating').innerHTML = `
+  <div class="s3-card s3-rate">
+    <div class="s3-h">${T('s3_rating')}</div>
+    <div class="ring"><svg viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9"/>
+      <circle cx="65" cy="65" r="54" fill="none" stroke="${TC}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 65 65)" style="filter:drop-shadow(0 0 6px ${TC})"/></svg>
+      <div class="num" style="color:${TC}">${psl}<small>/ 8</small></div></div>
+    <div class="s3-tier"><div class="name" style="color:${TC};text-shadow:0 0 18px ${TC}66">${tierName}</div><div class="desc">${tierLine}</div></div>
+  </div>`;
+
+  // weak points (text only)
+  const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  box.innerHTML = `<div class="s3-card"><div class="s3-h">${L('Weak Points', 'نقاط الضعف')}</div>` +
+    (flaws.length ? `<ul class="s3-weak">${flaws.map(f => `<li class="${f.major ? 'major' : ''}">${esc(f.text)}</li>`).join('')}</ul>` : `<p class="s3-p">${none}</p>`) +
+    `</div>`;
   drawS3();
 }
 
-/* photo with the confirmed, labelled landmarks */
+/* photo with the confirmed points and guide lines, no numbers */
 function drawS3() {
   const cv = $('s3Canvas'), d = window.lowerThirdLandmarks?.front;
   if (!d || !s3 || s3.bad) { cv.style.display = 'none'; return; }
   cv.style.display = 'block';
-  const cw = Math.min($('s3Stage').clientWidth || 640, 720), k = cw / d.width, ch = Math.round(d.height * k), dpr = window.devicePixelRatio || 1;
+  const cw = Math.min($('s3Stage').clientWidth || 640, 720), k = cw / d.width, ch = Math.round(d.height * k);
+  const dpr = window.devicePixelRatio || 1;
   cv.style.width = cw + 'px'; cv.style.height = ch + 'px';
   cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
   const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
   c.drawImage(d.image, 0, 0, cw, ch);
   c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(0, 0, cw, ch);
-  paint(c, d.points, k, { sel: null, r: 2.5, font: 10, lw: 1 });
+  const P = d.points, X = id => P[id].x * k, Y = id => P[id].y * k;
+  const ln = (a, b, col, w) => { c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(X(a), Y(a)); c.lineTo(X(b), Y(b)); c.stroke(); };
+  ['Tr', 'N', 'Sn', 'Me'].forEach((id, i, arr) => { if (i) ln(arr[i - 1], id, 'rgba(255,255,255,.7)', 1.4); });
+  ln('Zl', 'Zr', '#5ecbff', 1.2); ln('Gl', 'Gr', '#5ecbff', 1.2); ln('Cl', 'Cr', '#5ecbff', 1.2); ln('Al', 'Ar', '#5ecbff', 1.2);
+  ln('Pl', 'Pr', '#6ee7b7', 1.2); ln('Exl', 'Enl', '#6ee7b7', 1.2); ln('Enr', 'Exr', '#6ee7b7', 1.2);
+  Object.keys(P).forEach(id => {
+    const col = /^(Tr|Br|N|Sn|Ls|St|Li|Me)$/.test(id) ? '#fff' : /^(Pl|Pr|En|Ex)/.test(id) ? '#6ee7b7' : '#5ecbff';
+    c.fillStyle = col; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1;
+    c.beginPath(); c.arc(X(id), Y(id), 2.5, 0, 7); c.fill(); c.stroke();
+  });
 }
 
 $('s3Back').addEventListener('click', () => {

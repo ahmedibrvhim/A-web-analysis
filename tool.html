@@ -335,6 +335,7 @@ html[dir=rtl] .lm-side{direction:rtl}
 </div>
 </div>
 
+<script src="face_ref.js"></script>
 <script type="module">
 import { auth, onAuthStateChanged, signOut } from './firebase-config.js';
 import { getLang, applyDocumentDirection, applyTranslations, wireLangToggle, t, dict } from './i18n.js';
@@ -471,15 +472,16 @@ async function getLandmarker() {
     const base = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
     const vision = await import(base + '/vision_bundle.mjs');
     const files = await vision.FilesetResolver.forVisionTasks(base + '/wasm');
-    landmarker = await vision.FaceLandmarker.createFromOptions(files, {
+    const mk = d => vision.FaceLandmarker.createFromOptions(files, {
       baseOptions: {
         modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
-        delegate: 'GPU'
+        delegate: d
       },
       runningMode: 'IMAGE',
       numFaces: 2,                                  // 2 so a second person can be caught
       outputFacialTransformationMatrixes: true
     });
+    try { landmarker = await mk('GPU'); } catch (e) { console.warn('GPU delegate failed, using CPU', e); landmarker = await mk('CPU'); }   // batch copy only
   } catch (e) { console.error('MediaPipe load failed', e); modelFailed = true; landmarker = null; }
   return landmarker;
 }
@@ -539,6 +541,34 @@ function levelAndCrop(img, lm, rollDeg, pivot) {
   return c.toDataURL('image/jpeg', 0.92);
 }
 
+// Photo quality + pose (3D pose from MediaPipe's matrix). Each factor is 0..1; confidence multiplies them.
+function faceQuality(res, lm, img, yaw) {
+  const m = res.facialTransformationMatrixes?.[0]?.data, W = img.naturalWidth, H = img.naturalHeight;
+  const pitch = m ? Math.abs(Math.atan2(m[6], m[10]) * 180 / Math.PI) : 0;
+  let x0 = 1, x1 = 0, y0 = 1, y1 = 0;
+  for (let i = 0; i < 468; i++) { x0 = Math.min(x0, lm[i].x); x1 = Math.max(x1, lm[i].x); y0 = Math.min(y0, lm[i].y); y1 = Math.max(y1, lm[i].y); }
+  const faceW = (x1 - x0) * W, S = 128, c = document.createElement('canvas'); c.width = c.height = S;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, x0 * W, y0 * H, (x1 - x0) * W, (y1 - y0) * H, 0, 0, S, S);
+  const d = g.getImageData(0, 0, S, S).data, Y = new Float32Array(S * S);
+  let sum = 0, clip = 0, lS = 0, rS = 0;
+  for (let i = 0; i < S * S; i++) { const l = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]; Y[i] = l; sum += l; if (l > 245 || l < 12) clip++; (i % S < S / 2 ? (lS += l) : (rS += l)); }
+  const mean = sum / (S * S), imb = Math.abs(lS - rS) / (S * S / 2) / Math.max(mean, 1);
+  let lap = 0, n = 0;
+  for (let yy = 1; yy < S - 1; yy++) for (let xx = 1; xx < S - 1; xx++) { const i = yy * S + xx, v = 4 * Y[i] - Y[i - 1] - Y[i + 1] - Y[i - S] - Y[i + S]; lap += v * v; n++; }
+  lap /= n;
+  const cl = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const f = { yaw: 1 - cl((Math.abs(yaw) - 3) / 12), pitch: 1 - cl((pitch - 5) / 15), res: cl((faceW - 100) / 200, .2, 1),
+    sharp: cl(lap / 60, .3, 1), light: cl(1 - Math.max(0, imb - .12) * 2.5 - Math.max(0, clip / (S * S) - .05) * 3 - (mean < 60 || mean > 205 ? .3 : 0), .25, 1) };
+  const W_ = [];
+  if (f.yaw < .8) W_.push({ en: `Head is turned ${Math.abs(yaw).toFixed(1)}°. Width and symmetry readings are less reliable.`, ar: `الرأس مائل ${Math.abs(yaw).toFixed(1)}°، فتقل دقة العرض والتناظر.` });
+  if (f.pitch < .8) W_.push({ en: `Head is tilted up/down ${pitch.toFixed(1)}°. Vertical thirds are distorted.`, ar: `الرأس مائل للأعلى/الأسفل ${pitch.toFixed(1)}°، فتتشوه الأثلاث العمودية.` });
+  if (f.res < .6) W_.push({ en: 'Low resolution on the face. Use a closer, larger photo.', ar: 'دقة الوجه منخفضة. استخدم صورة أقرب وأكبر.' });
+  if (f.sharp < .6) W_.push({ en: 'The photo looks blurry, so landmark edges are uncertain.', ar: 'الصورة ضبابية، فحواف المعالم غير مؤكدة.' });
+  if (f.light < .7) W_.push({ en: 'Uneven, dark or blown-out lighting. Shadows can move landmarks.', ar: 'إضاءة غير متساوية أو مظلمة أو مفرطة. الظلال قد تُزيح المعالم.' });
+  return { pitch, yaw, faceW, f, warns: W_ };
+}
+
 async function analyze(img) {
   const lmk = await getLandmarker();
   if (!lmk) return { error: 'tv_err_model' };
@@ -555,6 +585,7 @@ async function analyze(img) {
   const eyes = pupils(lm, img.naturalWidth, img.naturalHeight);
   const roll = eyes.angle, abs = Math.abs(roll);
   const stats = { yaw, roll };
+  let quality = null; try { quality = faceQuality(res, lm, img, yaw); } catch (e) { console.warn('quality failed', e); }
 
   if (Math.abs(yaw) > RULES.yawMax) return { ok: false, stats, head: ['tv_rej_front'],
     reason: ['tv_rej_front_why', { deg: Math.abs(yaw).toFixed(1), max: RULES.yawMax }] };
@@ -565,7 +596,7 @@ async function analyze(img) {
   const steps = level
     ? [['tv_step_level', { deg: roll.toFixed(2) }]]
     : [['tv_step1'], ['tv_step2', { deg }], ['tv_step3', { deg, dir: roll > 0 ? 'tv_ccw' : 'tv_cw' }], ['tv_step4']];
-  return { ok: true, stats, steps, level,
+  return { ok: true, stats, quality, steps, level,
     cropUrl: levelAndCrop(img, lm, level ? 0 : roll, eyes.mid),
     correctionDeg: level ? 0 : -roll,
     head: ['tv_ok_head'], reason: level ? ['tv_ok_level'] : ['tv_ok_tilt', { deg }] };
@@ -1038,8 +1069,12 @@ function s3Measure() {
 
   const x0 = ['Tr', 'Br', 'N', 'Sn', 'Ls', 'St', 'Li', 'Me'].reduce((t, i) => t + X(i), 0) / 8;     // facial midline
   const lat = p => { const a = x0 - X(p + 'l'), b = X(p + 'r') - x0; return (a + b) > 0 ? Math.abs(a - b) / (a + b) * 100 : 0; };
-  const vert = (['En', 'Ex', 'C'].reduce((t, p) => t + Math.abs(y(p + 'l') - y(p + 'r')), 0) / 3) / wd.zyg * 100;
-  const asym = (['Z', 'G', 'C', 'A', 'En', 'Ex', 'P'].reduce((t, p) => t + lat(p), 0) + vert) / 8;
+  const avg = a => a.reduce((t, n) => t + n, 0) / a.length;
+  // three separate left/right measures (each answers one question)
+  const symMid = avg(['Z', 'A', 'En', 'Ex', 'P'].map(lat));                              // midface/eyes: horizontal offset from midline
+  const symLow = avg(['G', 'C'].map(lat));                                               // jaw + mouth: horizontal offset from midline
+  const symEye = avg([Math.abs(y('Enl') - y('Enr')), Math.abs(y('Exl') - y('Exr'))]) / wd.zyg * 100;   // eye-corner height difference
+  const asym = (symMid + symLow + symEye) / 3;
 
   const r = v.snStm / v.low, x = v.stmMe / v.snStm;
   const jaw = wd.gon / wd.zyg, mn = wd.mou / wd.nos;
@@ -1057,18 +1092,68 @@ function s3Measure() {
     { k: 'tilt',  name: 's3_m_tilt',  val: tilt,    r: G([2, 8], [4, 10]),            w: G(1.2, 1.3), f: 'deg', scale: 6 },
     { k: 'midR',  name: 's3_m_midR',  val: wd.ipd / midH, r: G([.92, 1.1], [.95, 1.15]), w: G(1.2, 1.4), f: 'n2' },
     { k: 'nic',   name: 's3_m_nic',   val: wd.nos / wd.icd, r: G([1, 1.25], [.92, 1.15]), w: G(.5, .8), f: 'n2' },
-    { k: 'sym',   name: 's3_m_sym',   val: asym,    r: G([0, 4], [0, 3.5]),           w: G(1.3, 1.5), f: 'asym' }
+    { k: 'symMid', name: 's3_m_symMid', val: symMid, os: 1, sd: G(3, 2.5), w: G(.7, .9), f: 'asym', r: [0, G(3, 2.5)] },
+    { k: 'symLow', name: 's3_m_symLow', val: symLow, os: 1, sd: G(3.5, 3), w: G(.6, .6), f: 'asym', r: [0, G(3.5, 3)] },
+    { k: 'symEye', name: 's3_m_symEye', val: symEye, os: 1, sd: G(2, 1.6), w: G(.5, .8), f: 'asym', r: [0, G(2, 1.6)] }
   ];
+  /* REFERENCE TABLE. Where window.FACE_REF (face_ref.js, fitted from the CFD dataset by calibrate.mjs) has an entry, it replaces the old
+     provisional ranges: m,s = median and MAD-based SD per sex; entries with log:true are scored in log space (lm,ls).
+     Metrics with no entry (the three symmetry metrics) keep the provisional values derived from the old ideal ranges. */
   M.forEach(it => {
-    const [a, b] = it.r, out = it.val < a ? a - it.val : it.val > b ? it.val - b : 0;
-    it.dev = out / (it.scale || (it.val < a ? a : b));
+    if (!it.os) { const [a, b] = it.r; it.m = (a + b) / 2; it.s = it.sd || (b - a) / 2; } else { it.m = 0; it.s = it.sd; }
+    const ov = window.FACE_REF?.[male ? 'male' : 'female']?.[it.k]; if (ov) { it.m = ov.m; it.s = ov.s; if (!it.os) it.r = [it.m - it.s, it.m + it.s]; }
+    const useLog = !!(ov && ov.log && !it.os && it.val > 0 && ov.ls > 0);   // right-skewed metrics (esp, midR) are scored in log space
+    if (useLog) it.r = [Math.exp(ov.lm - ov.ls), Math.exp(ov.lm + ov.ls)];
+    it.z = it.os ? Math.max(0, it.val) / it.s : useLog ? (Math.log(it.val) - ov.lm) / ov.ls : (it.val - it.m) / it.s;
+    if (it.os && it.z === 0) it.z = 0;
+    it.score = 100 * Math.exp(-it.z * it.z / 2);                 // smooth: 100 only at the reference mean, never a flat plateau
+    it.dev = Math.abs(it.z) > 1 ? 0.04 + (Math.abs(it.z) - 1) * 0.08 : 0;   // keeps the flaw-text thresholds: >1 SD notable, >2 SD major
   });
   const dev = {}; M.forEach(it => dev[it.k] = it.dev);
-  const penalty = M.reduce((t, it) => t + it.w * it.dev, 0) / M.reduce((t, it) => t + it.w, 0);
-  const psl = clamp(7.8 - 26 * penalty, 2, 7.8);
+  const Wt = M.reduce((t, it) => t + it.w, 0), S = M.reduce((t, it) => t + it.w * it.score, 0) / Wt;
+  M.forEach(it => it.impact = it.w * (it.score - 70.7) / Wt);      // points vs a typical face (a typical z~N(0,1) face averages 70.7)
+  /* Overall: anchored so a typical face = 5.0 and a perfect-on-every-metric face = 8.0. NOT fitted to human ratings yet. */
+  const CALIB = { typical: 70.7, at5: 5, perPoint: 3 / 29.3 };
+  const psl = clamp(CALIB.at5 + (S - CALIB.typical) * CALIB.perPoint, 2, 8);
   const tier = psl < 4 ? 'sub5' : psl < 4.5 ? 'lt' : psl < 5.5 ? 'mt' : psl < 6.5 ? 'ht' : psl < 7.5 ? 'htplus' : 'elite';
-  return { v, tot, pct, r, x, M, dev, psl, tier, stm: y('St'), wd, jaw, mn, tilt, tiltL, tiltR, asym };
+  return { v, tot, pct, r, x, M, dev, psl, S, conf: s3Confidence(), tier, stm: y('St'), wd, jaw, mn, tilt, tiltL, tiltR, asym };
 }
+
+
+Object.assign(dict.en, { s3_m_symMid: 'Midface/eyes symmetry (offset from midline)', s3_m_symLow: 'Jaw/mouth symmetry (offset from midline)', s3_m_symEye: 'Eye-corner height difference' });
+Object.assign(dict.ar, { s3_m_symMid: 'تناظر الوجه الأوسط والعينين', s3_m_symLow: 'تناظر الفك والفم', s3_m_symEye: 'فرق ارتفاع زوايا العينين' });
+function s3Confidence() {
+  const q = validation?.quality, w = [], f = q ? q.f : {};
+  let c = q ? Object.values(f).reduce((t, n) => t * n, 1) : 0.6;
+  if (q) w.push(...q.warns); else w.push({ en: 'Photo quality could not be measured.', ar: 'تعذر قياس جودة الصورة.' });
+  if (s2 && !s2.detected) { c *= 0.5; w.push({ en: 'Automatic detection failed. Points are estimates.', ar: 'فشل الكشف التلقائي والنقاط تقديرية.' }); }
+  if (s2?.hairEst) { c *= 0.9; w.push({ en: 'Hairline was estimated (hair or cap hides it). Thirds are less certain.', ar: 'خط الشعر مُقدَّر (الشعر أو القبعة تخفيه)، فالأثلاث أقل يقيناً.' }); }
+  return { pct: Math.round(clamp(c, 0, 1) * 100), warns: w };
+}
+function breakdownHTML(m, esc) {
+  const c = m.conf, col = c.pct >= 75 ? '#5ecb96' : c.pct >= 50 ? '#ffc933' : '#ff8080';
+  const lab = c.pct >= 75 ? L('High', 'عالية') : c.pct >= 50 ? L('Medium', 'متوسطة') : L('Low. Treat the score as unreliable.', 'منخفضة. اعتبر الدرجة غير موثوقة.');
+  const row = it => `<li style="display:flex;justify-content:space-between;gap:10px;font-size:11px;line-height:1.9"><span>${esc(T(it.name))}: ${esc(fmtVal(it, it.val))} <span style="color:var(--ash)">(${L('typical', 'المعتاد')} ${esc(fmtRange(it))})</span></span><b style="white-space:nowrap;color:${it.impact >= 0 ? '#5ecb96' : '#ff8080'}">${it.impact >= 0 ? '+' : '−'}${nf(Math.abs(it.impact).toFixed(1))}</b></li>`;
+  const byImp = [...m.M].sort((a, b) => b.impact - a.impact), up = byImp.filter(i => i.impact > 0.3).slice(0, 3), dn = byImp.filter(i => i.impact < -0.3).reverse().slice(0, 3);
+  return `<div class="s3-card"><div class="s3-h">${L('Confidence', 'مستوى الثقة')}: <span style="color:${col}">${nf(c.pct)}% · ${lab}</span></div>` +
+    (c.warns.length ? `<ul class="s3-weak">${c.warns.map(x => `<li>${esc(L(x.en, x.ar))}</li>`).join('')}</ul>` : `<p class="s3-p">${L('Pose, sharpness and lighting look good.', 'الوضعية والحدة والإضاءة جيدة.')}</p>`) + `</div>` +
+    `<div class="s3-card"><div class="s3-h">${L('What moved your score', 'ما الذي حرّك درجتك')}</div>` +
+    `<p class="s3-p">${L('Points are each measurement\'s effect compared with a typical face (average = 5.0).', 'النقاط هي تأثير كل قياس مقارنة بوجه معتاد (المتوسط = 5.0).')}</p>` +
+    `<ul style="list-style:none;padding:0;margin:8px 0">${up.map(row).join('')}${dn.map(row).join('')}</ul>` +
+    `<details><summary style="cursor:pointer;font-size:10px;letter-spacing:1px;color:var(--bone)">${T('s3_h_all')}</summary><ul style="list-style:none;padding:0;margin:8px 0">${byImp.map(row).join('')}</ul></details>` +
+    `<p class="s3-p" style="color:var(--ash);margin-top:10px">${L('Reference values come from a measured set of 597 studio-lit, front-facing faces (symmetry limits are still provisional), and the score is not yet fitted to human ratings. This is an estimate from one photo, not an objective truth.', 'القيم المرجعية مأخوذة من عينة مقاسة من 597 وجهاً مصوراً في استوديو من الأمام (حدود التناظر ما زالت مؤقتة)، والدرجة غير مضبوطة بعد على تقييمات بشرية. هذا تقدير من صورة واحدة وليس حقيقة موضوعية.')}</p></div>`;
+}
+window.exportFaceMeasurements = () => s3 && !s3.bad ? { gender, confidence: s3.conf.pct, values: Object.fromEntries(s3.M.map(i => [i.k, i.val])) } : null;   // for batch-fitting FACE_REF on a labeled dataset
+/* Full row for batch runs and for manual-vs-auto landmark studies. pts[k] = [x,y] as confirmed; auto[k] = [x,y] as first placed by the detector
+   (both in leveled-crop pixels, so the difference is exactly the manual correction). */
+window.exportFaceRow = () => {
+  if (!s3 || s3.bad) return null;
+  const q = validation?.quality, st = validation?.stats, pts = {}, auto = {};
+  if (s2) Object.entries(s2.pts).forEach(([k, p]) => { pts[k] = [+p.x.toFixed(2), +p.y.toFixed(2)]; auto[k] = [+p.ax.toFixed(2), +p.ay.toFixed(2)]; });
+  return { gender, confidence: s3.conf.pct, detected: !!s2?.detected, hairEst: !!s2?.hairEst,
+    yaw: st?.yaw ?? null, roll: st?.roll ?? null, pitch: q?.pitch ?? null, faceW: q?.faceW ?? null, qf: q ? q.f : null,
+    crop: s2 ? [s2.W, s2.H] : null, tot: s3.tot, values: Object.fromEntries(s3.M.map(i => [i.k, i.val])), pts, auto };
+};
 
 const fmtPct = n => nf(n.toFixed(1)) + '%';
 const mmOf = (len, tot) => s3cal ? nf((len / tot * s3cal).toFixed(1)) + ' ' + T('s3_mm') : '';
@@ -1124,6 +1209,7 @@ const FLAW = {
   sym:  { low:  { en: 'Your face is visibly asymmetric. The two sides do not match and the eye and mouth lines tilt off.', ar: 'وجهك غير متناسق بوضوح. الجانبان لا يتطابقان وخطوط العينين والفم مائلة.' },
           high: { en: 'Your face is visibly asymmetric. The two sides do not match and the eye and mouth lines tilt off.', ar: 'وجهك غير متناسق بوضوح. الجانبان لا يتطابقان وخطوط العينين والفم مائلة.' } }
 };
+FLAW.symMid = FLAW.symLow = FLAW.symEye = FLAW.sym;
 const flawText = (k, dir, male) => { const e = FLAW[k][dir], o = e.m ? (male ? e.m : e.f) : e; return L(o.en, o.ar); };
 
 const TIER_LINE = {
@@ -1158,7 +1244,7 @@ function renderS3() {
 
   // weak points: every metric that is outside its range, worst first
   const flaws = m.M.filter(it => it.dev > 0.04).sort((a, b) => b.w * b.dev - a.w * a.dev).map(it => {
-    const major = it.dev > 0.12, dir = it.val < it.r[0] ? 'low' : 'high';
+    const major = it.dev > 0.12, dir = it.z < 0 ? 'low' : 'high';
     return { major, text: (major ? L('Major flaw: ', 'عيب كبير: ') : L('Noticeable: ', 'ملحوظ: ')) + flawText(it.k, dir, male) };
   });
 
@@ -1169,7 +1255,7 @@ function renderS3() {
     ? L('That is the truth. Fix the flaws above in order, starting with the worst.', 'هذه هي الحقيقة. عالج العيوب أعلاه بالترتيب، بدءاً بالأسوأ.')
     : L('Not much left to attack. Polish the small flaws above and keep your grooming sharp.', 'لم يبقَ الكثير لانتقاده. صقل العيوب الصغيرة وإبقاء العناية في أعلى مستوى هو كل ما تبقى.');
   const none = L('I found no real weak points. Annoying, but fair.', 'لم أجد نقاط ضعف حقيقية. مزعج، لكنه عادل.');
-  m.say = [intro, tierLine, ...(flaws.length ? flaws.slice(0, 3).map(f => f.text) : [none]), outro].join(' ');
+  m.say = [intro, ...(m.conf.pct < 60 ? [L('My confidence in this reading is low, so treat it as a rough estimate.', 'ثقتي بهذه القراءة منخفضة، فاعتبرها تقديراً تقريبياً.')] : []), tierLine, ...(flaws.length ? flaws.slice(0, 3).map(f => f.text) : [none]), outro].join(' ');
 
   // rating card (rating + tier + one blunt line, no stats)
   const C = 2 * Math.PI * 54, frac = clamp(m.psl / 8, 0, 1);
@@ -1187,6 +1273,7 @@ function renderS3() {
   box.innerHTML = `<div class="s3-card"><div class="s3-h">${L('Weak Points', 'نقاط الضعف')}</div>` +
     (flaws.length ? `<ul class="s3-weak">${flaws.map(f => `<li class="${f.major ? 'major' : ''}">${esc(f.text)}</li>`).join('')}</ul>` : `<p class="s3-p">${none}</p>`) +
     `</div>`;
+  box.innerHTML += breakdownHTML(m, esc);
   drawS3();
 }
 

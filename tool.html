@@ -418,7 +418,9 @@ function pupils(lm, w, h) {
 
 // Level the photo (rotate so the pupil line is horizontal), then crop to head + hair.
 // The mesh only covers the face (forehead→chin), so the box is the face extents padded for hair/ears.
-const CROP = { top: 0.5, bottom: 0.12, side: 0.32, aspect: 4 / 5, maxSide: 1600 };
+// pad = space above AND below the face (as a fraction of face height) -> face sits in the vertical middle.
+// side = extra space left/right of the face (fraction of face width). Raise pad for more hair/shoulders.
+const CROP = { pad: 0.42, side: 0.32, aspect: 4 / 5, maxSide: 1600 };
 function levelAndCrop(img, lm, rollDeg, pivot) {
   const W = img.naturalWidth, H = img.naturalHeight, r = rollDeg * Math.PI / 180;
   const cos = Math.cos(r), sin = Math.sin(r);
@@ -429,11 +431,19 @@ function levelAndCrop(img, lm, rollDeg, pivot) {
     const x = pivot.x + dx * cos + dy * sin, y = pivot.y - dx * sin + dy * cos;
     x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
   });
-  const fw = x1 - x0, fh = y1 - y0, cx = (x0 + x1) / 2;
-  const top = y0 - fh * CROP.top, bottom = y1 + fh * CROP.bottom;
-  let h = bottom - top, w = Math.max(fw * (1 + 2 * CROP.side), h * CROP.aspect);
+  const fw = x1 - x0, fh = y1 - y0;
+  // Horizontal centre = facial midline (forehead, nose bridge, nose tip, chin), not the mesh bbox,
+  // so a slightly turned head or ear landmarks don't push the face off-centre.
+  let mx = 0;
+  [10, 168, 1, 152].forEach(i => {
+    const p = lm[i], dx = p.x * W - pivot.x, dy = p.y * H - pivot.y;
+    mx += pivot.x + dx * cos + dy * sin;
+  });
+  const cx = mx / 4;
+  const cy = (y0 + y1) / 2;                       // vertical centre of the face (forehead -> chin)
+  let h = fh * (1 + 2 * CROP.pad), w = Math.max(fw * (1 + 2 * CROP.side), h * CROP.aspect);
   h = Math.max(h, w / CROP.aspect);
-  const bx = cx - w / 2, by = top - (h - (bottom - top)) / 2;
+  const bx = cx - w / 2, by = cy - h / 2;        // face centred on both axes
   const k = Math.min(1, CROP.maxSide / Math.max(w, h));
   const c = document.createElement('canvas');
   c.width = Math.round(w * k); c.height = Math.round(h * k);

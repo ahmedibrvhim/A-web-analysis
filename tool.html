@@ -279,7 +279,6 @@ html[dir=rtl] .lm-side{direction:rtl}
   <section id="step2" aria-live="polite">
     <div class="tool-eyebrow" data-i18n="s2_eyebrow">Step 2 · Landmarks</div>
     <h2 class="tool-title" data-i18n="tool_step_adjust_title">Confirm The Landmarks</h2>
-    <p class="tool-text" style="margin-bottom:22px" data-i18n="s2_text"></p>
     <figure class="lm-ref" id="lmRef">
       <div class="lm-ref-main" id="lmRefSvg"></div>
     </figure>
@@ -310,7 +309,6 @@ html[dir=rtl] .lm-side{direction:rtl}
         </div>
       </div>
     </div>
-    <p class="lm-note" style="margin-top:12px" data-i18n="s2_keys_tip"></p>
     <div class="lm-progress" id="lmProgress"></div>
     <div class="tool-nav">
       <button class="btn-ghost" type="button" id="s2Back" data-i18n="tool_back">← Back</button>
@@ -898,31 +896,19 @@ function draw() {
   });
 }
 
-/* reference diagram: a schematic face with all 22 points; the selected one is highlighted */
-const REFPT = { Tr: [150, 56], Br: [150, 113], N: [150, 134], Sn: [150, 234], Ls: [150, 252], St: [150, 261], Li: [150, 271], Me: [150, 334],
-  Pl: [117, 147], Pr: [183, 147], Enl: [133, 148], Enr: [167, 148], Exl: [100, 144], Exr: [200, 144],
-  Zl: [58, 165], Zr: [242, 165], Gl: [80, 270], Gr: [220, 270], Cl: [122, 261], Cr: [178, 261], Al: [133, 223], Ar: [167, 223] };
-const REFLBL = { Tr: [158, 59, 'start'], Br: [158, 116, 'start'], N: [150, 128, 'middle'], Sn: [158, 239, 'start'], Ls: [158, 251, 'start'], St: [158, 263, 'start'], Li: [158, 275, 'start'], Me: [150, 350, 'middle'],
-  Pl: [117, 161, 'middle'], Pr: [183, 161, 'middle'], Enl: [133, 141, 'middle'], Enr: [167, 141, 'middle'], Exl: [93, 147, 'end'], Exr: [207, 147, 'start'],
-  Zl: [50, 168, 'end'], Zr: [250, 168, 'start'], Gl: [72, 274, 'end'], Gr: [228, 274, 'start'], Cl: [114, 264, 'end'], Cr: [186, 264, 'start'], Al: [125, 226, 'end'], Ar: [175, 226, 'start'] };
+/* reference diagram: the supplied labeled face image (landmark-reference-labeled.png, same folder as this file).
+   Coordinates are in image pixels (1650 x 1458). Points are only ringed when selected;
+   all 22 points are printed on the image itself. */
+const REF_IMG = 'landmark-reference-labeled.png', REF_W = 1650, REF_H = 1458;
+const REFPT = { Tr: [825, 198], Br: [813, 553], N: [813, 591], Sn: [813, 1014], Ls: [810, 1104], St: [810, 1146], Li: [810, 1202], Me: [804, 1410],
+  Pl: [560, 630], Pr: [1046, 630], Enl: [683, 640], Enr: [925, 643], Exl: [450, 627], Exr: [1155, 625],
+  Zl: [333, 786], Zr: [1284, 786], Gl: [405, 1152], Gr: [1203, 1152], Cl: [627, 1146], Cr: [981, 1146], Al: [684, 966], Ar: [918, 966] };
 function renderRef() {
   const box = $('lmRefSvg'); if (!box || !s2) return;
   const cur = LM[s2.sel].id;
-  const art = `<path d="M150 334 C118 334 92 306 80 270 C68 236 58 200 58 160 C58 92 96 36 150 36 C204 36 242 92 242 160 C242 200 232 236 220 270 C208 306 182 334 150 334 Z" fill="#fff" stroke="#111" stroke-width="2"/>
-    <path d="M70 92 C80 40 120 26 150 26 C180 26 220 40 230 92 C215 64 185 54 150 54 C115 54 85 64 70 92 Z" fill="#111"/>
-    <path d="M57 150 Q40 168 57 200 M243 150 Q260 168 243 200" fill="none" stroke="#111" stroke-width="1.6"/>
-    <path d="M94 126 Q114 112 138 123 M162 123 Q186 112 206 126" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round"/>
-    <path d="M100 144 Q116 133 133 148 Q116 157 100 144 Z M200 144 Q184 133 167 148 Q184 157 200 144 Z" fill="none" stroke="#111" stroke-width="1.5"/>
-    <circle cx="117" cy="147" r="4.2" fill="none" stroke="#111" stroke-width="1.3"/><circle cx="183" cy="147" r="4.2" fill="none" stroke="#111" stroke-width="1.3"/>
-    <path d="M147 148 Q143 196 134 222 Q150 236 166 222 Q157 196 153 148" fill="none" stroke="#111" stroke-width="1.4"/>
-    <path d="M122 261 Q150 250 178 261 Q150 284 122 261 Z M122 261 Q150 264 178 261" fill="none" stroke="#111" stroke-width="1.6"/>`;
-  const dots = LM.filter(m => m.id !== cur).map(m => {
-    const [x, y] = REFPT[m.id], [lx, ly, an] = REFLBL[m.id], c = m.e ? '#0f9d76' : m.w ? '#1a73e8' : m.lower ? '#c98a00' : '#222';
-    return `<circle cx="${x}" cy="${y}" r="2.4" fill="${c}"/><text x="${lx}" y="${ly}" text-anchor="${an}" font-size="8" font-weight="700" fill="${c}" stroke="#fff" stroke-width="2.4" paint-order="stroke" font-family="Arial,sans-serif">${m.id}</text>`;
-  }).join('');
-  const [cx, cy] = REFPT[cur], [clx, cly, can] = REFLBL[cur];
-  const on = `<circle cx="${cx}" cy="${cy}" r="9" fill="none" stroke="#e0143c" stroke-width="1.4"/><circle cx="${cx}" cy="${cy}" r="3.6" fill="#e0143c"/><text x="${clx}" y="${cly}" text-anchor="${can}" font-size="10" font-weight="800" fill="#e0143c" stroke="#fff" stroke-width="3" paint-order="stroke" font-family="Arial,sans-serif">${cur}</text>`;
-  box.innerHTML = `<svg viewBox="0 0 300 366" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Landmark reference">${art}${dots}${on}</svg>`;
+  const [cx, cy] = REFPT[cur];
+  const on = `<circle cx="${cx}" cy="${cy}" r="34" fill="rgba(255,214,0,.28)" stroke="#111" stroke-width="5"/><circle cx="${cx}" cy="${cy}" r="34" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 6"/>`;
+  box.innerHTML = `<svg viewBox="0 0 ${REF_W} ${REF_H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Landmark reference"><image href="${REF_IMG}" x="0" y="0" width="${REF_W}" height="${REF_H}"/>${on}</svg>`;
 }
 
 function renderStep2() {

@@ -255,7 +255,6 @@ export const dict = {
 
     /* ── Step 2: landmark review ── */
     s2_eyebrow: 'Step 2 · Landmarks',
-    s2_text: "22 points were placed on your face: height, eyes and width. Select a point, then move it with the arrow pad only. Review every point to continue.",
     s2_lower_note: 'Sn · Ls · Li · Me measure your lower third, and Tr and N complete the facial thirds. The width points (cheekbone, jaw corner, mouth corner, nostril edge) move left and right only.',
     s2_detecting: 'Placing landmarks…',
     s2_fallback: 'Automatic detection was not possible — points start at average positions. Review each one carefully.',
@@ -263,7 +262,6 @@ export const dict = {
     s2_step_label: 'Step size',
     s2_progress: '{n} / {total} reviewed',
     s2_confirm: 'Confirm Landmarks →',
-    s2_keys_tip: 'Keyboard arrows also work (hold Shift for coarse).',
     s2_up: 'Move up',
     s2_down: 'Move down',
     s2_left: 'Move left',
@@ -594,7 +592,6 @@ export const dict = {
 
     /* ── الخطوة ٢: مراجعة النقاط ── */
     s2_eyebrow: 'الخطوة ٢ · النقاط المرجعية',
-    s2_text: "تم وضع ٢٢ نقطة على وجهك: الارتفاع والعينان والعرض. اختر نقطة ثم حرّكها بلوحة الأسهم فقط. راجع كل نقطة للمتابعة.",
     s2_lower_note: 'النقاط Sn · Ls · Li · Me تقيس الثلث السفلي، أما Tr وN فتكمّلان أثلاث الوجه. نقاط العرض (الوجنة وزاوية الفك وزاوية الفم وحافة المنخر) تتحرك يميناً ويساراً فقط.',
     s2_detecting: 'جارٍ وضع النقاط…',
     s2_fallback: 'تعذّر الكشف التلقائي — بدأت النقاط من مواضع متوسطة. راجع كل نقطة بعناية.',
@@ -602,7 +599,6 @@ export const dict = {
     s2_step_label: 'حجم الخطوة',
     s2_progress: 'تمت مراجعة {n} / {total}',
     s2_confirm: 'تأكيد النقاط ←',
-    s2_keys_tip: 'أسهم لوحة المفاتيح تعمل أيضاً (اضغط Shift للخطوة الكبيرة).',
     s2_up: 'تحريك للأعلى',
     s2_down: 'تحريك للأسفل',
     s2_left: 'تحريك لليسار',

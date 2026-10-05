@@ -189,9 +189,6 @@ html[dir=rtl] .lm-side{direction:rtl}
 .s3-list li{margin-bottom:5px}
 .s3-disc{text-align:center;font-size:9px;line-height:1.8;letter-spacing:.4px;color:var(--ash);max-width:480px;margin:16px auto 0}
 #step3 .tool-nav{flex-wrap:wrap}
-.s3-dev{margin-top:16px;border:1px dashed var(--smoke);background:var(--panel);padding:12px 16px;direction:ltr;text-align:left}
-.s3-dev summary{cursor:pointer;font-size:9px;letter-spacing:2px;color:var(--ash);text-transform:uppercase}
-.s3-dev .dbg{font-size:10px;display:block;overflow-x:auto;margin-bottom:6px}.s3-dev .dbg td,.s3-dev .dbg th{white-space:nowrap}
 
 /* ── auth gate ── */
 .auth-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#150000 0%,#000 70%);display:flex;align-items:center;justify-content:center;transition:opacity .3s,visibility .3s}
@@ -323,7 +320,6 @@ html[dir=rtl] .lm-side{direction:rtl}
       <p class="lm-note" data-i18n="s3_cal_note"></p>
     </div>
     <div id="s3Report"></div>
-    <details class="s3-dev" id="s3Dev"><summary>Developer / debug panel</summary><div id="s3DevBody"></div><button class="btn-ghost" type="button" id="s3Cons" style="margin-top:12px">Run consistency test</button><div id="s3ConsOut"></div></details>
     <p class="s3-disc" data-i18n="s3_disclaimer"></p>
     <div class="tool-nav">
       <button class="btn-ghost" type="button" id="s3Back" data-i18n="tool_back">← Back</button>
@@ -335,7 +331,6 @@ html[dir=rtl] .lm-side{direction:rtl}
 
 <script type="module">
 import { auth, onAuthStateChanged, signOut } from './firebase-config.js';
-import * as FA from './engine.js';
 import { getLang, applyDocumentDirection, applyTranslations, wireLangToggle, t } from './i18n.js';
 
 const $ = id => document.getElementById(id);
@@ -382,8 +377,7 @@ renderStatic();
 /* ── FACE ANALYSIS (runs fully in the browser with MediaPipe) ── */
 const T = (key, params = {}) => t(key, lang).replace(/\{(\w+)\}/g, (_, k) => params[k] ?? '');
 const RULES = {
-  yawMax: FA.CONFIG.pose.yawReject,    // deg — hard reject (confidence already decays from FA.CONFIG.pose.soft)
-  pitchMax: FA.CONFIG.pose.pitchReject,
+  yawMax: 15,       // deg — beyond this the head is turned (¾ view / profile)
   rollLevel: 0.5    // deg — below this the pupillary line counts as already level
 };
 let landmarker = null, modelFailed = false;
@@ -400,11 +394,16 @@ async function getLandmarker() {
       },
       runningMode: 'IMAGE',
       numFaces: 2,                                  // 2 so a second person can be caught
-      outputFacialTransformationMatrixes: true,
-      outputFaceBlendshapes: true                  // expression control (smile / jaw open / brows / squint)
+      outputFacialTransformationMatrixes: true
     });
   } catch (e) { console.error('MediaPipe load failed', e); modelFailed = true; landmarker = null; }
   return landmarker;
+}
+
+// Head yaw (deg) from MediaPipe's 4x4 column-major transform.
+function headYaw(result) {
+  const m = result.facialTransformationMatrixes?.[0]?.data;
+  return m ? Math.asin(Math.max(-1, Math.min(1, -m[2]))) * 180 / Math.PI : null;
 }
 
 // Pupil centers in pixels + the line angle vs true horizontal.
@@ -456,19 +455,15 @@ async function analyze(img) {
   // 1. Object detection & strict compliance
   if (faces !== 1) return { ok: false, head: ['tv_rej_human'], reason: [faces === 0 ? 'tv_rej_human_none' : 'tv_rej_human_multi'] };
 
-  const pz = FA.poseFromMatrix(res.facialTransformationMatrixes?.[0]?.data);
-  if (!pz) return { error: 'tv_err_pose' };
-  const yaw = pz.yaw, pitch = pz.pitch;
+  const yaw = headYaw(res);
+  if (yaw === null) return { error: 'tv_err_pose' };
   const lm = res.faceLandmarks[0];
-  const facePx = (Math.max(...lm.slice(0, 468).map(p => p.y)) - Math.min(...lm.slice(0, 468).map(p => p.y))) * img.naturalHeight;
   const eyes = pupils(lm, img.naturalWidth, img.naturalHeight);
   const roll = eyes.angle, abs = Math.abs(roll);
-  const stats = { yaw, roll, pitch };
+  const stats = { yaw, roll };
 
   if (Math.abs(yaw) > RULES.yawMax) return { ok: false, stats, head: ['tv_rej_front'],
     reason: ['tv_rej_front_why', { deg: Math.abs(yaw).toFixed(1), max: RULES.yawMax }] };
-  if (Math.abs(pitch) > RULES.pitchMax) return { ok: false, stats, head: ['tv_rej_front'],
-    reason: ['tv_rej_front_why', { deg: Math.abs(pitch).toFixed(1), max: RULES.pitchMax }] };
 
   // 2. Smart geometric correction — actually applied to the image
   const level = abs < RULES.rollLevel;
@@ -476,7 +471,7 @@ async function analyze(img) {
   const steps = level
     ? [['tv_step_level', { deg: roll.toFixed(2) }]]
     : [['tv_step1'], ['tv_step2', { deg }], ['tv_step3', { deg, dir: roll > 0 ? 'tv_ccw' : 'tv_cw' }], ['tv_step4']];
-  return { ok: true, stats, steps, level, pose: { yaw, pitch, roll: 0 }, facePx,
+  return { ok: true, stats, steps, level,
     cropUrl: levelAndCrop(img, lm, level ? 0 : roll, eyes.mid),
     correctionDeg: level ? 0 : -roll,
     head: ['tv_ok_head'], reason: level ? ['tv_ok_level'] : ['tv_ok_tilt', { deg }] };
@@ -592,56 +587,40 @@ let s2 = null;   // { src, img, W, H, k, dpr, pts:{id:{x,y,ax,ay,seen}}, sel, st
 const nf = n => lang === 'ar' ? String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
-/* Hairline scan: brightness step from skin to (darker) hair, up three forehead columns.
-   Returns { y, contrast, spread } for the centre column or null. It only finds DARK hair against lighter skin;
-   everything else (blond/light hair, dark skin, hats, shadows) is expected to fail or score low confidence
-   in FA.resolveHairline — the point is then marked ESTIMATED and the user is asked to place Tr. */
-function scanHairline(img, p10, p9, fw, fh) {
+/* Hairline: scan up the forehead midline until skin turns to (dark) hair. */
+function findHairline(img, p10, p9, fw, fh) {
   try {
     const W = img.naturalWidth, H = img.naturalHeight;
     const c = document.createElement('canvas'); c.width = W; c.height = H;
     const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
+    const band = Math.max(2, Math.round(0.035 * fw));
+    const x0 = clamp(Math.round(p10.x - band), 0, W - 1), bw = Math.max(1, Math.min(W - x0, band * 2));
     const yEnd = clamp(Math.round(p9.y), 1, H - 1);
-    const column = cx => {
-      const band = Math.max(2, Math.round(0.035 * fw));
-      const x0 = clamp(Math.round(cx - band), 0, W - 1), bw = Math.max(1, Math.min(W - x0, band * 2));
-      const d = g.getImageData(x0, 0, bw, yEnd).data, col = new Float32Array(yEnd);
-      for (let y = 0; y < yEnd; y++) { let sum = 0; for (let x = 0; x < bw; x++) { const k = (y * bw + x) * 4; sum += 0.299 * d[k] + 0.587 * d[k + 1] + 0.114 * d[k + 2]; } col[y] = sum / bw; }
-      const sm = new Float32Array(yEnd);
-      for (let y = 0; y < yEnd; y++) { let a = 0, n = 0; for (let k = -2; k <= 2; k++) { const i = y + k; if (i >= 0 && i < yEnd) { a += col[i]; n++; } } sm[y] = a / n; }
-      const y10 = Math.round(p10.y), yTo = yEnd - Math.round(0.05 * fh);
-      if (yTo - y10 < 3) return null;
-      const skinArr = Array.from(sm.slice(y10, yTo)).sort((a, b) => a - b), skin = skinArr[skinArr.length >> 1];
-      if (skin < 25) return null;
-      const thr = skin * 0.62, run = Math.max(3, Math.round(0.012 * fh)), top = Math.max(run, Math.round(p10.y - 0.6 * fh));
-      for (let y = y10; y > top; y--) {
-        let all = true; for (let k = 1; k <= run; k++) if (sm[y - k] >= thr) { all = false; break; }
-        if (all) { let hs = 0; for (let k = 1; k <= run; k++) hs += sm[y - k]; return { y, contrast: (skin - hs / run) / skin }; }
-      }
-      return null;
-    };
-    const mid = column(p10.x);
-    if (!mid) return null;
-    const ys = [-0.10, 0.10].map(o => column(p10.x + o * fw)).filter(Boolean).map(r => r.y).concat(mid.y);
-    const spread = ys.length < 3 ? FA.CONFIG.hair.spread.bad : (Math.max(...ys) - Math.min(...ys)) / fh;
-    return { y: mid.y, contrast: mid.contrast, spread };
+    const d = g.getImageData(x0, 0, bw, yEnd).data;
+    const col = new Float32Array(yEnd);
+    for (let y = 0; y < yEnd; y++) {
+      let sum = 0;
+      for (let x = 0; x < bw; x++) { const k = (y * bw + x) * 4; sum += 0.299 * d[k] + 0.587 * d[k + 1] + 0.114 * d[k + 2]; }
+      col[y] = sum / bw;
+    }
+    const sm = new Float32Array(yEnd);                        // 5-row smoothing
+    for (let y = 0; y < yEnd; y++) { let s = 0, n = 0; for (let k = -2; k <= 2; k++) { const i = y + k; if (i >= 0 && i < yEnd) { s += col[i]; n++; } } sm[y] = s / n; }
+    const y10 = Math.round(p10.y), yTo = yEnd - Math.round(0.05 * fh);
+    if (yTo - y10 < 3) return null;
+    const skinArr = Array.from(sm.slice(y10, yTo)).sort((a, b) => a - b);
+    const skin = skinArr[skinArr.length >> 1];
+    if (skin < 25) return null;                               // too dark to trust
+    const thr = skin * 0.62, run = Math.max(3, Math.round(0.012 * fh));
+    const top = Math.max(run, Math.round(p10.y - 0.6 * fh));
+    for (let y = y10; y > top; y--) {
+      let all = true;
+      for (let k = 1; k <= run; k++) if (sm[y - k] >= thr) { all = false; break; }
+      if (all) return y;
+    }
   } catch (e) { console.warn('hairline scan failed', e); }
   return null;
 }
 
-/* Image-quality sample: face box resampled to a fixed width (so blur/lighting numbers are comparable between photos). */
-function sampleQuality(img, mesh, facePx) {
-  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
-  for (let i = 0; i < 468; i++) { x0 = Math.min(x0, mesh[i].x); x1 = Math.max(x1, mesh[i].x); y0 = Math.min(y0, mesh[i].y); y1 = Math.max(y1, mesh[i].y); }
-  const W = img.naturalWidth, H = img.naturalHeight, w = 160, h = Math.max(8, Math.round(w * (y1 - y0) / (x1 - x0)));
-  const c = document.createElement('canvas'); c.width = w; c.height = h;
-  const g = c.getContext('2d', { willReadFrequently: true });
-  g.drawImage(img, x0, y0, x1 - x0, y1 - y0, 0, 0, w, h);
-  const d = g.getImageData(0, 0, w, h).data, luma = new Float32Array(w * h);
-  for (let i = 0; i < w * h; i++) luma[i] = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
-  const m = FA.CONFIG.quality.edgeMargin;
-  return FA.assessQuality({ luma, w, h, facePx, meshNearEdge: x0 < m * W || y0 < m * H || x1 > (1 - m) * W || y1 > (1 - m) * H });
-}
 
 /* Upper-lip border (Ls): the mesh runs low on the upper lip, so look for the thin bright
    vermilion ridge just above the dark mouth line, on the midline. Returns null if not clear. */
@@ -676,34 +655,36 @@ function findUpperLip(img, p0, p13, p14, fw, fh) {
   return null;
 }
 
-async function detectLandmarks(img, facePx, pose) {
+async function detectLandmarks(img) {
   const W = img.naturalWidth, H = img.naturalHeight;
   const lmk = await getLandmarker();
   if (lmk) {
     try {
-      const res = lmk.detect(img), lm = res?.faceLandmarks?.[0];
+      const lm = lmk.detect(img)?.faceLandmarks?.[0];
       if (lm && lm.length >= 468) {
-        const mesh = lm.map(p => ({ x: p.x * W, y: p.y * H })), P = i => mesh[i];
-        const G = FA.faceGeometry(mesh), fh = G.fh, fw = G.fw;
-        const mix = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
-        const N = mix(P(9), P(168), 0.5);                             // brow dip, between glabella and bridge
-        const hair = FA.resolveHairline(scanHairline(img, P(10), P(9), fw, fh), P(10).y, N.y, P(152).y, fh);
+        const P = i => ({ x: lm[i].x * W, y: lm[i].y * H });
+        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+        for (let i = 0; i < 468; i++) { const p = P(i); x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); }
+        const fw = x1 - x0, fh = y1 - y0;
+        const p10 = P(10), p9 = P(9), p168 = P(168), p2 = P(2), p164 = P(164);
+        const hl = findHairline(img, p10, p9, fw, fh);
         const lsY = findUpperLip(img, P(0), P(13), P(14), fw, fh);
-        const pts = {
-          Tr: { x: P(10).x, y: hair.y },
-          N,
-          Sn: P(2),                                                    // base of the nose where the columella meets the lip
-          Ls: { x: P(0).x, y: lsY ?? P(0).y - 0.012 * fh },             // upper-lip vermilion border (snapped to the bright ridge when clear)
-          Li: P(17),                                                   // lower-lip vermilion border
-          Me: P(152)                                                   // chin bottom
+        const mix = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+        return {
+          detected: true, hairEst: hl === null,
+          pts: {
+            Tr: { x: p10.x, y: hl ?? p10.y - 0.14 * fh },   // true hairline (scan) — mesh top sits mid-forehead
+            N:  mix(p9, p168, 0.5),                         // brow dip, between glabella and bridge
+            Sn: p2,                                         // base of the nose where the columella meets the lip
+            Ls: { x: P(0).x, y: lsY ?? P(0).y - 0.012 * fh },  // upper-lip vermilion border (snapped to the bright ridge; mesh runs low here)
+            Li: P(17),                                      // lower-lip vermilion border
+            Me: P(152)                                      // chin bottom
+          }
         };
-        return { detected: true, hairEst: hair.source === 'proxy', pts,
-          meta: { mesh, hair, fh, blend: res.faceBlendshapes?.[0]?.categories || null, pose,
-                  quality: sampleQuality(img, mesh, facePx || fh) } };
       }
     } catch (e) { console.error(e); }
   }
-  const f = (y) => ({ x: W / 2, y: H * y });                // average positions for a cropped portrait — NO mesh, so no scored analysis
+  const f = (y) => ({ x: W / 2, y: H * y });                // average positions for a cropped portrait
   return { detected: false, hairEst: false, pts: { Tr: f(.20), N: f(.45), Sn: f(.70), Ls: f(.76), Li: f(.82), Me: f(.91) } };
 }
 
@@ -719,11 +700,11 @@ async function openStep2() {
   $('s2Confirm').disabled = true;
   let img = src.cropped;
   if (!img) { try { img = await loadImage(src.cropUrl); } catch (e) { return; } }
-  const r = await detectLandmarks(img, src.facePx, src.pose);
+  const r = await detectLandmarks(img);
   if (validation !== src) return;                           // photo was swapped meanwhile
   const pts = {};
   LM.forEach((m, i) => { const p = r.pts[m.id]; pts[m.id] = { x: p.x, y: p.y, ax: p.x, ay: p.y, seen: i === 0 }; });   // first point is on screen from the start
-  s2 = { src, img, W: img.naturalWidth, H: img.naturalHeight, pts, sel: 0, stepKey: 'normal', detected: r.detected, hairEst: r.hairEst, meta: r.meta || null };
+  s2 = { src, img, W: img.naturalWidth, H: img.naturalHeight, pts, sel: 0, stepKey: 'normal', detected: r.detected, hairEst: r.hairEst };
   $('lmBusy').style.display = 'none';
   const bar = $('s2Msg');
   if (!r.detected) { bar.className = 'msg-bar info'; bar.textContent = T('s2_fallback'); }
@@ -779,7 +760,7 @@ function renderStep2() {
   const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   box.innerHTML = LM.map((m, i) =>
     `<button type="button" class="lm-chip${m.lower ? ' lower' : ''}${i === s2.sel ? ' sel' : ''}${s2.pts[m.id].seen ? ' seen' : ''}" data-i="${i}" title="${esc(T(m.pt))}">${m.id}</button>`).join('');
-  $('lmName').textContent = T(LM[s2.sel].pt) + ' · ' + T('st_' + pointStatus(LM[s2.sel].id));
+  $('lmName').textContent = T(LM[s2.sel].pt);
   $('lmDesc').textContent = T(LM[s2.sel].desc);
   const n = LM.filter(m => s2.pts[m.id].seen).length;
   $('lmProgress').textContent = T('s2_progress', { n: nf(n), total: nf(LM.length) });
@@ -787,13 +768,6 @@ function renderStep2() {
   $('lmSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.step === s2.stepKey));
 }
 
-function pointStatus(id) {                                  // AUTO | CORRECTED | ESTIMATED | LOW
-  const p = s2.pts[id], fh = s2.meta?.fh || s2.H * 0.6;
-  if (Math.hypot(p.x - p.ax, p.y - p.ay) / fh > FA.CONFIG.moveTolFh) return 'corrected';
-  if (id === 'Tr' && s2.hairEst) return 'estimated';
-  if (id === 'Tr' && s2.meta && s2.meta.hair.confidence < 0.45) return 'low';
-  return 'auto';
-}
 function select(i) {
   if (!s2) return;
   s2.sel = (i + LM.length) % LM.length;
@@ -847,8 +821,7 @@ $('s2Confirm').addEventListener('click', () => {
   if (!s2 || LM.some(m => !s2.pts[m.id].seen)) return;
   const out = {};
   LM.forEach(m => { const p = s2.pts[m.id]; out[m.id] = { x: +p.x.toFixed(2), y: +p.y.toFixed(2) }; });
-  const auto = {}; LM.forEach(m => { const p = s2.pts[m.id]; auto[m.id] = { x: p.ax, y: p.ay }; });
-  window.lowerThirdLandmarks = { front: { width: s2.W, height: s2.H, points: out, auto, meta: s2.meta, image: s2.img } };
+  window.lowerThirdLandmarks = { front: { width: s2.W, height: s2.H, points: out, image: s2.img } };
   document.dispatchEvent(new CustomEvent('landmarks:confirmed', { detail: window.lowerThirdLandmarks }));
   $('step2').classList.remove('active');
   $('step3').classList.add('active');
@@ -871,7 +844,7 @@ document.querySelectorAll('.lm-ref-thumbs button').forEach(b => b.addEventListen
    (extension lines + rulers with labels) and builds the report.
    Gender picks the tier names and the fix recommendations.
 ══════════════════════════════════════════════════════════ */
-// (no universal 'ideal' constant any more — see FA.REFERENCE_PROFILES)
+const IDEAL = 100 / 3;
 const S3C = { up: '#8ab4ff', mid: '#c3a6ff', low: '#ffffff', phil: '#ffc933', lips: '#ff7a8c', chin: '#5ecb96' };
 const TIERS = {
   male:   { sub5: 'Sub-5', lt: 'LTN', mt: 'MTN', ht: 'HTN', htplus: 'HTN+ · Chadlite',   elite: 'Chad'  },
@@ -882,66 +855,68 @@ let s3 = null, s3cal = null;   // s3 = latest measurement, s3cal = optional real
 function s3Measure() {
   const d = window.lowerThirdLandmarks?.front;
   if (!d) return null;
-  if (!d.meta) return { bad: true, noMesh: true };
-  const rep = FA.generateReport({ mesh: d.meta.mesh, W: d.width, H: d.height, gender: gender || 'male', points: d.points, autoPoints: d.auto,
-    pose: d.meta.pose, blendshapes: d.meta.blend, quality: d.meta.quality, hair: d.meta.hair });
-  if (rep.bad) return { bad: true };
-  const R = rep.measurements._raw, y = id => d.points[id].y, T3 = rep.measurements.facialThirds, S = rep.stomion.value;
-  // compatibility fields used by the canvas drawing code
-  rep.tot = R.tot; rep.stm = S;
-  rep.v = { up: R.up, mid: R.mid, low: R.low, phil: y('Ls') - y('Sn'), lips: y('Li') - y('Ls'), chin: y('Me') - y('Li'), snStm: S - y('Sn'), stmMe: y('Me') - S };
-  rep.pct = { up: T3.upper, mid: T3.middle, low: T3.lower }; Object.keys(rep.v).forEach(k => { rep.pct[k] = rep.v[k] / R.tot * 100; });
-  rep.r = rep.measurements.lowerThird.split; rep.x = rep.v.stmMe / rep.v.snStm;
-  return rep;
+  const P = d.points, y = id => P[id].y;
+  const stm = y('Ls') + 0.42 * (y('Li') - y('Ls'));          // stomion ≈ mouth line, just under the upper vermilion
+  const v = {
+    up: y('N') - y('Tr'), mid: y('Sn') - y('N'), low: y('Me') - y('Sn'),
+    phil: y('Ls') - y('Sn'), lips: y('Li') - y('Ls'), chin: y('Me') - y('Li'),
+    snStm: stm - y('Sn'), stmMe: y('Me') - stm
+  };
+  const tot = y('Me') - y('Tr');
+  if (tot <= 0 || Object.values(v).some(n => n <= 0)) return { bad: true };
+  const pct = {}; Object.keys(v).forEach(k => pct[k] = v[k] / tot * 100);
+  const r = v.snStm / v.low, x = v.stmMe / v.snStm;           // r ideal 1/3 · split is 1 : x, ideal 1 : 2
+  const dev = {
+    up: Math.abs(pct.up - IDEAL) / IDEAL, mid: Math.abs(pct.mid - IDEAL) / IDEAL,
+    low: Math.abs(pct.low - IDEAL) / IDEAL, split: Math.abs(r - 1 / 3) / (1 / 3)
+  };
+  const penalty = 0.5 * (dev.up + dev.mid + dev.low) / 3 + 0.5 * dev.split;
+  const psl = clamp(7.8 - 22 * penalty, 2, 7.8);
+  const tier = psl < 4 ? 'sub5' : psl < 4.5 ? 'lt' : psl < 5.5 ? 'mt' : psl < 6.5 ? 'ht' : psl < 7.5 ? 'htplus' : 'elite';
+  return { v, tot, pct, r, x, dev, psl, tier, stm };
 }
 
 const fmtPct = n => nf(n.toFixed(1)) + '%';
 const mmOf = (len, tot) => s3cal ? nf((len / tot * s3cal).toFixed(1)) + ' ' + T('s3_mm') : '';
-const BANDCLS = { 'within': 'ok', 'slightly outside': 'warn', 'strong deviation': 'bad', 'n/a': 'warn' };
+const chipOf = d => d <= 0.10 ? 'ok' : d <= 0.20 ? 'warn' : 'bad';
 
 function renderS3() {
   s3 = s3Measure();
   const box = $('s3Report'), msg = $('s3Msg');
   msg.className = 'msg-bar'; msg.textContent = '';
   if (!s3 || s3.bad) {
-    box.innerHTML = ''; $('s3DevBody').innerHTML = '';
-    if (s3) { msg.className = 'msg-bar error'; msg.textContent = T(s3.noMesh ? 's3_err_nomesh' : 's3_err_order'); }
+    box.innerHTML = '';
+    if (s3) { msg.className = 'msg-bar error'; msg.textContent = T('s3_err_order'); }
     drawS3(); return;
   }
-  const m = s3, g = gender || 'male', male = g === 'male', dev = m.deviations, fs = m.featureScores, esc = v => String(v).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
-  const fx2 = v => nf(v.toFixed(2)), fx3 = v => nf(v.toFixed(3)), xTxt = nf(m.x.toFixed(2));
+  const m = s3, g = gender || 'male', male = g === 'male';
+  const row = (label, val, ideal, dev) =>
+    `<tr><td>${label}</td><td class="v">${val}</td><td class="i">${ideal}</td><td><span class="s3-chip ${chipOf(dev)}">${T('s3_' + chipOf(dev))}</span></td></tr>`;
   const withMm = k => fmtPct(m.pct[k]) + (s3cal ? ' · ' + mmOf(m.v[k], m.tot) : '');
-  const half = key => FA.CONFIG.scoring.tolSd * dev[key].scale, c = key => dev[key].center;
-  const refTxt = key => {
-    const pc = key.startsWith('third'), f = pc ? (v => nf(v.toFixed(1))) : (key === 'lowerSplit' ? fx3 : fx2);
-    if (dev[key].excessSd !== dev[key].excessSd) return '—';
-    return dev[key].center !== undefined && FA.REFERENCE_PROFILES[g][key].oneSided ? '≤ ' + f(c(key) + half(key)) : f(c(key) - half(key)) + '–' + f(c(key) + half(key)) + (pc ? '%' : '');
-  };
-  const rows = [['s3_m_up', 'thirdUp', () => withMm('up')], ['s3_m_mid', 'thirdMid', () => withMm('mid')], ['s3_m_low', 'thirdLow', () => withMm('low')],
-    ['s3_m_mlb', 'midLowBalance', fx3], ['s3_m_split', 'lowerSplit', () => '1 : ' + xTxt], ['s3_m_fwhr', 'fwhr', fx2], ['s3_m_jaw', 'jawWidth', fx2],
-    ['s3_m_eyes', 'eyeSpacing', fx2], ['s3_m_nose', 'noseWidth', fx2], ['s3_m_mouth', 'mouthNose', fx2], ['s3_m_sym', 'symmetry', fx3]];
-  const rowHtml = ([lbl, key, fn]) => { const cls = BANDCLS[dev[key].band];
-    return `<tr><td>${T(lbl)}</td><td class="v">${fn(dev[key].value)}</td><td class="i">${refTxt(key)}</td><td><span class="s3-chip ${cls}">${T('s3_' + cls)}</span></td><td class="i">${nf(Math.round(fs[key].confidence * 100))}%</td></tr>`; };
 
-  const bandOf = key => dev[key].excessSd > 0 ? (dev[key].z > 0 ? 'hi' : 'lo') : 'ok';
-  const balKey = { ok: 's3_bal_ok', hi: 's3_bal_long', lo: 's3_bal_short' }[bandOf('thirdLow')];
-  const splitKey = { ok: 's3_split_ok', hi: 's3_split_long', lo: 's3_split_short' }[bandOf('lowerSplit')];
+  // verdict paragraphs
+  const ltTxt = fmtPct(m.pct.low);
+  const balKey = m.pct.low > IDEAL * 1.08 ? 's3_bal_long' : m.pct.low < IDEAL * 0.92 ? 's3_bal_short' : 's3_bal_ok';
+  const splitKey = m.r > (1 / 3) * 1.12 ? 's3_split_long' : m.r < (1 / 3) * 0.88 ? 's3_split_short' : 's3_split_ok';
+  const xTxt = nf(m.x.toFixed(2));
 
-  // limiting factor = largest confidence-weighted excess deviation (a low-confidence measurement can't be "the" limiter)
-  const cand = rows.map(r => r[1]).filter(k => dev[k].excessSd === dev[k].excessSd && fs[k].confidence >= .45);
-  const worst = cand.reduce((a, b) => (!a || dev[b].excessSd > dev[a].excessSd) ? b : a, null);
-  const lbl = Object.fromEntries(rows.map(r => [r[1], r[0]])), vfn = Object.fromEntries(rows.map(r => [r[1], r[2]]));
-  const limit = worst && dev[worst].excessSd >= 1
-    ? T('s3_limit', { m: T(lbl[worst]), v: vfn[worst](dev[worst].value), i: refTxt(worst) }) : T('s3_limit_none');
+  // limiting factor
+  const names = { up: 's3_m_up', mid: 's3_m_mid', low: 's3_m_low', split: 's3_m_split' };
+  const worst = Object.keys(m.dev).reduce((a, b) => m.dev[a] >= m.dev[b] ? a : b);
+  const valOf = k => k === 'split' ? '1 : ' + xTxt : fmtPct(m.pct[k]);
+  const limit = m.dev[worst] > 0.10
+    ? T('s3_limit', { m: T(names[worst]), v: valOf(worst), i: worst === 'split' ? '1 : 2' : '33.3%' })
+    : T('s3_limit_none');
 
-  // fixes — only suggested when the underlying measurement is reliable AND clearly outside the reference
-  const ok = k => fs[k].confidence >= .45 && dev[k].excessSd >= 1;
+  // fixes
   const soft = [male ? 's3_soft_bf_m' : 's3_soft_bf_f', 's3_soft_posture', male ? 's3_soft_groom_m' : 's3_soft_groom_f'];
-  if (ok('thirdUp') && dev.thirdUp.z > 0) soft.push('s3_soft_hair');
+  if (m.pct.up > IDEAL * 1.08) soft.push('s3_soft_hair');
   const hard = [];
-  if (ok('thirdLow') && dev.thirdLow.z > 0) hard.push('s3_hard_long');
-  if (ok('thirdLow') && dev.thirdLow.z < 0) hard.push('s3_hard_short');
-  if (ok('lowerSplit') && dev.lowerSplit.z > 0) hard.push('s3_hard_phil');
+  if (m.tier === 'sub5' || m.tier === 'lt') {
+    if (m.pct.low > IDEAL * 1.08) hard.push('s3_hard_long');
+    if (m.pct.low < IDEAL * 0.92) hard.push('s3_hard_short');
+    if (m.r > (1 / 3) * 1.12) hard.push('s3_hard_phil');
+  }
   if (!hard.length) hard.push('s3_hard_none');
   const li = a => a.map(k => `<li>${T(k)}</li>`).join('');
 
@@ -949,96 +924,38 @@ function renderS3() {
     .map(([k, c]) => `<span style="width:${m.pct[k].toFixed(2)}%;background:${c}">${fmtPct(m.pct[k])}</span>`).join('');
   const bar2 = `<span style="width:${(m.v.snStm / m.v.low * 100).toFixed(2)}%;background:${S3C.phil}">1</span><span style="width:${(m.v.stmMe / m.v.low * 100).toFixed(2)}%;background:${S3C.chin}">${nf(m.x.toFixed(2))}</span>`;
 
-  const o = m.overall, tn = TIERS[g], [tlo, thi] = m.tierRange;
-  const lmChips = Object.entries(m.landmarks.points).map(([id, p]) => {
-    const st = p.source === 'corrected' ? 'corrected' : p.source === 'estimated' ? 'estimated' : p.low ? 'low' : 'auto', cls = st === 'auto' ? 'ok' : st === 'corrected' ? 'ok' : 'warn';
-    return `<span class="s3-chip ${cls}" style="margin:2px">${id} · ${T('st_' + st)} · ${nf(Math.round(p.confidence * 100))}%</span>`; }).join('');
-  const stmLine = `Stm · ${T('st_estimated')} · ${nf(Math.round(m.stomion.confidence * 100))}%`;
-  const warn = [...new Set(m.warnings)].map(w => `<li>${esc(w)}</li>`).join('');
-
   box.innerHTML = `
   <div class="s3-card">
     <div class="s3-h">${T('s3_h1')}</div>
-    <table class="s3-tbl"><thead><tr><th>${T('s3_col_metric')}</th><th>${T('s3_col_value')}</th><th>${T('s3_col_ideal')}</th><th></th><th>${T('s3_col_conf')}</th></tr></thead><tbody>${rows.map(rowHtml).join('')}</tbody></table>
+    <table class="s3-tbl"><thead><tr><th>${T('s3_col_metric')}</th><th>${T('s3_col_value')}</th><th>${T('s3_col_ideal')}</th><th></th></tr></thead><tbody>
+      ${row(T('s3_m_up'), withMm('up'), '33.3%', m.dev.up)}
+      ${row(T('s3_m_mid'), withMm('mid'), '33.3%', m.dev.mid)}
+      ${row(T('s3_m_low'), withMm('low'), '33.3%', m.dev.low)}
+      ${row(T('s3_m_split'), '1 : ' + xTxt, '1 : 2', m.dev.split)}
+    </tbody></table>
     <div class="s3-bar-cap">Tr–N · N–Sn · Sn–Me</div><div class="s3-bar">${bar}</div>
     <div class="s3-bar-cap">Sn–Stm : Stm–Me</div><div class="s3-bar">${bar2}</div>
     <p class="s3-p dim">${T('s3_split_note')}</p>
-    <p class="s3-p">${T(balKey, { lt: fmtPct(m.pct.low) })}</p>
+    <p class="s3-p">${T(balKey, { lt: ltTxt })}</p>
     <p class="s3-p">${T(splitKey, { x: xTxt })}</p>
+    <p class="s3-p">${T(male ? 's3_dim_m' : 's3_dim_f')}</p>
     <p class="s3-p dim">${T('s3_dim_need')}</p>
-    <div class="s3-bar-cap" style="margin-top:14px">${T('s3_lm_title')}</div><div>${lmChips}<span class="s3-chip warn" style="margin:2px">${stmLine}</span></div>
   </div>
   <div class="s3-card">
     <div class="s3-h">${T('s3_h2')}</div>
     <div class="s3-tier">
-      <div class="name">${tn[m.tier]}</div>
-      <div class="score">${T('s3_score', { idx: nf(Math.round(o.index)), unc: nf(Math.round(o.uncertainty)) })}</div>
-      <div class="score" style="margin-top:4px">${T('s3_conf', { c: T('s3_conf_' + o.confidenceLabel.toLowerCase()) + ' (' + nf(Math.round(o.confidence * 100)) + '%)' })}</div>
-      ${tlo !== thi ? `<p class="desc">${T('s3_tier_border', { a: tn[tlo], b: tn[thi] })}</p>` : `<p class="desc">${T('s3_tier_' + m.tier)}</p>`}
+      <div class="name">${TIERS[g][m.tier]}</div>
+      <div class="score">${T('s3_score', { psl: nf(m.psl.toFixed(1)) })}</div>
+      <p class="desc">${T('s3_tier_' + m.tier)}</p>
     </div>
     <p class="s3-p" style="text-align:center">${limit}</p>
-    <p class="s3-p dim" style="text-align:center">${T('s3_dim_' + (male ? 'm' : 'f'))}</p>
-    <p class="s3-p dim" style="text-align:center">${T('s3_uncal')}</p>
-    ${warn ? `<div class="s3-sub">${T('s3_warn_title')}</div><ul class="s3-list">${warn}</ul>` : ''}
   </div>
   <div class="s3-card">
     <div class="s3-h">${T('s3_h3')}</div>
     <div class="s3-sub">${T('s3_soft_title')}</div><ul class="s3-list">${li(soft)}</ul>
     <div class="s3-sub">${T('s3_hard_title')}</div><ul class="s3-list">${li(hard)}</ul>
   </div>`;
-  renderDev(m);
   drawS3();
-}
-
-/* ── DEVELOPER / DEBUG PANEL (English only, intentionally raw) ── */
-function renderDev(m) {
-  const f = (v, n = 3) => typeof v === 'number' ? (isFinite(v) ? v.toFixed(n) : 'NaN') : v;
-  const tbl = (head, rows) => `<table class="s3-tbl dbg"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => `<td class="${i ? 'i' : ''}">${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
-  const P = m.pose, Q = m.quality, E = m.expression, M = m.measurements, h = window.lowerThirdLandmarks.front.meta.hair;
-  const sec = (t, body) => `<div class="s3-sub">${t}</div>${body}`;
-  $('s3DevBody').innerHTML =
-    sec('Pose', tbl(['yaw°', 'pitch°', 'roll° (post-level)'], [[f(P.yaw, 1), f(P.pitch, 1), f(P.roll, 1)]])) +
-    sec('Landmarks (final = authoritative)', tbl(['pt', 'source', 'conf', 'moved/fh', 'flags'], Object.entries(m.landmarks.points).map(([id, p]) => [id, p.source, f(p.confidence, 2), f(p.movedFh), p.flags.join('; ') || '—']))) +
-    sec('Hairline', tbl(['source', 'conf', 'flags'], [[h.source, f(h.confidence, 2), h.flags.join('; ') || '—']])) +
-    sec('Stomion', tbl(['source', 'conf', 'lip fraction', 'mouth open / IPD'], [[m.stomion.source, f(m.stomion.confidence, 2), f(m.stomion.fraction), f(m.stomion.mouthOpenIpd)]])) +
-    sec('Expression', tbl(['known', 'smile', 'jawOpen', 'browRaise', 'squint', 'factors m/l/b/e'], [[E.known, f(E.raw.smile || 0, 2), f(E.raw.jawOpen || 0, 2), f(E.raw.browRaise || 0, 2), f(E.raw.squint || 0, 2), ['mouth', 'lower', 'brow', 'eyes'].map(k => f(E.factors[k], 2)).join(' / ')]])) +
-    sec('Image quality', tbl(['score', 'size', 'blur', 'light', 'crop', 'blurVar', 'facePx'], [[f(Q.score, 2), f(Q.factors.size, 2), f(Q.factors.blur, 2), f(Q.factors.light, 2), f(Q.factors.crop, 2), f(Q.metrics.blurVar, 1), f(Q.metrics.facePx, 0)]])) +
-    sec('Measurements (thirds %, ratios dimensionless)', tbl(['group', 'values'], Object.entries(M).filter(([k]) => k[0] !== '_').map(([k, v]) => [k, Object.entries(v).filter(([, x]) => typeof x === 'number').map(([a, x]) => a + '=' + f(x)).join('  ')]))) +
-    sec('Reference deviations → feature scores', tbl(['feature', 'value', 'ref centre', 'scale', 'z', 'excess SD', 'sex-specific', 'kind', 'conf', 'score', 'weight'],
-      Object.keys(m.deviations).map(k => { const d = m.deviations[k], s = m.featureScores[k]; return [k, f(d.value), f(d.center), f(d.scale), f(d.z, 2), f(d.excessSd, 2), d.sexSpecific, d.kind, f(s.confidence, 2), f(s.score, 2), s.weight]; }))) +
-    sec('Final', tbl(['index /100', '± (heuristic)', 'overall confidence', 'label', 'reference profile'], [[f(m.overall.index, 1), f(m.overall.uncertainty, 1), f(m.overall.confidence, 2), m.overall.confidenceLabel, m.gender + ' · validated=' + m.profileMeta.validated]]));
-}
-$('s3Cons').addEventListener('click', async () => {
-  const out = $('s3ConsOut'), d = window.lowerThirdLandmarks?.front; if (!d?.meta) return;
-  out.textContent = 'running…';
-  const inp = { mesh: d.meta.mesh, W: d.width, H: d.height, gender: gender || 'male', points: d.points, autoPoints: d.auto, pose: d.meta.pose, blendshapes: d.meta.blend, quality: d.meta.quality, hair: d.meta.hair };
-  const a = FA.consistencyTest(inp, { trials: 40 });
-  let html = `<p class="s3-p">Landmark perturbation (scale/shift/noise ≈ ${FA.CONFIG.noiseIpdFrac * 100}% IPD): index sd ${a.sdIndex.toFixed(2)}, max Δ ${a.maxIndexDelta.toFixed(2)} vs reported ±${s3.overall.uncertainty.toFixed(1)} → <b>${a.stable ? 'STABLE' : 'UNSTABLE'}</b></p>`;
-  html += `<p class="s3-p dim">max feature Δ: ${Object.entries(a.maxFeatureDelta).map(([k, v]) => k + '=' + v.toFixed(3)).join('  ')}</p>`;
-  try { html += await imageConsistency(); } catch (e) { html += `<p class="s3-p dim">image test failed: ${e.message}</p>`; }
-  out.innerHTML = html;
-});
-/* Image-level perturbation: re-run MediaPipe on resized / shifted-crop / brighter / higher-contrast copies and compare the
-   mesh-derived (hairline-independent) measurements. Landmark noise is covered above; this covers the detector itself. */
-async function imageConsistency() {
-  const img = window.lowerThirdLandmarks.front.image, lmk = await getLandmarker(); if (!lmk) return '';
-  const W = img.naturalWidth, H = img.naturalHeight, clip = v => Math.max(0, Math.min(255, v));
-  const variants = { base: {}, 'resize 75%': { s: .75 }, 'crop 3% + shift': { crop: .03 }, 'brightness +25': { b: 25 }, 'contrast ×1.25': { a: 1.25, b: -32 } };
-  const meas = {};
-  for (const [name, o] of Object.entries(variants)) {
-    const s = o.s || 1, cr = o.crop || 0, sx = W * cr, sy = H * cr, cw = W - 2 * sx, chh = H - 2 * sy;
-    const c = document.createElement('canvas'); c.width = Math.round(cw * s); c.height = Math.round(chh * s);
-    const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, sx, sy, cw, chh, 0, 0, c.width, c.height);
-    if (o.a || o.b) { const id = g.getImageData(0, 0, c.width, c.height), p = id.data; for (let i = 0; i < p.length; i += 4) for (let k = 0; k < 3; k++) p[i + k] = clip(p[i + k] * (o.a || 1) + (o.b || 0)); g.putImageData(id, 0, 0); }
-    const lm = lmk.detect(c)?.faceLandmarks?.[0]; if (!lm) { meas[name] = null; continue; }
-    const mesh = lm.map(p => ({ x: p.x * c.width, y: p.y * c.height })), G = FA.faceGeometry(mesh), a = FA.autoPointsFromMesh(mesh);
-    const L = Object.fromEntries(Object.entries(a).map(([k, p]) => [k, { ...p, confidence: 1 }])), stm = FA.estimateStomion(L, mesh, G, FA.expressionFromBlendshapes(null));
-    const M = FA.calculateMeasurements(L, mesh, G, stm);
-    meas[name] = { 'mid:low': M.facialThirds.midLowBalance, split: M.lowerThird.split, fWHR: M.facialWidthHeight.fwhr, jaw: M.jaw.width, eyes: M.eyes.spacing, nose: M.nose.alarToIntercanthal, mouth: M.mouth.toNose, asym: M.symmetry.value };
-  }
-  const b = meas.base; if (!b) return '';
-  const rows = Object.entries(meas).filter(([n]) => n !== 'base').map(([n, v]) => v ? `<tr><td>${n}</td>${Object.keys(b).map(k => `<td class="i">${(v[k] - b[k] >= 0 ? '+' : '') + (v[k] - b[k]).toFixed(3)}</td>`).join('')}</tr>` : `<tr><td>${n}</td><td colspan="8">no face detected</td></tr>`).join('');
-  return `<table class="s3-tbl dbg"><thead><tr><th>Δ vs original</th>${Object.keys(b).map(k => `<th>${k}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 function drawS3() {

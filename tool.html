@@ -109,7 +109,6 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
 .lm-ref-main img{display:block;width:100%;height:auto}
 .lm-chips{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:12px;direction:ltr}
 .lm-chip{position:relative;padding:11px 2px;font-size:12px;font-weight:700;letter-spacing:1px;line-height:1.2;text-align:center;color:var(--text);background:var(--panel);border:1px solid var(--border);cursor:pointer;font-family:inherit;transition:all .2s}
-.lm-chip.lower{border-bottom:2px solid var(--blood)}
 .lm-chip:hover{border-color:var(--blood)}
 .lm-chip.sel{border-color:var(--crimson);background:rgba(139,0,0,.16);color:var(--white);box-shadow:0 0 14px rgba(220,20,60,.25)}
 .lm-chip.seen::after{content:'';position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:#5ecb96}
@@ -170,6 +169,7 @@ html[dir=rtl] .lm-side{direction:rtl}
 .s3-chip{display:inline-block;padding:3px 8px;font-size:9px;letter-spacing:1px;border:1px solid;white-space:nowrap}
 .s3-chip.ok{color:#5ecb96;border-color:#0a5;background:rgba(0,160,90,.08)}
 .s3-chip.warn{color:#ffc933;border-color:#8a6d00;background:rgba(255,201,51,.07)}
+.s3-weak{list-style:none;margin:10px 0 0;padding:0}.s3-weak li{padding:11px 13px;margin-bottom:8px;border:1px solid var(--border);border-inline-start:3px solid var(--blood);background:rgba(220,20,60,.05);font-size:13px;line-height:1.9;color:var(--bone)}.s3-weak li.major{border-inline-start-color:var(--crimson);background:rgba(220,20,60,.11);color:var(--white)}
 .s3-chip.bad{color:#ff8080;border-color:var(--blood);background:rgba(220,20,60,.08)}
 .s3-bar{display:flex;height:24px;margin:14px 0 4px;direction:ltr;border:1px solid var(--border)}
 .s3-bar span{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#000;overflow:hidden;white-space:nowrap}
@@ -319,7 +319,6 @@ html[dir=rtl] .lm-side{direction:rtl}
   <section id="step3" aria-live="polite">
     <div class="tool-eyebrow" data-i18n="s3_eyebrow">Step 3 · Analysis</div>
     <h2 class="tool-title" data-i18n="s3_title">Full Face Analysis</h2>
-    <p class="tool-text" style="margin-bottom:22px" data-i18n="s3_text"></p>
     <div class="msg-bar" id="s3Msg"></div>
     <div class="skull-card" style="margin-top:0">
       <div class="skull-wrap" id="skullWrap"><div class="sk-up"></div><div class="sk-jaw" id="skJaw"></div></div>
@@ -672,11 +671,11 @@ const LM = [
   { id: 'Tr', pt: 'tool_pt_tr', desc: 'tool_guide_desc_tr' },
   { id: 'Br', pt: 'tool_pt_br', desc: 'tool_guide_desc_br' },
   { id: 'N',  pt: 'tool_pt_n',  desc: 'tool_guide_desc_n' },
-  { id: 'Sn', pt: 'tool_pt_sn', desc: 'tool_guide_desc_sn', lower: true },
-  { id: 'Ls', pt: 'tool_pt_ls', desc: 'tool_guide_desc_ls', lower: true },
-  { id: 'St', pt: 'tool_pt_st', desc: 'tool_guide_desc_st', lower: true },
-  { id: 'Li', pt: 'tool_pt_li', desc: 'tool_guide_desc_li', lower: true },
-  { id: 'Me', pt: 'tool_pt_me', desc: 'tool_guide_desc_me', lower: true },
+  { id: 'Sn', pt: 'tool_pt_sn', desc: 'tool_guide_desc_sn' },
+  { id: 'Ls', pt: 'tool_pt_ls', desc: 'tool_guide_desc_ls' },
+  { id: 'St', pt: 'tool_pt_st', desc: 'tool_guide_desc_st' },
+  { id: 'Li', pt: 'tool_pt_li', desc: 'tool_guide_desc_li' },
+  { id: 'Me', pt: 'tool_pt_me', desc: 'tool_guide_desc_me' },
   ...['Pl', 'Pr', 'Enl', 'Enr', 'Exl', 'Exr'].map(id => ({ id, pt: 'tool_pt_' + id.toLowerCase(), desc: 'tool_guide_desc_' + id.toLowerCase(), e: true })),
   ...['Zl', 'Zr', 'Gl', 'Gr', 'Cl', 'Cr', 'Al', 'Ar'].map(id => ({ id, pt: 'tool_pt_' + id.toLowerCase(), desc: 'tool_guide_desc_' + id.toLowerCase(), w: true }))
 ];
@@ -890,7 +889,7 @@ function draw() {
       g.moveTo(x, y - R - 4 * d); g.lineTo(x, y - gap); g.moveTo(x, y + gap); g.lineTo(x, y + R + 4 * d);
       g.stroke();
     }
-    g.fillStyle = on ? '#ff3c5a' : (m.e ? '#6ee7b7' : m.w ? '#5ecbff' : m.lower ? '#ffc933' : '#ffffff');
+    g.fillStyle = on ? '#ff3c5a' : (m.e ? '#6ee7b7' : m.w ? '#5ecbff' : '#ffffff');
     g.strokeStyle = 'rgba(0,0,0,.75)'; g.lineWidth = .8 * d;
     g.beginPath(); g.arc(x, y, (on ? DOT_R + .3 : DOT_R) * d, 0, 7); g.fill(); g.stroke();
   });
@@ -920,7 +919,7 @@ function renderStep2() {
   if (!s2) { box.innerHTML = ''; return; }
   const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   box.innerHTML = LM.map((m, i) =>
-    `<button type="button" class="lm-chip${m.lower ? ' lower' : ''}${i === s2.sel ? ' sel' : ''}${s2.pts[m.id].seen ? ' seen' : ''}" data-i="${i}" title="${esc(T(m.pt))}">${m.id}</button>`).join('');
+    `<button type="button" class="lm-chip${i === s2.sel ? ' sel' : ''}${s2.pts[m.id].seen ? ' seen' : ''}" data-i="${i}" title="${esc(T(m.pt))}">${m.id}</button>`).join('');
   $('lmName').textContent = T(LM[s2.sel].pt);
   $('lmDesc').textContent = T(LM[s2.sel].desc);
   const n = LM.filter(m => s2.pts[m.id].seen).length;
@@ -1088,6 +1087,64 @@ const fmtRange = it => {
     : nf(a.toFixed(2)) + ' – ' + nf(b.toFixed(2));
 };
 
+/* ── BRUTAL TEXT (looksmax-style). No numbers: only weak points, rating and blunt words. ── */
+const L = (en, ar) => lang === 'ar' ? ar : en;
+const FLAW = {
+  up:   { low:  { en: 'Your upper third is cramped. A short forehead squashes the top of your face and throws the thirds off.', ar: 'ثلثك العلوي مضغوط. جبهة قصيرة تكبس أعلى الوجه وتخرّب توازن الأثلاث.' },
+          high: { en: 'Your forehead is too tall. That fivehead drags the face upward and out of proportion.', ar: 'جبهتك طويلة أكثر من اللازم. هذا الـ fivehead يسحب الوجه للأعلى ويكسر التناسب.' } },
+  mid:  { low:  { en: 'Your midface is too short. Everything is crammed together with no room to breathe.', ar: 'منتصف وجهك قصير جداً. الملامح متزاحمة وبلا أي مساحة.' },
+          high: { en: 'Long midface. It stretches the centre of your face and makes it look elongated and off.', ar: 'منتصف وجهك طويل. يمدّ الوجه ويعطيه مظهراً مستطيلاً وغير متناسق.' } },
+  low:  { low:  { en: 'Short lower third. The bottom of your face is stubby and under-supported.', ar: 'الثلث السفلي قصير. أسفل وجهك متقزّم وبلا دعم.' },
+          high: { en: 'Your lower third is too long. The face drags downward and looks stretched.', ar: 'الثلث السفلي طويل جداً. الوجه ينسحب للأسفل ويبدو ممطوطاً.' } },
+  split:{ low:  { en: 'Your mouth sits too high over a long chin segment. The chin dominates the lower face.', ar: 'فمك مرتفع فوق قطعة ذقن طويلة. الذقن تسيطر على أسفل الوجه.' },
+          high: { en: 'Long philtrum. Too much space between nose and lip, which reads aged and weak.', ar: 'فيلترم طويل. مسافة زائدة بين الأنف والشفة تعطي مظهراً أضعف وأكبر سناً.' } },
+  jaw:  { low:  { m: { en: 'Weak, narrow jaw. There is no frame under those cheekbones and the face tapers into nothing.', ar: 'فك ضعيف وضيق. لا يوجد إطار تحت عظام الخد والوجه يتناقص إلى لا شيء.' },
+                  f: { en: 'Your jaw is too narrow. It leaves the lower face looking pinched and undersized.', ar: 'فكك ضيق أكثر من اللازم، ويجعل أسفل الوجه يبدو منكمشاً.' } },
+          high: { m: { en: 'Your jaw is oversized against your cheekbones. Boxy and heavy, like the bottom half belongs to another face.', ar: 'فك أعرض من عظام الخد. صندوقي وثقيل وكأن النصف السفلي لوجه آخر.' },
+                  f: { en: 'Wide, heavy jaw. It reads masculine and overpowers the softness of the upper face.', ar: 'فك عريض وثقيل. يعطي طابعاً ذكورياً ويطغى على نعومة أعلى الوجه.' } } },
+  mn:   { low:  { en: 'Your mouth is small under a wide nose. The balance is off and the lower face looks cramped.', ar: 'فم صغير تحت أنف عريض. التوازن مختل وأسفل الوجه يبدو مزدحماً.' },
+          high: { en: 'Your mouth is too wide for your nose. It stretches the lower face sideways.', ar: 'فمك عريض بالنسبة لأنفك ويمدّ أسفل الوجه جانبياً.' } },
+  fwhr: { low:  { m: { en: 'Low width-to-height ratio. Your face is narrow and long, with no width and no dominance.', ar: 'نسبة عرض الوجه إلى ارتفاعه منخفضة. وجهك ضيق وطويل بلا عرض ولا هيبة.' },
+                  f: { en: 'The midface is too narrow. It lacks the cheek width that makes a face striking.', ar: 'منتصف وجهك ضيق وينقصه عرض الخدود الذي يمنح الوجه جاذبيته.' } },
+          high: { m: { en: 'Very wide, short midface. It looks squashed and heavy.', ar: 'منتصف وجه عريض وقصير جداً. يبدو مسحوقاً وثقيلاً.' },
+                  f: { en: 'The midface is too wide and short. It reads heavy and coarse.', ar: 'منتصف الوجه عريض وقصير أكثر من اللازم. يبدو ثقيلاً وخشناً.' } } },
+  fidx: { low:  { en: 'Your face is too short and wide. Squat and blocky overall.', ar: 'وجهك قصير وعريض أكثر من اللازم. مربّع وثقيل بشكل عام.' },
+          high: { en: 'Your face is too long and narrow. Horse-face territory.', ar: 'وجهك طويل وضيق جداً. أقرب إلى وجه الحصان.' } },
+  ipdz: { low:  { en: 'Eyes set too close together. It gives a pinched, cramped look.', ar: 'عيناك متقاربتان جداً وتعطيان مظهراً ضيقاً ومكتظاً.' },
+          high: { en: 'Eyes set too far apart. The whole face looks off and alien.', ar: 'عيناك متباعدتان جداً وتجعلان الوجه يبدو غريباً.' } },
+  esp:  { low:  { en: 'Inner eye spacing is tight for the size of your eyes. Cramped, close-set eyes.', ar: 'المسافة بين العينين ضيقة بالنسبة لحجمهما. عيون متقاربة ومزدحمة.' },
+          high: { en: 'Inner eye spacing is too wide for your eyes. Wide-set and a bit vacant.', ar: 'المسافة بين العينين واسعة أكثر من اللازم، وتعطي نظرة شاردة.' } },
+  tilt: { low:  { m: { en: 'Negative or flat canthal tilt. Droopy, tired, prey-like eyes.', ar: 'ميل العين سلبي أو مسطّح. عيون ذابلة ومتعبة ومظهر فريسة.' },
+                  f: { en: 'Flat or downturned eyes. They look tired and sad instead of alluring.', ar: 'عيون مسطحة أو منزلة للأسفل، تبدو متعبة وحزينة بدل أن تكون جذابة.' } },
+          high: { en: 'The canthal tilt is exaggerated. The eyes pull up too hard and look unnatural.', ar: 'ميل العين مبالغ فيه. العينان ترتفعان بشكل غير طبيعي.' } },
+  midR: { low:  { en: 'Pupils to mouth is too long. A long midface stretching the centre of your face.', ar: 'المسافة من البؤبؤ إلى الفم طويلة. منتصف وجهك ممطوط.' },
+          high: { en: 'Pupils to mouth is too short, so the centre of your face looks squeezed.', ar: 'المسافة من البؤبؤ إلى الفم قصيرة، فيبدو منتصف الوجه مضغوطاً.' } },
+  nic:  { low:  { en: 'Your nose is narrow against your eye spacing. Pinched and underdeveloped.', ar: 'أنفك ضيق بالنسبة للمسافة بين العينين. مضغوط وغير مكتمل.' },
+          high: { en: 'Your nose is wide against your eye spacing. Broad and bulbous, it dominates the centre of your face.', ar: 'أنفك عريض بالنسبة للمسافة بين العينين. ضخم ويطغى على وسط الوجه.' } },
+  sym:  { low:  { en: 'Your face is visibly asymmetric. The two sides do not match and the eye and mouth lines tilt off.', ar: 'وجهك غير متناسق بوضوح. الجانبان لا يتطابقان وخطوط العينين والفم مائلة.' },
+          high: { en: 'Your face is visibly asymmetric. The two sides do not match and the eye and mouth lines tilt off.', ar: 'وجهك غير متناسق بوضوح. الجانبان لا يتطابقان وخطوط العينين والفم مائلة.' } }
+};
+const flawText = (k, dir, male) => { const e = FLAW[k][dir], o = e.m ? (male ? e.m : e.f) : e; return L(o.en, o.ar); };
+
+const TIER_LINE = {
+  male: {
+    sub5:   { en: 'Sub-5. Be honest with yourself: this face has serious problems and almost nothing is on target. You have a lot of work ahead.', ar: 'Sub-5. صراحة بلا مجاملة: وجه فيه مشاكل جدية وشبه كل شيء خارج المعدل. أمامك عمل كثير.' },
+    lt:     { en: 'Low-tier normie. Your flaws are loud, and people notice them before they notice anything good.', ar: 'مستوى منخفض. عيوبك صارخة، والناس تلاحظها قبل أي شيء جيد.' },
+    mt:     { en: 'Mid-tier. Forgettable. Nobody is hating on you and nobody is looking twice either.', ar: 'متوسط. عادي ومنسي. لا أحد يكرهك ولا أحد يلتفت إليك.' },
+    ht:     { en: 'High-tier normie. Good, but not special. The flaws below are all that stands between you and the top tier.', ar: 'فوق المتوسط. جيد لكنه ليس مميزاً. العيوب أدناه هي الفاصل الوحيد بينك وبين الفئة العليا.' },
+    htplus: { en: 'Chadlite. You are close, which makes the leftover flaws more annoying. Fix them or stay stuck here.', ar: 'Chadlite. قريب جداً من القمة، وهذا يجعل العيوب المتبقية أكثر إزعاجاً. عالجها وإلا ستبقى مكانك.' },
+    elite:  { en: 'Chad. The proportions hold up. Do not get cocky, this is one flat photo.', ar: 'Chad. التناسب ممتاز. المهم ألا يصيبك الغرور، فهذه صورة واحدة مسطحة.' }
+  },
+  female: {
+    sub5:   { en: 'Sub-5. Brutally honest: this face is far from the ideal in too many places, and changing that takes real effort.', ar: 'Sub-5. صراحة قاسية: هذا الوجه بعيد عن المثالي في نقاط كثيرة، وتغييره يحتاج جهداً حقيقياً.' },
+    lt:     { en: 'Low-tier Becky. The flaws shout, and they are the first thing people see.', ar: 'مستوى منخفض. العيوب صارخة وهي أول ما يراه الناس.' },
+    mt:     { en: 'Mid-tier. Plain and forgettable. Not ugly, but not turning any heads either.', ar: 'متوسط. عادي ومنسي، لا قبح ولا لفت للأنظار.' },
+    ht:     { en: 'High-tier. Pretty, but not stunning. The flaws below are what is holding you back.', ar: 'مستوى عالٍ. جميل لكنه ليس مبهراً. العيوب أدناه هي ما يوقفك.' },
+    htplus: { en: 'Stacylite. Very close to the top. The leftover flaws are the only gap to Stacy.', ar: 'Stacylite. قريب جداً من القمة، والعيوب المتبقية هي الفجوة الوحيدة نحو Stacy.' },
+    elite:  { en: 'Stacy. The proportions hold up. Stay humble, this is one flat photo.', ar: 'Stacy. التناسب ممتاز. لكن تذكّر أنها صورة واحدة مسطحة.' }
+  }
+};
+
 function renderS3() {
   s3 = s3Measure();
   const box = $('s3Report'), msg = $('s3Msg');
@@ -1097,156 +1154,64 @@ function renderS3() {
     if (s3) { msg.className = 'msg-bar error'; msg.textContent = T('s3_err_order'); }
     drawS3(); return;
   }
-  const m = s3, g = gender || 'male', male = g === 'male', item = k => m.M.find(it => it.k === k);
+  const m = s3, g = gender || 'male', male = g === 'male';
 
-  // verdict sentences (the talking skull reads these)
-  const ltTxt = fmtPct(m.pct.low);
-  const balKey = m.pct.low > IDEAL * 1.08 ? 's3_bal_long' : m.pct.low < IDEAL * 0.92 ? 's3_bal_short' : 's3_bal_ok';
-  const jawI = item('jaw'), tiltI = item('tilt'), symI = item('sym');
-  const jawKey = m.jaw < jawI.r[0] ? 's3_jaw_low' : m.jaw > jawI.r[1] ? 's3_jaw_high' : 's3_jaw_ok';
-  const tiltKey = m.tilt < tiltI.r[0] ? 's3_tilt_low' : m.tilt > tiltI.r[1] ? 's3_tilt_high' : 's3_tilt_ok';
-  const symKey = symI.dev > 0 ? 's3_sym_bad' : 's3_sym_ok';
-  const worst = m.M.reduce((a, b) => b.dev > a.dev ? b : a);
-  const best = m.M.filter(it => it.dev <= 0.04).sort((a, b) => b.w - a.w)[0];
-  const limit = worst.dev > 0.06
-    ? T('s3_limit', { m: T(worst.name), v: fmtVal(worst, worst.val), i: fmtRange(worst) })
-    : T('s3_limit_none');
+  // weak points: every metric that is outside its range, worst first
+  const flaws = m.M.filter(it => it.dev > 0.04).sort((a, b) => b.w * b.dev - a.w * a.dev).map(it => {
+    const major = it.dev > 0.12, dir = it.val < it.r[0] ? 'low' : 'high';
+    return { major, text: (major ? L('Major flaw: ', 'عيب كبير: ') : L('Noticeable: ', 'ملحوظ: ')) + flawText(it.k, dir, male) };
+  });
 
   const tierName = TIERS[g][m.tier], TC = { sub5: '#ff5555', lt: '#ff8a4c', mt: '#ffc933', ht: '#9be564', htplus: '#5ecb96', elite: '#5ecbff' }[m.tier];
-  m.say = [
-    T('s3_say_intro', { n: nf(m.M.length), tier: tierName.replace('+', ' plus ').replace('·', ','), psl: nf(m.psl.toFixed(1)) }),
-    T(male ? 's3_say_algo_m' : 's3_say_algo_f'),
-    T(balKey, { lt: ltTxt }),
-    T(jawKey, { v: nf(m.jaw.toFixed(2)) }),
-    T(tiltKey, { v: fmtVal(tiltI, m.tilt) }),
-    T(symKey, { v: fmtVal(symI, m.asym) }),
-    best ? T('s3_say_best', { m: T(best.name), v: fmtVal(best, best.val) }) : '',
-    limit,
-    T('s3_say_outro')
-  ].filter(Boolean).join(' ');
+  const tl = TIER_LINE[g][m.tier], tierLine = L(tl.en, tl.ar), psl = nf(m.psl.toFixed(1));
+  const intro = L(`Rating: ${tierName.replace('+', ' plus ').replace('·', ',')}, ${psl} out of 8.`, `التقييم: ${tierName.replace('·', '،')}، درجة ${psl} من 8.`);
+  const outro = m.psl < 5.5
+    ? L('That is the truth. Fix the flaws above in order, starting with the worst.', 'هذه هي الحقيقة. عالج العيوب أعلاه بالترتيب، بدءاً بالأسوأ.')
+    : L('Not much left to attack. Polish the small flaws above and keep your grooming sharp.', 'لم يبقَ الكثير لانتقاده. صقل العيوب الصغيرة وإبقاء العناية في أعلى مستوى هو كل ما تبقى.');
+  const none = L('I found no real weak points. Annoying, but fair.', 'لم أجد نقاط ضعف حقيقية. مزعج، لكنه عادل.');
+  m.say = [intro, tierLine, ...(flaws.length ? flaws.slice(0, 3).map(f => f.text) : [none]), outro].join(' ');
 
-  // rating card
+  // rating card (rating + tier + one blunt line, no stats)
   const C = 2 * Math.PI * 54, frac = clamp(m.psl / 8, 0, 1);
   $('s3Rating').innerHTML = `
   <div class="s3-card s3-rate">
     <div class="s3-h">${T('s3_rating')}</div>
     <div class="ring"><svg viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9"/>
       <circle cx="65" cy="65" r="54" fill="none" stroke="${TC}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 65 65)" style="filter:drop-shadow(0 0 6px ${TC})"/></svg>
-      <div class="num" style="color:${TC}">${nf(m.psl.toFixed(1))}<small>/ 8</small></div></div>
-    <div class="s3-tier"><div class="name" style="color:${TC};text-shadow:0 0 18px ${TC}66">${tierName}</div><div class="desc">${T('s3_tier_' + m.tier)}</div></div>
-    <div class="stats">
-      <div><b>${ltTxt}</b><span>${T('s3_stat_lt')}</span></div>
-      <div><b>${nf(m.jaw.toFixed(2))}</b><span>${T('s3_stat_jaw')}</span></div>
-      <div><b>${fmtVal(tiltI, m.tilt)}</b><span>${T('s3_stat_tilt')}</span></div>
-      <div><b>${fmtVal(symI, m.asym)}</b><span>${T('s3_stat_sym')}</span></div>
-    </div>
+      <div class="num" style="color:${TC}">${psl}<small>/ 8</small></div></div>
+    <div class="s3-tier"><div class="name" style="color:${TC};text-shadow:0 0 18px ${TC}66">${tierName}</div><div class="desc">${tierLine}</div></div>
   </div>`;
 
-  // full measurement table
-  const rows = m.M.map(it => `<tr><td>${T(it.name)}</td><td class="v">${fmtVal(it, it.val)}</td><td class="i">${fmtRange(it)}</td><td><span class="s3-chip ${chipOf(it.dev)}">${T('s3_' + chipOf(it.dev))}</span></td></tr>`).join('');
-  box.innerHTML = `<div class="s3-card" style="overflow-x:auto"><div class="s3-h">${T('s3_h_all')}</div>
-    <table class="s3-tbl"><thead><tr><th>${T('s3_col_metric')}</th><th>${T('s3_col_value')}</th><th>${T('s3_col_ideal')}</th><th></th></tr></thead><tbody>${rows}</tbody></table>
-    <p class="s3-p dim">${T(male ? 's3_algo_m' : 's3_algo_f')}</p></div>
-    <p class="s3-disc">${T('s3_disclaimer')}</p>`;
+  // weak points (text only)
+  const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  box.innerHTML = `<div class="s3-card"><div class="s3-h">${L('Weak Points', 'نقاط الضعف')}</div>` +
+    (flaws.length ? `<ul class="s3-weak">${flaws.map(f => `<li class="${f.major ? 'major' : ''}">${esc(f.text)}</li>`).join('')}</ul>` : `<p class="s3-p">${none}</p>`) +
+    `</div>`;
   drawS3();
 }
 
+/* photo with the confirmed points and guide lines, no numbers */
 function drawS3() {
   const cv = $('s3Canvas'), d = window.lowerThirdLandmarks?.front;
   if (!d || !s3 || s3.bad) { cv.style.display = 'none'; return; }
   cv.style.display = 'block';
-  const cw = Math.min($('s3Stage').clientWidth || 640, 720);
-  const small = cw < 480, gut = small ? 72 : 126, iw = cw - 2 * gut, k = iw / d.width, ch = Math.round(d.height * k);
+  const cw = Math.min($('s3Stage').clientWidth || 640, 720), k = cw / d.width, ch = Math.round(d.height * k);
   const dpr = window.devicePixelRatio || 1;
   cv.style.width = cw + 'px'; cv.style.height = ch + 'px';
   cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
   const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
-  c.direction = 'ltr';   // keep "33.8%" in the right order on the RTL (Arabic) page
-  c.fillStyle = '#0a0a0a'; c.fillRect(0, 0, cw, ch);
-  c.drawImage(d.image, gut, 0, iw, ch);
-  c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(gut, 0, iw, ch);   // dim the photo so the overlay reads cleanly
-
-  const P = d.points, X = id => gut + P[id].x * k, Y = id => P[id].y * k;
-  const fam = lang === 'ar' ? "'Tajawal','Segoe UI',Arial,sans-serif" : "'Segoe UI',Arial,sans-serif";
-  const fs1 = small ? 8 : 9.5, fs2 = small ? 10 : 12.5, lh = small ? 11 : 14;
-  const xL = gut - 6, xR = gut + iw + 6;
-  const m = s3;
-
-  // extension lines: landmark → ruler
-  const ext = (id, xr, col) => {
-    c.save(); c.setLineDash([3, 3]); c.strokeStyle = col || 'rgba(255,255,255,.45)'; c.lineWidth = .8;
-    c.beginPath(); c.moveTo(X(id), Y(id)); c.lineTo(xr, Y(id)); c.stroke(); c.restore();
-  };
-  ['Tr', 'N', 'Sn', 'Me'].forEach(id => ext(id, xL));
-  ['Sn', 'Ls', 'Li', 'Me'].forEach(id => ext(id, xR));
-
-  // midline segments between the related dots
-  const seg = (a, b, col) => { c.strokeStyle = col; c.lineWidth = 1.8; c.beginPath(); c.moveTo(X(a), Y(a)); c.lineTo(X(b), Y(b)); c.stroke(); };
-  seg('Tr', 'N', S3C.up); seg('N', 'Sn', S3C.mid); seg('Sn', 'Ls', S3C.phil); seg('Ls', 'Li', S3C.lips); seg('Li', 'Me', S3C.chin);
-
-  // rulers with labels
-  function ruler(x, side, ticks, items) {
-    c.strokeStyle = 'rgba(255,255,255,.8)'; c.lineWidth = 1;
-    c.beginPath(); c.moveTo(x, ticks[0]); c.lineTo(x, ticks[ticks.length - 1]); c.stroke();
-    ticks.forEach(t => { c.beginPath(); c.moveTo(x - 4, t); c.lineTo(x + 4, t); c.stroke(); });
-    items.forEach(it => { c.strokeStyle = it.col; c.lineWidth = 2.6; c.beginPath(); c.moveTo(x, it.ya); c.lineTo(x, it.yb); c.stroke(); });
-    const L = items.map(it => ({ it, mid: (it.ya + it.yb) / 2, y: (it.ya + it.yb) / 2, h: it.lines.length * lh + 4 }));
-    for (let pass = 0; pass < 24; pass++) for (let i = 1; i < L.length; i++) {      // push overlapping labels apart
-      const need = (L[i - 1].h + L[i].h) / 2, gap = L[i].y - L[i - 1].y;
-      if (gap < need) { const sh = (need - gap) / 2; L[i - 1].y -= sh; L[i].y += sh; }
-    }
-    L.forEach(o => { o.y = clamp(o.y, o.h / 2, ch - o.h / 2); });
-    const tx = side === 'L' ? x - 8 : x + 8;
-    c.textAlign = side === 'L' ? 'right' : 'left'; c.textBaseline = 'middle';
-    L.forEach(o => {
-      if (Math.abs(o.y - o.mid) > 3) { c.strokeStyle = o.it.col; c.lineWidth = .8; c.beginPath(); c.moveTo(x, o.mid); c.lineTo(x + (side === 'L' ? -5 : 5), o.y); c.stroke(); }
-      const top = o.y - (o.it.lines.length * lh) / 2 + lh / 2;
-      o.it.lines.forEach((ln, j) => {
-        c.font = (j === 0 ? '600 ' + fs1 : j === 1 ? '700 ' + fs2 : '500 ' + fs1) + 'px ' + fam;
-        c.fillStyle = j === 0 ? o.it.col : j === 1 ? '#fff' : '#bdbdbd';
-        c.fillText(ln, tx, top + j * lh);
-      });
-    });
-  }
-  const lines = (name, key) => {
-    const a = [name, fmtPct(m.pct[key])]; const mm = mmOf(m.v[key], m.tot); if (mm) a.push(mm); return a;
-  };
-  ruler(xL, 'L', [Y('Tr'), Y('N'), Y('Sn'), Y('Me')], [
-    { ya: Y('Tr'), yb: Y('N'),  col: S3C.up,  lines: lines(T('s3_l_up'), 'up') },
-    { ya: Y('N'),  yb: Y('Sn'), col: S3C.mid, lines: lines(T('s3_l_mid'), 'mid') },
-    { ya: Y('Sn'), yb: Y('Me'), col: S3C.low, lines: lines(T('s3_l_lower'), 'low') }
-  ]);
-  ruler(xR, 'R', [Y('Sn'), Y('Ls'), Y('Li'), Y('Me')], [
-    { ya: Y('Sn'), yb: Y('Ls'), col: S3C.phil, lines: lines(T('s3_l_phil'), 'phil') },
-    { ya: Y('Ls'), yb: Y('Li'), col: S3C.lips, lines: lines(T('s3_l_lips'), 'lips') },
-    { ya: Y('Li'), yb: Y('Me'), col: S3C.chin, lines: lines(T('s3_l_chin'), 'chin') }
-  ]);
-
-  // width lines (labels = % of cheekbone width)
-  const wl = (a, b, lab) => {
-    c.strokeStyle = '#5ecbff'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(X(a), Y(a)); c.lineTo(X(b), Y(b)); c.stroke();
-    [a, b].forEach(id => { c.fillStyle = '#5ecbff'; c.beginPath(); c.arc(X(id), Y(id), 2.4, 0, 7); c.fill(); });
-    c.font = '600 ' + fs1 + 'px ' + fam; c.textAlign = 'center'; c.textBaseline = 'bottom';
-    c.fillText(lab, (X(a) + X(b)) / 2, (Y(a) + Y(b)) / 2 - 3);
-  };
-  const pc = n => nf(Math.round(n / m.wd.zyg * 100)) + '%';
-  wl('Zl', 'Zr', pc(m.wd.zyg)); wl('Gl', 'Gr', pc(m.wd.gon)); wl('Cl', 'Cr', pc(m.wd.mou)); wl('Al', 'Ar', pc(m.wd.nos));
-
-  // eyes: pupil line, canthal-tilt lines, then all midline + eye dots
-  const GRN = '#6ee7b7';
-  const eyeLn = (a, b) => { c.strokeStyle = GRN; c.lineWidth = 1.2; c.beginPath(); c.moveTo(X(a), Y(a)); c.lineTo(X(b), Y(b)); c.stroke(); };
-  eyeLn('Pl', 'Pr'); eyeLn('Exl', 'Enl'); eyeLn('Enr', 'Exr');
-  ['Tr', 'Br', 'N', 'Sn', 'Ls', 'St', 'Li', 'Me'].forEach(id => {
-    c.fillStyle = '#fff'; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1;
+  c.drawImage(d.image, 0, 0, cw, ch);
+  c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(0, 0, cw, ch);
+  const P = d.points, X = id => P[id].x * k, Y = id => P[id].y * k;
+  const ln = (a, b, col, w) => { c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(X(a), Y(a)); c.lineTo(X(b), Y(b)); c.stroke(); };
+  ['Tr', 'N', 'Sn', 'Me'].forEach((id, i, arr) => { if (i) ln(arr[i - 1], id, 'rgba(255,255,255,.7)', 1.4); });
+  ln('Zl', 'Zr', '#5ecbff', 1.2); ln('Gl', 'Gr', '#5ecbff', 1.2); ln('Cl', 'Cr', '#5ecbff', 1.2); ln('Al', 'Ar', '#5ecbff', 1.2);
+  ln('Pl', 'Pr', '#6ee7b7', 1.2); ln('Exl', 'Enl', '#6ee7b7', 1.2); ln('Enr', 'Exr', '#6ee7b7', 1.2);
+  Object.keys(P).forEach(id => {
+    const col = /^(Tr|Br|N|Sn|Ls|St|Li|Me)$/.test(id) ? '#fff' : /^(Pl|Pr|En|Ex)/.test(id) ? '#6ee7b7' : '#5ecbff';
+    c.fillStyle = col; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1;
     c.beginPath(); c.arc(X(id), Y(id), 2.5, 0, 7); c.fill(); c.stroke();
   });
-  ['Pl', 'Pr', 'Enl', 'Enr', 'Exl', 'Exr'].forEach(id => { c.fillStyle = GRN; c.beginPath(); c.arc(X(id), Y(id), 2.4, 0, 7); c.fill(); });
-  c.font = '600 ' + fs1 + 'px ' + fam; c.fillStyle = GRN; c.textBaseline = 'bottom';
-  c.textAlign = 'center'; c.fillText(pc(m.wd.ipd), (X('Pl') + X('Pr')) / 2, Math.min(Y('Pl'), Y('Pr')) - 4);
-  const tl = q => (q > 0 ? '+' : q < 0 ? '−' : '') + nf(Math.abs(q).toFixed(1)) + '°';
-  c.textBaseline = 'middle';
-  c.textAlign = 'right'; c.fillText(tl(m.tiltL), X('Exl') - 5, Y('Exl'));
-  c.textAlign = 'left';  c.fillText(tl(m.tiltR), X('Exr') + 5, Y('Exr'));
 }
 
 $('s3Back').addEventListener('click', () => {

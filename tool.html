@@ -199,7 +199,7 @@ html[dir=rtl] .lm-side{direction:rtl}
 .s3-rate .stats b{font-size:14px;color:var(--white);direction:ltr}
 .s3-rate .stats span{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase}
 .skull-card{display:flex;gap:16px;align-items:center;margin-top:16px;padding:16px;border:1px solid var(--border);background:var(--panel)}
-.skull-wrap{position:relative;flex:none;width:130px;height:130px;border-radius:50%;overflow:hidden;background:#000;border:2px solid var(--blood);box-shadow:0 0 22px rgba(139,0,0,.35);transition:box-shadow .3s}
+.skull-wrap{cursor:pointer;position:relative;flex:none;width:130px;height:130px;border-radius:50%;overflow:hidden;background:#000;border:2px solid var(--blood);box-shadow:0 0 22px rgba(139,0,0,.35);transition:box-shadow .3s}
 .skull-wrap.speaking{box-shadow:0 0 34px rgba(220,20,60,.75)}
 .sk-up,.sk-jaw{position:absolute;inset:0;background:url(Skull.png) center/cover}
 .sk-up{clip-path:polygon(0 0,100% 0,100% 100%,74% 100%,74% 76%,28% 76%,28% 100%,0 100%)}
@@ -336,12 +336,7 @@ html[dir=rtl] .lm-side{direction:rtl}
     <div class="lm-stage" id="s3Stage" style="margin-top:16px"><canvas id="s3Canvas"></canvas></div>
     <div class="skull-card">
       <div class="skull-wrap" id="skullWrap"><div class="sk-up"></div><div class="sk-jaw" id="skJaw"></div></div>
-      <div class="skull-bubble"><div class="s3-h" style="margin:0" data-i18n="s3_skull_h">The Skull's Verdict</div><div id="skText"></div><button class="btn-ghost" type="button" id="skPlay" data-i18n="s3_say_play">▶ Speak</button></div>
-    </div>
-    <div class="s3-cal">
-      <label for="s3Cal" data-i18n="s3_cal_label"></label>
-      <input id="s3Cal" type="number" inputmode="decimal" min="1" max="400" step="0.1" placeholder="mm">
-      <p class="lm-note" data-i18n="s3_cal_note"></p>
+      <div class="skull-bubble"><div class="s3-h" style="margin:0" data-i18n="s3_skull_h">The Skull's Verdict</div><div id="skText"></div><button class="btn-ghost" type="button" id="skPlay" data-i18n="s3_say_play">▶ Replay</button></div>
     </div>
     <div id="s3Report"></div>
     <p class="s3-disc" data-i18n="s3_disclaimer"></p>
@@ -373,7 +368,7 @@ const $ = id => document.getElementById(id);
     dict[L]['tool_guide_desc_' + k.toLowerCase() + sd] = `${WP[k][L][1]} (${SIDE[L][i]})`;
   })));
   Object.assign(dict.en, {
-    s3_rating: 'Overall Rating', s3_skull_h: 'The Skull\'s Verdict', s3_say_play: '▶ Speak', s3_say_stop: '■ Stop',
+    s3_rating: 'Overall Rating', s3_skull_h: 'The Skull\'s Verdict', s3_say_play: '▶ Replay', s3_say_stop: '■ Stop',
     s3_w_h: 'Width Proportions', s3_m_jaw: 'Jaw : cheekbone width', s3_m_mn: 'Mouth : nose width',
     s3_say_intro: 'Let me look at you. Your lower third is {lt} of your face height. Your rating is {tier}, around {psl} on the scale.',
     s3_say_outro: 'That is my verdict. Remember, this is one flat photo, not a medical exam.',
@@ -383,7 +378,7 @@ const $ = id => document.getElementById(id);
     s3_stat_lt: 'Lower third', s3_stat_split: 'Split', s3_stat_jaw: 'Jaw ratio'
   });
   Object.assign(dict.ar, {
-    s3_rating: 'التقييم العام', s3_skull_h: 'حكم الجمجمة', s3_say_play: '▶ تكلّم', s3_say_stop: '■ إيقاف',
+    s3_rating: 'التقييم العام', s3_skull_h: 'حكم الجمجمة', s3_say_play: '▶ إعادة', s3_say_stop: '■ إيقاف',
     s3_w_h: 'نسب العرض', s3_m_jaw: 'الفك : عرض الوجنتين', s3_m_mn: 'الفم : عرض الأنف',
     s3_say_intro: 'دعني أنظر إليك. الثلث السفلي لديك {lt} من ارتفاع وجهك. تقييمك {tier}، حوالي {psl} على المقياس.',
     s3_say_outro: 'هذا حكمي. تذكّر أنها صورة واحدة مسطحة وليست فحصًا طبيًا.',
@@ -1146,11 +1141,6 @@ function drawS3() {
   wl('Zl', 'Zr', pc(m.wd.zyg)); wl('Gl', 'Gr', pc(m.wd.gon)); wl('Cl', 'Cr', pc(m.wd.mou)); wl('Al', 'Ar', pc(m.wd.nos));
 }
 
-$('s3Cal').addEventListener('input', e => {
-  const n = parseFloat(e.target.value);
-  s3cal = n > 0 && n < 400 ? n : null;
-  renderS3();
-});
 $('s3Back').addEventListener('click', () => {
   skStop();
   $('step3').classList.remove('active');
@@ -1160,38 +1150,40 @@ $('s3Back').addEventListener('click', () => {
 });
 $('s3Restart').addEventListener('click', () => location.reload());
 
-/* ══ TALKING SKULL — the jaw is a separate layer of Skull.png; it opens with the voice ══ */
-const sk = { on: false, raf: 0, tm: 0, bump: 0, full: '' };
-function skFrame(t) {
-  const o = sk.on ? clamp(0.12 + 0.6 * Math.abs(Math.sin(t / 95)) * (0.6 + 0.4 * Math.abs(Math.sin(t / 310))) + sk.bump, 0, 1) : 0;
-  sk.bump *= 0.8;
-  $('skJaw').style.transform = `translateY(${(o * 9).toFixed(2)}%)`;
+/* ══ TALKING SKULL — no audio: the jaw (a separate layer of Skull.png) moves with every typed letter ══ */
+const sk = { on: false, raf: 0, tm: 0, open: 0, target: 0, full: '', id: 0 };
+function skFrame() {
+  sk.open += (sk.target - sk.open) * 0.4;
+  $('skJaw').style.transform = `translateY(${(sk.open * 10).toFixed(2)}%)`;
   $('skullWrap').classList.toggle('speaking', sk.on);
-  if (sk.on || o > 0.01) sk.raf = requestAnimationFrame(skFrame);
+  if (sk.on || sk.open > 0.01) sk.raf = requestAnimationFrame(skFrame); else { sk.open = 0; $('skJaw').style.transform = ''; }
 }
 function skStop() {
-  sk.on = false; clearInterval(sk.tm);
-  try { speechSynthesis.cancel(); } catch (e) {}
+  sk.on = false; sk.id++; clearTimeout(sk.tm); sk.target = 0;
   if (sk.full) $('skText').textContent = sk.full;
   $('skPlay').textContent = T('s3_say_play');
 }
 function skSpeak(text) {
   skStop();
   if (!text) { $('skText').textContent = ''; return; }
-  sk.full = text; sk.on = true; $('skPlay').textContent = T('s3_say_stop');
+  const id = sk.id;
+  sk.full = text; sk.on = true; $('skText').textContent = ''; $('skPlay').textContent = T('s3_say_stop');
   cancelAnimationFrame(sk.raf); sk.raf = requestAnimationFrame(skFrame);
-  let i = 0; $('skText').textContent = '';
-  sk.tm = setInterval(() => { i += 2; $('skText').textContent = text.slice(0, i); if (i >= text.length) clearInterval(sk.tm); }, 40);
-  if (!('speechSynthesis' in window)) { setTimeout(() => { if (sk.full === text) skStop(); }, text.length * 40 + 300); return; }
-  const u = new SpeechSynthesisUtterance(text), want = lang === 'ar' ? 'ar' : 'en';
-  u.lang = lang === 'ar' ? 'ar-SA' : 'en-US'; u.rate = 0.92; u.pitch = 0.55;
-  const v = speechSynthesis.getVoices().find(x => x.lang.toLowerCase().startsWith(want));
-  if (v) u.voice = v;
-  u.onboundary = () => { sk.bump = 0.5; };
-  u.onend = u.onerror = () => { if (sk.full === text) skStop(); };
-  speechSynthesis.speak(u);
+  let i = 0;
+  const step = () => {
+    if (sk.id !== id) return;
+    const ch = text[i++];
+    $('skText').textContent = text.slice(0, i);
+    const end = /[.!?؟]/.test(ch), comma = /[,،]/.test(ch), sp = /\s/.test(ch);
+    sk.target = (end || comma || sp) ? 0.04 : 0.45 + Math.random() * 0.55;      // mouth shuts on pauses, opens on letters
+    if (i >= text.length) { sk.target = 0; sk.tm = setTimeout(() => { if (sk.id === id) skStop(); }, 250); return; }
+    sk.tm = setTimeout(step, end ? 320 : comma ? 160 : sp ? 45 : 34);
+  };
+  step();
 }
-$('skPlay').addEventListener('click', () => { if (sk.on) skStop(); else skSpeak(s3 && !s3.bad ? s3.say : ''); });
+const skToggle = () => { if (sk.on) skStop(); else skSpeak(s3 && !s3.bad ? s3.say : ''); };
+$('skPlay').addEventListener('click', skToggle);
+$('skullWrap').addEventListener('click', skToggle);
 addEventListener('pagehide', skStop);
 
 getLandmarker();   // warm the model up while the user picks a photo

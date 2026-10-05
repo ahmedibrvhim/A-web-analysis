@@ -279,14 +279,18 @@ html[dir=rtl] .lm-side{direction:rtl}
     <div class="tool-eyebrow" data-i18n="s2_eyebrow">Step 2 · Landmarks</div>
     <h2 class="tool-title" data-i18n="tool_step_adjust_title">Confirm The Landmarks</h2>
     <p class="tool-text" style="margin-bottom:22px" data-i18n="s2_text"></p>
+    <figure class="lm-ref" id="lmRef">
+      <div class="lm-ref-main"><img id="lmRefImg" src="landmark-reference-labeled.png" alt="Landmark reference showing the points Tr, N, Sn, Ls, Li, Me"></div>
+      <figcaption class="lm-ref-cap" id="lmRefCap" data-i18n="tool_ref_cap_dots"></figcaption>
+    </figure>
     <div class="msg-bar" id="s2Msg"></div>
     <div class="lm-chips" id="lmChips"></div>
-    <p class="lm-name" id="lmName"></p>
-    <p class="lm-desc" id="lmDesc"></p>
-    <div class="lm-stage" id="lmStage">
+    <div class="lm-stage" id="lmStage" style="margin-top:12px">
       <canvas id="lmCanvas"></canvas>
       <div class="lm-busy" id="lmBusy"><span class="mini-spinner"></span><span id="lmBusyTxt"></span></div>
     </div>
+    <p class="lm-name" id="lmName"></p>
+    <p class="lm-desc" id="lmDesc"></p>
     <p class="lm-note" data-i18n="s2_lower_note"></p>
     <div class="lm-dash">
       <div class="lm-pad" id="lmPad">
@@ -307,10 +311,6 @@ html[dir=rtl] .lm-side{direction:rtl}
         </div>
       </div>
     </div>
-    <figure class="lm-ref" id="lmRef">
-      <div class="lm-ref-main"><img id="lmRefImg" src="landmark-reference-labeled.png" alt="Landmark reference showing the points Tr, N, Sn, Ls, Li, Me"></div>
-      <figcaption class="lm-ref-cap" id="lmRefCap" data-i18n="tool_ref_cap_dots"></figcaption>
-    </figure>
     <p class="lm-note" style="margin-top:12px" data-i18n="s2_keys_tip"></p>
     <div class="lm-progress" id="lmProgress"></div>
     <div class="tool-nav">

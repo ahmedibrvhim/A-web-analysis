@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>A | Lower Third</title>
+<title>Mr Skull | Face Analysis</title>
 <link rel="stylesheet" href="style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -102,10 +102,12 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
 .lm-stage{position:relative;background:#000;border:1px solid var(--border);display:flex;justify-content:center;overflow:hidden}
 .lm-stage canvas{display:block;max-width:100%;pointer-events:none;user-select:none;-webkit-user-select:none}
 .lm-busy{position:absolute;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;gap:12px;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
-.lm-ref{margin:0 auto 18px;max-width:560px;border:1px solid var(--border);background:var(--panel);overflow:hidden}
-.lm-ref-main{background:#fff;line-height:0}
+.lm-ref{margin:0 auto 18px;max-width:380px;border:1px solid var(--border);background:var(--panel);overflow:hidden}
+.lm-ref-main{background:#fff;line-height:0;padding:6px}
+.lm-ref-main:empty{display:none}
+.lm-ref-main svg{display:block;width:100%;height:auto}
 .lm-ref-main img{display:block;width:100%;height:auto}
-.lm-chips{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px;direction:ltr}
+.lm-chips{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:12px;direction:ltr}
 .lm-chip{position:relative;padding:11px 2px;font-size:12px;font-weight:700;letter-spacing:1px;line-height:1.2;text-align:center;color:var(--text);background:var(--panel);border:1px solid var(--border);cursor:pointer;font-family:inherit;transition:all .2s}
 .lm-chip.lower{border-bottom:2px solid var(--blood)}
 .lm-chip:hover{border-color:var(--blood)}
@@ -223,10 +225,10 @@ html[dir=rtl] .lm-side{direction:rtl}
 
 <nav>
   <a class="nav-logo" href="index.html">
-    <img src="Skull.png" alt="Lower Third">
+    <img src="Skull.png" alt="Mr Skull">
     <div>
-      <div class="logo-mark" data-i18n="brand_name">Lower Third</div>
-      <div class="logo-tag" data-i18n="brand_tag">Calculator</div>
+      <div class="logo-mark" data-i18n="brand_name">Mr Skull</div>
+      <div class="logo-tag" data-i18n="brand_tag">Face Analysis</div>
     </div>
   </a>
   <ul class="nav-links" id="navLinks">
@@ -279,7 +281,7 @@ html[dir=rtl] .lm-side{direction:rtl}
     <h2 class="tool-title" data-i18n="tool_step_adjust_title">Confirm The Landmarks</h2>
     <p class="tool-text" style="margin-bottom:22px" data-i18n="s2_text"></p>
     <figure class="lm-ref" id="lmRef">
-      <div class="lm-ref-main"><img id="lmRefImg" src="landmark-reference-labeled.png" alt="Landmark reference showing the points Tr, N, Sn, Ls, Li, Me"></div>
+      <div class="lm-ref-main" id="lmRefSvg"></div>
     </figure>
     <p class="lm-name" id="lmName"></p>
     <p class="lm-desc" id="lmDesc"></p>
@@ -318,7 +320,7 @@ html[dir=rtl] .lm-side{direction:rtl}
 
   <section id="step3" aria-live="polite">
     <div class="tool-eyebrow" data-i18n="s3_eyebrow">Step 3 · Analysis</div>
-    <h2 class="tool-title" data-i18n="s3_title">Lower Third Analysis</h2>
+    <h2 class="tool-title" data-i18n="s3_title">Full Face Analysis</h2>
     <p class="tool-text" style="margin-bottom:22px" data-i18n="s3_text"></p>
     <div class="msg-bar" id="s3Msg"></div>
     <div class="skull-card" style="margin-top:0">
@@ -349,7 +351,10 @@ const $ = id => document.getElementById(id);
     Z: { en: ['Cheekbone', 'The widest point of the cheek arch, level with the ear opening.'], ar: ['عظمة الخد', 'أعرض نقطة في قوس الوجنة، بمحاذاة فتحة الأذن.'] },
     G: { en: ['Jaw corner', 'The corner where the jaw turns up toward the ear, at its widest.'], ar: ['زاوية الفك', 'الزاوية التي ينعطف عندها الفك نحو الأذن، عند أعرض نقطة.'] },
     C: { en: ['Mouth corner', 'The outer corner where the upper and lower lips meet.'], ar: ['زاوية الفم', 'الزاوية الخارجية التي تلتقي عندها الشفتان.'] },
-    A: { en: ['Nostril edge', 'The outer edge of the nostril wing at its widest.'], ar: ['حافة المنخر', 'الحافة الخارجية لجناح الأنف عند أعرض نقطة.'] }
+    A: { en: ['Nostril edge', 'The outer edge of the nostril wing at its widest.'], ar: ['حافة المنخر', 'الحافة الخارجية لجناح الأنف عند أعرض نقطة.'] },
+    P:  { en: ['Pupil', 'The center of the pupil, looking straight at the camera.'], ar: ['بؤبؤ العين', 'مركز بؤبؤ العين وأنت تنظر مباشرة إلى الكاميرا.'] },
+    En: { en: ['Inner eye corner', 'Where the upper and lower eyelids meet, beside the nose.'], ar: ['زاوية العين الداخلية', 'حيث يلتقي الجفنان العلوي والسفلي بجانب الأنف.'] },
+    Ex: { en: ['Outer eye corner', 'Where the upper and lower eyelids meet, on the temple side.'], ar: ['زاوية العين الخارجية', 'حيث يلتقي الجفنان العلوي والسفلي من جهة الصدغ.'] }
   };
   ['en', 'ar'].forEach(L => Object.keys(WP).forEach(k => ['l', 'r'].forEach((sd, i) => {
     dict[L]['tool_pt_' + k.toLowerCase() + sd] = `${k}${sd} — ${WP[k][L][0]} (${SIDE[L][i]})`;
@@ -358,7 +363,6 @@ const $ = id => document.getElementById(id);
   Object.assign(dict.en, {
     s3_rating: 'Overall Rating', s3_skull_h: 'The Skull\'s Verdict', s3_say_play: '▶ Replay', s3_say_stop: '■ Stop',
     s3_w_h: 'Width Proportions', s3_m_jaw: 'Jaw : cheekbone width', s3_m_mn: 'Mouth : nose width',
-    s3_say_intro: 'Let me look at you. Your lower third is {lt} of your face height. Your rating is {tier}, around {psl} on the scale.',
     s3_say_outro: 'That is my verdict. Remember, this is one flat photo, not a medical exam.',
     s3_jaw_low: 'Your jaw is narrow compared to your cheekbones, ratio {v}. The lower face looks tapered.',
     s3_jaw_ok: 'Your jaw to cheekbone ratio, {v}, sits in a healthy range.',
@@ -368,12 +372,53 @@ const $ = id => document.getElementById(id);
   Object.assign(dict.ar, {
     s3_rating: 'التقييم العام', s3_skull_h: 'حكم الجمجمة', s3_say_play: '▶ إعادة', s3_say_stop: '■ إيقاف',
     s3_w_h: 'نسب العرض', s3_m_jaw: 'الفك : عرض الوجنتين', s3_m_mn: 'الفم : عرض الأنف',
-    s3_say_intro: 'دعني أنظر إليك. الثلث السفلي لديك {lt} من ارتفاع وجهك. تقييمك {tier}، حوالي {psl} على المقياس.',
     s3_say_outro: 'هذا حكمي. تذكّر أنها صورة واحدة مسطحة وليست فحصًا طبيًا.',
     s3_jaw_low: 'فكك ضيق مقارنة بالوجنتين، النسبة {v}. يبدو الوجه السفلي مدببًا.',
     s3_jaw_ok: 'نسبة الفك إلى الوجنتين، {v}، ضمن المدى الصحي.',
     s3_jaw_high: 'فكك عريض جدًا مقارنة بالوجنتين، النسبة {v}. يبدو الوجه السفلي مربعًا وثقيلًا.',
     s2_axis_y: 'يقيس الارتفاع', s2_axis_x: 'يقيس العرض', s3_stat_lt: 'الثلث السفلي', s3_stat_split: 'التقسيم', s3_stat_jaw: 'نسبة الفك'
+  });
+  Object.assign(dict.en, {
+    s2_axis_xy: 'measures eye position',
+    tool_pt_br: 'Br — Brow top', tool_guide_desc_br: 'The highest point of the eyebrows, on the midline. Used for the facial width-to-height ratio.',
+    tool_pt_st: 'St — Stomion (mouth line)', tool_guide_desc_st: 'The line where the upper and lower lips meet, on the midline.',
+    s3_m_split: 'Philtrum : chin (Sn–St : St–Me)',
+    s3_m_fwhr: 'Facial width : height (fWHR)', s3_m_fidx: 'Face height : width', s3_m_ipdz: 'Eye distance : cheekbone width',
+    s3_m_esp: 'Eye spacing (gap : eye width)', s3_m_tilt: 'Canthal tilt', s3_m_midR: 'Midface ratio',
+    s3_m_nic: 'Nose width : eye gap', s3_m_sym: 'Facial asymmetry',
+    s3_h_all: 'All Measurements',
+    s3_algo_m: 'Scored with the male algorithm. Ideal ranges and weights are tuned for men, with extra weight on the jaw, fWHR and canthal tilt.',
+    s3_algo_f: 'Scored with the female algorithm. Ideal ranges and weights are tuned for women, with extra weight on the eyes, midface and symmetry.',
+    s3_stat_tilt: 'Canthal tilt', s3_stat_sym: 'Asymmetry',
+    s3_say_intro: 'Let me look at you. I measured {n} proportions on your face. Your rating is {tier}, around {psl} on the scale.',
+    s3_say_algo_m: 'I scored you with the male algorithm.', s3_say_algo_f: 'I scored you with the female algorithm.',
+    s3_tilt_low: 'Your canthal tilt is {v}, flatter than the ideal. The eyes look neutral or tired.',
+    s3_tilt_ok: 'Your canthal tilt is {v}, inside the attractive positive range.',
+    s3_tilt_high: 'Your canthal tilt is {v}, very upward. The eyes look sharp and angled.',
+    s3_sym_ok: 'Your face is well balanced left to right, with an asymmetry of {v}.',
+    s3_sym_bad: 'There is noticeable left to right asymmetry, {v}. A straight, evenly lit photo can help.',
+    s3_say_best: 'Your strongest feature is {m}, at {v}.'
+  });
+  Object.assign(dict.ar, {
+    s2_axis_xy: 'تقيس موضع العين',
+    tool_pt_br: 'Br — أعلى الحاجب', tool_guide_desc_br: 'أعلى نقطة في الحاجبين على خط المنتصف. تُستخدم لنسبة عرض الوجه إلى ارتفاعه.',
+    tool_pt_st: 'St — خط الفم (ستوميون)', tool_guide_desc_st: 'الخط الذي تلتقي عنده الشفتان العليا والسفلى، على خط المنتصف.',
+    s3_m_split: 'الفيلترم : الذقن (Sn–St : St–Me)',
+    s3_m_fwhr: 'عرض الوجه : ارتفاعه (fWHR)', s3_m_fidx: 'ارتفاع الوجه : عرضه', s3_m_ipdz: 'المسافة بين العينين : عرض الوجنتين',
+    s3_m_esp: 'تباعد العينين (الفاصل : عرض العين)', s3_m_tilt: 'ميل زاوية العين', s3_m_midR: 'نسبة الوجه الأوسط',
+    s3_m_nic: 'عرض الأنف : الفاصل بين العينين', s3_m_sym: 'عدم تناظر الوجه',
+    s3_h_all: 'كل القياسات',
+    s3_algo_m: 'تم التقييم بخوارزمية الذكور. المعدلات المثالية والأوزان مضبوطة للرجال، مع وزن أكبر للفك وfWHR وميل زاوية العين.',
+    s3_algo_f: 'تم التقييم بخوارزمية الإناث. المعدلات المثالية والأوزان مضبوطة للنساء، مع وزن أكبر للعينين والوجه الأوسط والتناظر.',
+    s3_stat_tilt: 'ميل العين', s3_stat_sym: 'عدم التناظر',
+    s3_say_intro: 'دعني أنظر إليك. قست {n} نسبة على وجهك. تقييمك {tier}، حوالي {psl} على المقياس.',
+    s3_say_algo_m: 'قيّمتك بخوارزمية الذكور.', s3_say_algo_f: 'قيّمتك بخوارزمية الإناث.',
+    s3_tilt_low: 'ميل زاوية عينك {v}، أكثر استواءً من المثالي. تبدو العينان محايدتين أو متعبتين.',
+    s3_tilt_ok: 'ميل زاوية عينك {v}، ضمن المدى الإيجابي الجذاب.',
+    s3_tilt_high: 'ميل زاوية عينك {v}، مرتفع جداً. تبدو العينان حادتين ومائلتين للأعلى.',
+    s3_sym_ok: 'وجهك متوازن من اليمين إلى اليسار، وعدم التناظر {v}.',
+    s3_sym_bad: 'هناك عدم تناظر واضح بين اليمين واليسار، {v}. صورة مستقيمة وبإضاءة متساوية قد تساعد.',
+    s3_say_best: 'أقوى ملامحك هي {m}، بقيمة {v}.'
   });
 })();
 
@@ -621,20 +666,23 @@ up.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
 
 /* ══════════════════════════════════════════════════════════
    STEP 2 · LANDMARK REVIEW
-   Six points: Tr, N (facial thirds) + Sn, Ls, Li, Me (lower third).
+   22 points: height (Tr, Br, N, Sn, Ls, St, Li, Me), eyes (pupils + eye corners) and width (cheekbone, jaw, mouth, nose).
    Points are auto-placed from the face mesh and can ONLY be moved
    with the arrow pad (or keyboard arrows) — never dragged or clicked.
 ══════════════════════════════════════════════════════════ */
 const LM = [
   { id: 'Tr', pt: 'tool_pt_tr', desc: 'tool_guide_desc_tr' },
+  { id: 'Br', pt: 'tool_pt_br', desc: 'tool_guide_desc_br' },
   { id: 'N',  pt: 'tool_pt_n',  desc: 'tool_guide_desc_n' },
   { id: 'Sn', pt: 'tool_pt_sn', desc: 'tool_guide_desc_sn', lower: true },
   { id: 'Ls', pt: 'tool_pt_ls', desc: 'tool_guide_desc_ls', lower: true },
+  { id: 'St', pt: 'tool_pt_st', desc: 'tool_guide_desc_st', lower: true },
   { id: 'Li', pt: 'tool_pt_li', desc: 'tool_guide_desc_li', lower: true },
   { id: 'Me', pt: 'tool_pt_me', desc: 'tool_guide_desc_me', lower: true },
+  ...['Pl', 'Pr', 'Enl', 'Enr', 'Exl', 'Exr'].map(id => ({ id, pt: 'tool_pt_' + id.toLowerCase(), desc: 'tool_guide_desc_' + id.toLowerCase(), e: true })),
   ...['Zl', 'Zr', 'Gl', 'Gr', 'Cl', 'Cr', 'Al', 'Ar'].map(id => ({ id, pt: 'tool_pt_' + id.toLowerCase(), desc: 'tool_guide_desc_' + id.toLowerCase(), w: true }))
 ];
-LM.forEach(m => m.ax = m.w ? 'x' : 'y');   // vertical-proportion points move ↕ only, width points move ↔ only
+LM.forEach(m => m.ax = m.w ? 'x' : m.e ? 'xy' : 'y');   // vertical-proportion points move ↕ only, width points move ↔ only
 const STEP_PX = { fine: 0.5, normal: 2, coarse: 8 };   // image px per 1000 px of image height
 const DOT_R = 1.5;                                      // css px — deliberately tiny
 let s2 = null;   // { src, img, W, H, k, dpr, pts:{id:{x,y,ax,ay,seen}}, sel, stepKey, detected, hairEst }
@@ -753,6 +801,12 @@ async function detectLandmarks(img) {
           return pt;
         };
         [zl, zr, gl, gr].forEach((q, i) => { const sn = snapEdge(q, i % 2 ? 'r' : 'l'); q.x = sn.x; });
+        // eyes: pupils (iris centers), inner + outer corners; brow top and mouth line on the midline
+        const lrp = (a, b) => (a.x <= b.x ? [a, b] : [b, a]).map(q => ({ x: q.x, y: q.y }));
+        const hasIris = lm.length > 473;
+        const [pupL, pupR] = lrp(hasIris ? P(468) : mix(P(33), P(133), .5), hasIris ? P(473) : mix(P(362), P(263), .5));
+        const [exl, exr] = lrp(P(33), P(263)), [enl, enr] = lrp(P(133), P(362));
+        const brY = (P(105).y + P(334).y) / 2, stY = (P(13).y + P(14).y) / 2;
         return {
           detected: true, hairEst: hl === null,
           pts: {
@@ -762,6 +816,8 @@ async function detectLandmarks(img) {
             Ls: V(lsY ?? P(0).y - 0.012 * fh),              // upper-lip vermilion border (snapped to the bright ridge)
             Li: V(P(17).y),                                 // lower-lip vermilion border
             Me: V(P(152).y),                                // chin bottom
+            Br: V(brY), St: V(stY),                         // brow top + mouth line (stomion)
+            Pl: pupL, Pr: pupR, Enl: enl, Enr: enr, Exl: exl, Exr: exr,   // eyes
             Zl: zl, Zr: zr, Gl: gl, Gr: gr, Cl: cl, Cr: cr, Al: al, Ar: ar   // width pairs share one level height
           }
         };
@@ -769,7 +825,8 @@ async function detectLandmarks(img) {
     } catch (e) { console.error(e); }
   }
   const f = (y) => ({ x: W / 2, y: H * y });                // average positions for a cropped portrait
-  return { detected: false, hairEst: false, pts: { Tr: f(.20), N: f(.45), Sn: f(.70), Ls: f(.76), Li: f(.82), Me: f(.91),
+  return { detected: false, hairEst: false, pts: { Tr: f(.20), Br: f(.38), N: f(.45), Sn: f(.70), Ls: f(.76), St: f(.79), Li: f(.82), Me: f(.91),
+    Pl: { x: W * .36, y: H * .47 }, Pr: { x: W * .64, y: H * .47 }, Enl: { x: W * .45, y: H * .475 }, Enr: { x: W * .55, y: H * .475 }, Exl: { x: W * .28, y: H * .465 }, Exr: { x: W * .72, y: H * .465 },
     Zl: { x: W * .22, y: H * .45 }, Zr: { x: W * .78, y: H * .45 }, Gl: { x: W * .28, y: H * .78 }, Gr: { x: W * .72, y: H * .78 },
     Cl: { x: W * .40, y: H * .78 }, Cr: { x: W * .60, y: H * .78 }, Al: { x: W * .43, y: H * .68 }, Ar: { x: W * .57, y: H * .68 } } };
 }
@@ -818,11 +875,12 @@ function draw() {
   const cur = LM[s2.sel].id, cp = s2.pts[cur];
   // faint level guide through the selected point
   g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = d; g.beginPath();
-  if (LM[s2.sel].ax === 'x') { g.moveTo(cp.x * sc, 0); g.lineTo(cp.x * sc, cv.height); }   // width points: vertical guide
-  else { g.moveTo(0, cp.y * sc); g.lineTo(cv.width, cp.y * sc); }                           // proportion points: level guide
+  const axs = LM[s2.sel].ax;
+  if (axs !== 'y') { g.moveTo(cp.x * sc, 0); g.lineTo(cp.x * sc, cv.height); }   // width + eye points: vertical guide
+  if (axs !== 'x') { g.moveTo(0, cp.y * sc); g.lineTo(cv.width, cp.y * sc); }   // proportion + eye points: level guide
   g.stroke();
   g.strokeStyle = 'rgba(94,203,255,.35)';
-  [['Zl', 'Zr'], ['Gl', 'Gr'], ['Cl', 'Cr'], ['Al', 'Ar']].forEach(([a, b]) => { g.beginPath(); g.moveTo(s2.pts[a].x * sc, s2.pts[a].y * sc); g.lineTo(s2.pts[b].x * sc, s2.pts[b].y * sc); g.stroke(); });
+  [['Zl', 'Zr'], ['Gl', 'Gr'], ['Cl', 'Cr'], ['Al', 'Ar'], ['Pl', 'Pr'], ['Exl', 'Enl'], ['Enr', 'Exr']].forEach(([a, b]) => { g.beginPath(); g.moveTo(s2.pts[a].x * sc, s2.pts[a].y * sc); g.lineTo(s2.pts[b].x * sc, s2.pts[b].y * sc); g.stroke(); });
   LM.forEach(m => {
     const p = s2.pts[m.id], x = p.x * sc, y = p.y * sc, on = m.id === cur;
     if (on) {                                               // thin ring + ticks so the tiny dot is findable
@@ -834,10 +892,37 @@ function draw() {
       g.moveTo(x, y - R - 4 * d); g.lineTo(x, y - gap); g.moveTo(x, y + gap); g.lineTo(x, y + R + 4 * d);
       g.stroke();
     }
-    g.fillStyle = on ? '#ff3c5a' : (m.w ? '#5ecbff' : m.lower ? '#ffc933' : '#ffffff');
+    g.fillStyle = on ? '#ff3c5a' : (m.e ? '#6ee7b7' : m.w ? '#5ecbff' : m.lower ? '#ffc933' : '#ffffff');
     g.strokeStyle = 'rgba(0,0,0,.75)'; g.lineWidth = .8 * d;
     g.beginPath(); g.arc(x, y, (on ? DOT_R + .3 : DOT_R) * d, 0, 7); g.fill(); g.stroke();
   });
+}
+
+/* reference diagram: a schematic face with all 22 points; the selected one is highlighted */
+const REFPT = { Tr: [150, 56], Br: [150, 113], N: [150, 134], Sn: [150, 234], Ls: [150, 252], St: [150, 261], Li: [150, 271], Me: [150, 334],
+  Pl: [117, 147], Pr: [183, 147], Enl: [133, 148], Enr: [167, 148], Exl: [100, 144], Exr: [200, 144],
+  Zl: [58, 165], Zr: [242, 165], Gl: [80, 270], Gr: [220, 270], Cl: [122, 261], Cr: [178, 261], Al: [133, 223], Ar: [167, 223] };
+const REFLBL = { Tr: [158, 59, 'start'], Br: [158, 116, 'start'], N: [150, 128, 'middle'], Sn: [158, 239, 'start'], Ls: [158, 251, 'start'], St: [158, 263, 'start'], Li: [158, 275, 'start'], Me: [150, 350, 'middle'],
+  Pl: [117, 161, 'middle'], Pr: [183, 161, 'middle'], Enl: [133, 141, 'middle'], Enr: [167, 141, 'middle'], Exl: [93, 147, 'end'], Exr: [207, 147, 'start'],
+  Zl: [50, 168, 'end'], Zr: [250, 168, 'start'], Gl: [72, 274, 'end'], Gr: [228, 274, 'start'], Cl: [114, 264, 'end'], Cr: [186, 264, 'start'], Al: [125, 226, 'end'], Ar: [175, 226, 'start'] };
+function renderRef() {
+  const box = $('lmRefSvg'); if (!box || !s2) return;
+  const cur = LM[s2.sel].id;
+  const art = `<path d="M150 334 C118 334 92 306 80 270 C68 236 58 200 58 160 C58 92 96 36 150 36 C204 36 242 92 242 160 C242 200 232 236 220 270 C208 306 182 334 150 334 Z" fill="#fff" stroke="#111" stroke-width="2"/>
+    <path d="M70 92 C80 40 120 26 150 26 C180 26 220 40 230 92 C215 64 185 54 150 54 C115 54 85 64 70 92 Z" fill="#111"/>
+    <path d="M57 150 Q40 168 57 200 M243 150 Q260 168 243 200" fill="none" stroke="#111" stroke-width="1.6"/>
+    <path d="M94 126 Q114 112 138 123 M162 123 Q186 112 206 126" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+    <path d="M100 144 Q116 133 133 148 Q116 157 100 144 Z M200 144 Q184 133 167 148 Q184 157 200 144 Z" fill="none" stroke="#111" stroke-width="1.5"/>
+    <circle cx="117" cy="147" r="4.2" fill="none" stroke="#111" stroke-width="1.3"/><circle cx="183" cy="147" r="4.2" fill="none" stroke="#111" stroke-width="1.3"/>
+    <path d="M147 148 Q143 196 134 222 Q150 236 166 222 Q157 196 153 148" fill="none" stroke="#111" stroke-width="1.4"/>
+    <path d="M122 261 Q150 250 178 261 Q150 284 122 261 Z M122 261 Q150 264 178 261" fill="none" stroke="#111" stroke-width="1.6"/>`;
+  const dots = LM.filter(m => m.id !== cur).map(m => {
+    const [x, y] = REFPT[m.id], [lx, ly, an] = REFLBL[m.id], c = m.e ? '#0f9d76' : m.w ? '#1a73e8' : m.lower ? '#c98a00' : '#222';
+    return `<circle cx="${x}" cy="${y}" r="2.4" fill="${c}"/><text x="${lx}" y="${ly}" text-anchor="${an}" font-size="8" font-weight="700" fill="${c}" stroke="#fff" stroke-width="2.4" paint-order="stroke" font-family="Arial,sans-serif">${m.id}</text>`;
+  }).join('');
+  const [cx, cy] = REFPT[cur], [clx, cly, can] = REFLBL[cur];
+  const on = `<circle cx="${cx}" cy="${cy}" r="9" fill="none" stroke="#e0143c" stroke-width="1.4"/><circle cx="${cx}" cy="${cy}" r="3.6" fill="#e0143c"/><text x="${clx}" y="${cly}" text-anchor="${can}" font-size="10" font-weight="800" fill="#e0143c" stroke="#fff" stroke-width="3" paint-order="stroke" font-family="Arial,sans-serif">${cur}</text>`;
+  box.innerHTML = `<svg viewBox="0 0 300 366" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Landmark reference">${art}${dots}${on}</svg>`;
 }
 
 function renderStep2() {
@@ -857,7 +942,8 @@ function renderStep2() {
   $('s2Confirm').disabled = n < LM.length;
   $('lmSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.step === s2.stepKey));
   const ax = LM[s2.sel].ax;
-  $('lmName').textContent = T(LM[s2.sel].pt) + '   ' + (ax === 'y' ? '↕ ' + T('s2_axis_y') : '↔ ' + T('s2_axis_x'));
+  $('lmName').textContent = T(LM[s2.sel].pt) + '   ' + (ax === 'y' ? '↕ ' + T('s2_axis_y') : ax === 'x' ? '↔ ' + T('s2_axis_x') : '✥ ' + T('s2_axis_xy'));
+  renderRef();
 
 }
 
@@ -926,7 +1012,7 @@ let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(
 
 
 /* ══════════════════════════════════════════════════════════
-   STEP 3 · LOWER THIRD ANALYSIS
+   STEP 3 · FULL FACE ANALYSIS
    Measures the confirmed landmarks, draws dimension lines
    (extension lines + rulers with labels) and builds the report.
    Gender picks the tier names and the fix recommendations.
@@ -939,40 +1025,82 @@ const TIERS = {
 };
 let s3 = null, s3cal = null;   // s3 = latest measurement, s3cal = optional real Tr–Me height in mm
 
+/* ── FULL-FACE SCORING ──
+   Reference ranges follow common looksmaxxing conventions (looksmax.org and similar) and classical
+   proportion rules. Male and female use different ideal ranges AND different weights. They are
+   conventions, not hard rules, and one flat photo can only approximate them. */
 function s3Measure() {
   const d = window.lowerThirdLandmarks?.front;
   if (!d) return null;
-  const P = d.points, y = id => P[id].y;
-  const stm = y('Ls') + 0.42 * (y('Li') - y('Ls'));          // stomion ≈ mouth line, just under the upper vermilion
+  const P = d.points, X = id => P[id].x, y = id => P[id].y;
+  const male = (gender || 'male') === 'male', G = (m, f) => male ? m : f;
   const v = {
     up: y('N') - y('Tr'), mid: y('Sn') - y('N'), low: y('Me') - y('Sn'),
     phil: y('Ls') - y('Sn'), lips: y('Li') - y('Ls'), chin: y('Me') - y('Li'),
-    snStm: stm - y('Sn'), stmMe: y('Me') - stm
+    snStm: y('St') - y('Sn'), stmMe: y('Me') - y('St')
   };
   const tot = y('Me') - y('Tr');
-  if (tot <= 0 || Object.values(v).some(n => n <= 0)) return { bad: true };
+  if (tot <= 0 || Object.values(v).some(n => n <= 0) || y('Br') <= y('Tr') || y('Ls') <= y('Br') || y('St') <= y('Ls') || y('Li') <= y('St')) return { bad: true };
   const pct = {}; Object.keys(v).forEach(k => pct[k] = v[k] / tot * 100);
-  const r = v.snStm / v.low, x = v.stmMe / v.snStm;           // r ideal 1/3 · split is 1 : x, ideal 1 : 2
-  const dev = {
-    up: Math.abs(pct.up - IDEAL) / IDEAL, mid: Math.abs(pct.mid - IDEAL) / IDEAL,
-    low: Math.abs(pct.low - IDEAL) / IDEAL, split: Math.abs(r - 1 / 3) / (1 / 3)
-  };
-  const hy = (a, b) => Math.abs(P[a].x - P[b].x);   // width = horizontal distance only; heights above use y only
-  const wd = { zyg: hy('Zl', 'Zr'), gon: hy('Gl', 'Gr'), mou: hy('Cl', 'Cr'), nos: hy('Al', 'Ar') };
-  if (Object.values(wd).some(n => !(n > 0))) return { bad: true };
+  const hx = (a, b) => Math.abs(X(a) - X(b));
+  const wd = { zyg: hx('Zl', 'Zr'), gon: hx('Gl', 'Gr'), mou: hx('Cl', 'Cr'), nos: hx('Al', 'Ar'), ipd: hx('Pl', 'Pr'), icd: hx('Enl', 'Enr'), eyeL: hx('Enl', 'Exl'), eyeR: hx('Enr', 'Exr') };
+  wd.eye = (wd.eyeL + wd.eyeR) / 2;
+  const midH = y('St') - (y('Pl') + y('Pr')) / 2;                    // pupil line → mouth line
+  if (Object.values(wd).some(n => !(n > 0)) || midH <= 0) return { bad: true };
+
+  const tiltOf = (en, ex) => Math.atan2(y(en) - y(ex), Math.abs(X(ex) - X(en))) * 180 / Math.PI;   // + when the outer corner sits higher
+  const tiltL = tiltOf('Enl', 'Exl'), tiltR = tiltOf('Enr', 'Exr'), tilt = (tiltL + tiltR) / 2;
+
+  const x0 = ['Tr', 'Br', 'N', 'Sn', 'Ls', 'St', 'Li', 'Me'].reduce((t, i) => t + X(i), 0) / 8;     // facial midline
+  const lat = p => { const a = x0 - X(p + 'l'), b = X(p + 'r') - x0; return (a + b) > 0 ? Math.abs(a - b) / (a + b) * 100 : 0; };
+  const vert = (['En', 'Ex', 'C'].reduce((t, p) => t + Math.abs(y(p + 'l') - y(p + 'r')), 0) / 3) / wd.zyg * 100;
+  const asym = (['Z', 'G', 'C', 'A', 'En', 'Ex', 'P'].reduce((t, p) => t + lat(p), 0) + vert) / 8;
+
+  const r = v.snStm / v.low, x = v.stmMe / v.snStm;
   const jaw = wd.gon / wd.zyg, mn = wd.mou / wd.nos;
-  const REF = { jaw: (gender || 'male') === 'male' ? [0.78, 0.92] : [0.72, 0.86], mn: [1.35, 1.65] };   // reference conventions, not hard rules
-  const rd = (x, [a, b]) => x < a ? (a - x) / a : x > b ? (x - b) / b : 0;
-  dev.jaw = rd(jaw, REF.jaw); dev.mn = rd(mn, REF.mn);
-  const penalty = 0.45 * (dev.up + dev.mid + dev.low) / 3 + 0.40 * dev.split + 0.15 * (dev.jaw + dev.mn) / 2;
-  const psl = clamp(7.8 - 22 * penalty, 2, 7.8);
+  const M = [
+    { k: 'up',    name: 's3_m_up',    val: pct.up,  r: [31, 35.7],                    w: G(.6, .8),  f: 'pct' },
+    { k: 'mid',   name: 's3_m_mid',   val: pct.mid, r: [31, 35.7],                    w: G(.8, 1),   f: 'pct' },
+    { k: 'low',   name: 's3_m_low',   val: pct.low, r: G([32, 36], [30.5, 34.5]),     w: G(1.2, .9), f: 'pct' },
+    { k: 'split', name: 's3_m_split', val: r,       r: [0.30, 0.37],                  w: 1,          f: 'split' },
+    { k: 'jaw',   name: 's3_m_jaw',   val: jaw,     r: G([.78, .92], [.72, .86]),     w: G(1.6, 1),  f: 'n2' },
+    { k: 'mn',    name: 's3_m_mn',    val: mn,      r: G([1.35, 1.65], [1.4, 1.7]),   w: G(.6, .8),  f: 'n2' },
+    { k: 'fwhr',  name: 's3_m_fwhr',  val: wd.zyg / (y('Ls') - y('Br')), r: G([1.85, 2.2], [1.7, 2.0]), w: G(1.5, .6), f: 'n2' },
+    { k: 'fidx',  name: 's3_m_fidx',  val: tot / wd.zyg, r: G([1.3, 1.5], [1.3, 1.52]), w: G(.8, .9), f: 'n2' },
+    { k: 'ipdz',  name: 's3_m_ipdz',  val: wd.ipd / wd.zyg, r: [.43, .5],             w: G(.5, .7),  f: 'n2' },
+    { k: 'esp',   name: 's3_m_esp',   val: wd.icd / wd.eye, r: G([.95, 1.2], [.95, 1.15]), w: G(.8, 1.2), f: 'n2' },
+    { k: 'tilt',  name: 's3_m_tilt',  val: tilt,    r: G([2, 8], [4, 10]),            w: G(1.2, 1.3), f: 'deg', scale: 6 },
+    { k: 'midR',  name: 's3_m_midR',  val: wd.ipd / midH, r: G([.92, 1.1], [.95, 1.15]), w: G(1.2, 1.4), f: 'n2' },
+    { k: 'nic',   name: 's3_m_nic',   val: wd.nos / wd.icd, r: G([1, 1.25], [.92, 1.15]), w: G(.5, .8), f: 'n2' },
+    { k: 'sym',   name: 's3_m_sym',   val: asym,    r: G([0, 4], [0, 3.5]),           w: G(1.3, 1.5), f: 'asym' }
+  ];
+  M.forEach(it => {
+    const [a, b] = it.r, out = it.val < a ? a - it.val : it.val > b ? it.val - b : 0;
+    it.dev = out / (it.scale || (it.val < a ? a : b));
+  });
+  const dev = {}; M.forEach(it => dev[it.k] = it.dev);
+  const penalty = M.reduce((t, it) => t + it.w * it.dev, 0) / M.reduce((t, it) => t + it.w, 0);
+  const psl = clamp(7.8 - 26 * penalty, 2, 7.8);
   const tier = psl < 4 ? 'sub5' : psl < 4.5 ? 'lt' : psl < 5.5 ? 'mt' : psl < 6.5 ? 'ht' : psl < 7.5 ? 'htplus' : 'elite';
-  return { v, tot, pct, r, x, dev, psl, tier, stm, wd, jaw, mn, REF };
+  return { v, tot, pct, r, x, M, dev, psl, tier, stm: y('St'), wd, jaw, mn, tilt, tiltL, tiltR, asym };
 }
 
 const fmtPct = n => nf(n.toFixed(1)) + '%';
 const mmOf = (len, tot) => s3cal ? nf((len / tot * s3cal).toFixed(1)) + ' ' + T('s3_mm') : '';
-const chipOf = d => d <= 0.10 ? 'ok' : d <= 0.20 ? 'warn' : 'bad';
+const chipOf = d => d <= 0.04 ? 'ok' : d <= 0.12 ? 'warn' : 'bad';
+const fmtVal = (it, q) => it.f === 'pct' ? nf(q.toFixed(1)) + '%'
+  : it.f === 'deg' ? (q > 0 ? '+' : q < 0 ? '−' : '') + nf(Math.abs(q).toFixed(1)) + '°'
+  : it.f === 'asym' ? nf(q.toFixed(1)) + '%'
+  : it.f === 'split' ? '1 : ' + nf(((1 - q) / q).toFixed(2))
+  : nf(q.toFixed(2));
+const fmtRange = it => {
+  const [a, b] = it.r;
+  return it.f === 'pct' ? nf(a.toFixed(1)) + ' – ' + nf(b.toFixed(1)) + '%'
+    : it.f === 'deg' ? nf(a) + '° – ' + nf(b) + '°'
+    : it.f === 'asym' ? '< ' + nf(b.toFixed(1)) + '%'
+    : it.f === 'split' ? '1 : ' + nf(((1 - b) / b).toFixed(1)) + ' – ' + nf(((1 - a) / a).toFixed(1))
+    : nf(a.toFixed(2)) + ' – ' + nf(b.toFixed(2));
+};
 
 function renderS3() {
   s3 = s3Measure();
@@ -983,46 +1111,35 @@ function renderS3() {
     if (s3) { msg.className = 'msg-bar error'; msg.textContent = T('s3_err_order'); }
     drawS3(); return;
   }
-  const m = s3, g = gender || 'male', male = g === 'male';
-  const row = (label, val, ideal, dev) =>
-    `<tr><td>${label}</td><td class="v">${val}</td><td class="i">${ideal}</td><td><span class="s3-chip ${chipOf(dev)}">${T('s3_' + chipOf(dev))}</span></td></tr>`;
-  const withMm = k => fmtPct(m.pct[k]) + (s3cal ? ' · ' + mmOf(m.v[k], m.tot) : '');
+  const m = s3, g = gender || 'male', male = g === 'male', item = k => m.M.find(it => it.k === k);
 
-  // verdict paragraphs
+  // verdict sentences (the talking skull reads these)
   const ltTxt = fmtPct(m.pct.low);
   const balKey = m.pct.low > IDEAL * 1.08 ? 's3_bal_long' : m.pct.low < IDEAL * 0.92 ? 's3_bal_short' : 's3_bal_ok';
-  const splitKey = m.r > (1 / 3) * 1.12 ? 's3_split_long' : m.r < (1 / 3) * 0.88 ? 's3_split_short' : 's3_split_ok';
-  const xTxt = nf(m.x.toFixed(2));
-
-  // limiting factor
-  const names = { up: 's3_m_up', mid: 's3_m_mid', low: 's3_m_low', split: 's3_m_split', jaw: 's3_m_jaw', mn: 's3_m_mn' };
-  const rrange = r => nf(r[0].toFixed(2)) + ' – ' + nf(r[1].toFixed(2));
-  const worst = Object.keys(m.dev).reduce((a, b) => m.dev[a] >= m.dev[b] ? a : b);
-  const valOf = k => k === 'split' ? '1 : ' + xTxt : k === 'jaw' ? nf(m.jaw.toFixed(2)) : k === 'mn' ? nf(m.mn.toFixed(2)) : fmtPct(m.pct[k]);
-  const limit = m.dev[worst] > 0.10
-    ? T('s3_limit', { m: T(names[worst]), v: valOf(worst), i: worst === 'split' ? '1 : 2' : worst === 'jaw' ? rrange(m.REF.jaw) : worst === 'mn' ? rrange(m.REF.mn) : '33.3%' })
+  const jawI = item('jaw'), tiltI = item('tilt'), symI = item('sym');
+  const jawKey = m.jaw < jawI.r[0] ? 's3_jaw_low' : m.jaw > jawI.r[1] ? 's3_jaw_high' : 's3_jaw_ok';
+  const tiltKey = m.tilt < tiltI.r[0] ? 's3_tilt_low' : m.tilt > tiltI.r[1] ? 's3_tilt_high' : 's3_tilt_ok';
+  const symKey = symI.dev > 0 ? 's3_sym_bad' : 's3_sym_ok';
+  const worst = m.M.reduce((a, b) => b.dev > a.dev ? b : a);
+  const best = m.M.filter(it => it.dev <= 0.04).sort((a, b) => b.w - a.w)[0];
+  const limit = worst.dev > 0.06
+    ? T('s3_limit', { m: T(worst.name), v: fmtVal(worst, worst.val), i: fmtRange(worst) })
     : T('s3_limit_none');
 
-  // fixes
-  const soft = [male ? 's3_soft_bf_m' : 's3_soft_bf_f', 's3_soft_posture', male ? 's3_soft_groom_m' : 's3_soft_groom_f'];
-  if (m.pct.up > IDEAL * 1.08) soft.push('s3_soft_hair');
-  const hard = [];
-  if (m.tier === 'sub5' || m.tier === 'lt') {
-    if (m.pct.low > IDEAL * 1.08) hard.push('s3_hard_long');
-    if (m.pct.low < IDEAL * 0.92) hard.push('s3_hard_short');
-    if (m.r > (1 / 3) * 1.12) hard.push('s3_hard_phil');
-  }
-  if (!hard.length) hard.push('s3_hard_none');
-  const li = a => a.map(k => `<li>${T(k)}</li>`).join('');
-
-  const bar = [['up', S3C.up], ['mid', S3C.mid], ['low', S3C.low]]
-    .map(([k, c]) => `<span style="width:${m.pct[k].toFixed(2)}%;background:${c}">${fmtPct(m.pct[k])}</span>`).join('');
-  const bar2 = `<span style="width:${(m.v.snStm / m.v.low * 100).toFixed(2)}%;background:${S3C.phil}">1</span><span style="width:${(m.v.stmMe / m.v.low * 100).toFixed(2)}%;background:${S3C.chin}">${nf(m.x.toFixed(2))}</span>`;
-
-  const jawKey = m.jaw < m.REF.jaw[0] ? 's3_jaw_low' : m.jaw > m.REF.jaw[1] ? 's3_jaw_high' : 's3_jaw_ok';
   const tierName = TIERS[g][m.tier], TC = { sub5: '#ff5555', lt: '#ff8a4c', mt: '#ffc933', ht: '#9be564', htplus: '#5ecb96', elite: '#5ecbff' }[m.tier];
-  m.say = [T('s3_say_intro', { lt: ltTxt, tier: tierName.replace('+', ' plus ').replace('·', ','), psl: nf(m.psl.toFixed(1)) }),
-    T(balKey, { lt: ltTxt }), T(splitKey, { x: xTxt }), T(jawKey, { v: nf(m.jaw.toFixed(2)) }), limit, T('s3_say_outro')].join(' ');
+  m.say = [
+    T('s3_say_intro', { n: nf(m.M.length), tier: tierName.replace('+', ' plus ').replace('·', ','), psl: nf(m.psl.toFixed(1)) }),
+    T(male ? 's3_say_algo_m' : 's3_say_algo_f'),
+    T(balKey, { lt: ltTxt }),
+    T(jawKey, { v: nf(m.jaw.toFixed(2)) }),
+    T(tiltKey, { v: fmtVal(tiltI, m.tilt) }),
+    T(symKey, { v: fmtVal(symI, m.asym) }),
+    best ? T('s3_say_best', { m: T(best.name), v: fmtVal(best, best.val) }) : '',
+    limit,
+    T('s3_say_outro')
+  ].filter(Boolean).join(' ');
+
+  // rating card
   const C = 2 * Math.PI * 54, frac = clamp(m.psl / 8, 0, 1);
   $('s3Rating').innerHTML = `
   <div class="s3-card s3-rate">
@@ -1030,9 +1147,21 @@ function renderS3() {
     <div class="ring"><svg viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9"/>
       <circle cx="65" cy="65" r="54" fill="none" stroke="${TC}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 65 65)" style="filter:drop-shadow(0 0 6px ${TC})"/></svg>
       <div class="num" style="color:${TC}">${nf(m.psl.toFixed(1))}<small>/ 8</small></div></div>
-    <div class="s3-tier"><div class="name" style="color:${TC};text-shadow:0 0 18px ${TC}66">${tierName}</div></div>
+    <div class="s3-tier"><div class="name" style="color:${TC};text-shadow:0 0 18px ${TC}66">${tierName}</div><div class="desc">${T('s3_tier_' + m.tier)}</div></div>
+    <div class="stats">
+      <div><b>${ltTxt}</b><span>${T('s3_stat_lt')}</span></div>
+      <div><b>${nf(m.jaw.toFixed(2))}</b><span>${T('s3_stat_jaw')}</span></div>
+      <div><b>${fmtVal(tiltI, m.tilt)}</b><span>${T('s3_stat_tilt')}</span></div>
+      <div><b>${fmtVal(symI, m.asym)}</b><span>${T('s3_stat_sym')}</span></div>
+    </div>
   </div>`;
-  box.innerHTML = '';
+
+  // full measurement table
+  const rows = m.M.map(it => `<tr><td>${T(it.name)}</td><td class="v">${fmtVal(it, it.val)}</td><td class="i">${fmtRange(it)}</td><td><span class="s3-chip ${chipOf(it.dev)}">${T('s3_' + chipOf(it.dev))}</span></td></tr>`).join('');
+  box.innerHTML = `<div class="s3-card" style="overflow-x:auto"><div class="s3-h">${T('s3_h_all')}</div>
+    <table class="s3-tbl"><thead><tr><th>${T('s3_col_metric')}</th><th>${T('s3_col_value')}</th><th>${T('s3_col_ideal')}</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="s3-p dim">${T(male ? 's3_algo_m' : 's3_algo_f')}</p></div>
+    <p class="s3-disc">${T('s3_disclaimer')}</p>`;
   drawS3();
 }
 
@@ -1107,13 +1236,6 @@ function drawS3() {
     { ya: Y('Li'), yb: Y('Me'), col: S3C.chin, lines: lines(T('s3_l_chin'), 'chin') }
   ]);
 
-  // landmark dots + estimated stomion ring
-  const stmX = (X('Ls') + X('Li')) / 2;
-  c.strokeStyle = '#ffc933'; c.lineWidth = 1.2; c.beginPath(); c.arc(stmX, m.stm * k, 2.6, 0, 7); c.stroke();
-  ['Tr', 'N', 'Sn', 'Ls', 'Li', 'Me'].forEach(id => {
-    c.fillStyle = '#fff'; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1;
-    c.beginPath(); c.arc(X(id), Y(id), 2.5, 0, 7); c.fill(); c.stroke();
-  });
   // width lines (labels = % of cheekbone width)
   const wl = (a, b, lab) => {
     c.strokeStyle = '#5ecbff'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(X(a), Y(a)); c.lineTo(X(b), Y(b)); c.stroke();
@@ -1123,6 +1245,22 @@ function drawS3() {
   };
   const pc = n => nf(Math.round(n / m.wd.zyg * 100)) + '%';
   wl('Zl', 'Zr', pc(m.wd.zyg)); wl('Gl', 'Gr', pc(m.wd.gon)); wl('Cl', 'Cr', pc(m.wd.mou)); wl('Al', 'Ar', pc(m.wd.nos));
+
+  // eyes: pupil line, canthal-tilt lines, then all midline + eye dots
+  const GRN = '#6ee7b7';
+  const eyeLn = (a, b) => { c.strokeStyle = GRN; c.lineWidth = 1.2; c.beginPath(); c.moveTo(X(a), Y(a)); c.lineTo(X(b), Y(b)); c.stroke(); };
+  eyeLn('Pl', 'Pr'); eyeLn('Exl', 'Enl'); eyeLn('Enr', 'Exr');
+  ['Tr', 'Br', 'N', 'Sn', 'Ls', 'St', 'Li', 'Me'].forEach(id => {
+    c.fillStyle = '#fff'; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1;
+    c.beginPath(); c.arc(X(id), Y(id), 2.5, 0, 7); c.fill(); c.stroke();
+  });
+  ['Pl', 'Pr', 'Enl', 'Enr', 'Exl', 'Exr'].forEach(id => { c.fillStyle = GRN; c.beginPath(); c.arc(X(id), Y(id), 2.4, 0, 7); c.fill(); });
+  c.font = '600 ' + fs1 + 'px ' + fam; c.fillStyle = GRN; c.textBaseline = 'bottom';
+  c.textAlign = 'center'; c.fillText(pc(m.wd.ipd), (X('Pl') + X('Pr')) / 2, Math.min(Y('Pl'), Y('Pr')) - 4);
+  const tl = q => (q > 0 ? '+' : q < 0 ? '−' : '') + nf(Math.abs(q).toFixed(1)) + '°';
+  c.textBaseline = 'middle';
+  c.textAlign = 'right'; c.fillText(tl(m.tiltL), X('Exl') - 5, Y('Exl'));
+  c.textAlign = 'left';  c.fillText(tl(m.tiltR), X('Exr') + 5, Y('Exr'));
 }
 
 $('s3Back').addEventListener('click', () => {

@@ -284,22 +284,14 @@ html[dir=rtl] .lm-side{direction:rtl}
     <div class="tool-eyebrow" data-i18n="s2_eyebrow">Step 2 · Landmarks</div>
     <h2 class="tool-title" data-i18n="tool_step_adjust_title">Confirm The Landmarks</h2>
     <p class="tool-text" style="margin-bottom:22px" data-i18n="s2_text"></p>
-    <figure class="lm-ref" id="lmRef">
-      <div class="lm-ref-main"><img id="lmRefImg" src="landmark-reference-labeled.png" alt="Landmark reference with the six points Tr, N, Sn, Ls, Li, Me"></div>
-      <div class="lm-ref-thumbs">
-        <button type="button" class="on" data-src="landmark-reference-labeled.png" data-cap="tool_ref_cap_dots" aria-label="Landmark points"><img src="landmark-reference-labeled.png" alt=""></button>
-        <button type="button" data-src="thirds.jpeg" data-cap="tool_ref_cap_thirds" aria-label="Facial thirds"><img src="thirds.jpeg" alt=""></button>
-      </div>
-      <figcaption class="lm-ref-cap" id="lmRefCap" data-i18n="tool_ref_cap_dots"></figcaption>
-    </figure>
     <div class="msg-bar" id="s2Msg"></div>
+    <div class="lm-chips" id="lmChips"></div>
+    <p class="lm-name" id="lmName"></p>
+    <p class="lm-desc" id="lmDesc"></p>
     <div class="lm-stage" id="lmStage">
       <canvas id="lmCanvas"></canvas>
       <div class="lm-busy" id="lmBusy"><span class="mini-spinner"></span><span id="lmBusyTxt"></span></div>
     </div>
-    <div class="lm-chips" id="lmChips"></div>
-    <p class="lm-name" id="lmName"></p>
-    <p class="lm-desc" id="lmDesc"></p>
     <p class="lm-note" data-i18n="s2_lower_note"></p>
     <div class="lm-dash">
       <div class="lm-pad" id="lmPad">
@@ -320,6 +312,14 @@ html[dir=rtl] .lm-side{direction:rtl}
         </div>
       </div>
     </div>
+    <figure class="lm-ref" id="lmRef">
+      <div class="lm-ref-main"><img id="lmRefImg" src="landmark-reference-labeled.png" alt="Landmark reference with the six points Tr, N, Sn, Ls, Li, Me"></div>
+      <div class="lm-ref-thumbs">
+        <button type="button" class="on" data-src="landmark-reference-labeled.png" data-cap="tool_ref_cap_dots" aria-label="Landmark points"><img src="landmark-reference-labeled.png" alt=""></button>
+        <button type="button" data-src="thirds.jpeg" data-cap="tool_ref_cap_thirds" aria-label="Facial thirds"><img src="thirds.jpeg" alt=""></button>
+      </div>
+      <figcaption class="lm-ref-cap" id="lmRefCap" data-i18n="tool_ref_cap_dots"></figcaption>
+    </figure>
     <p class="lm-note" style="margin-top:12px" data-i18n="s2_keys_tip"></p>
     <div class="lm-progress" id="lmProgress"></div>
     <div class="tool-nav">
@@ -376,7 +376,7 @@ const $ = id => document.getElementById(id);
     s3_jaw_low: 'Your jaw is narrow compared to your cheekbones, ratio {v}. The lower face looks tapered.',
     s3_jaw_ok: 'Your jaw to cheekbone ratio, {v}, sits in a healthy range.',
     s3_jaw_high: 'Your jaw is very wide compared to your cheekbones, ratio {v}. The lower face looks square and heavy.',
-    s3_stat_lt: 'Lower third', s3_stat_split: 'Split', s3_stat_jaw: 'Jaw ratio'
+    s2_axis_y: 'measures height', s2_axis_x: 'measures width', s3_stat_lt: 'Lower third', s3_stat_split: 'Split', s3_stat_jaw: 'Jaw ratio'
   });
   Object.assign(dict.ar, {
     s3_rating: 'التقييم العام', s3_skull_h: 'حكم الجمجمة', s3_say_play: '▶ إعادة', s3_say_stop: '■ إيقاف',
@@ -386,7 +386,7 @@ const $ = id => document.getElementById(id);
     s3_jaw_low: 'فكك ضيق مقارنة بالوجنتين، النسبة {v}. يبدو الوجه السفلي مدببًا.',
     s3_jaw_ok: 'نسبة الفك إلى الوجنتين، {v}، ضمن المدى الصحي.',
     s3_jaw_high: 'فكك عريض جدًا مقارنة بالوجنتين، النسبة {v}. يبدو الوجه السفلي مربعًا وثقيلًا.',
-    s3_stat_lt: 'الثلث السفلي', s3_stat_split: 'التقسيم', s3_stat_jaw: 'نسبة الفك'
+    s2_axis_y: 'يقيس الارتفاع', s2_axis_x: 'يقيس العرض', s3_stat_lt: 'الثلث السفلي', s3_stat_split: 'التقسيم', s3_stat_jaw: 'نسبة الفك'
   });
 })();
 
@@ -739,8 +739,33 @@ async function detectLandmarks(img) {
         const mix = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
         const mx = [10, 168, 2, 0, 17, 152].reduce((t, i) => t + P(i).x, 0) / 6;   // one shared facial midline
         const pr = (i, j) => { const A = P(i), B = P(j), y = (A.y + B.y) / 2, [l, r] = A.x <= B.x ? [A, B] : [B, A]; return [{ x: l.x, y }, { x: r.x, y }]; };
-        const [zl, zr] = pr(234, 454), [gl, gr] = pr(58, 288), [cl, cr] = pr(61, 291), [al, ar] = pr(129, 358);
+        const [zl, zr] = pr(234, 454), [gl, gr] = pr(172, 397), [cl, cr] = pr(61, 291), [al, ar] = pr(129, 358);
         const V = (y) => ({ x: mx, y });
+        // Face-edge snap: in dark/hooded photos the mesh contour can sit outside the face (usually on the shadowed side).
+        // Scan the pixel row from the mesh point toward the midline and stop where skin brightness resumes.
+        const snapEdge = (pt, side) => {
+          try {
+            const c = document.createElement('canvas'); c.width = W; c.height = H;
+            const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
+            const band = Math.max(2, Math.round(0.008 * fh)), y = clamp(Math.round(pt.y), band, H - band - 1);
+            const d = g.getImageData(0, y - band, W, band * 2 + 1).data, n = band * 2 + 1, row = new Float32Array(W);
+            for (let x = 0; x < W; x++) { let t = 0; for (let r = 0; r < n; r++) { const k = (r * W + x) * 4; t += 0.299 * d[k] + 0.587 * d[k + 1] + 0.114 * d[k + 2]; } row[x] = t / n; }
+            const sm = new Float32Array(W);
+            for (let x = 0; x < W; x++) { let t = 0, c2 = 0; for (let k = -3; k <= 3; k++) { const i = x + k; if (i >= 0 && i < W) { t += row[i]; c2++; } } sm[x] = t / c2; }
+            const xa = Math.round(side === 'r' ? mx : pt.x), xb = Math.round(side === 'r' ? pt.x : mx), seg = Array.from(sm.slice(xa, xb)).sort((u, v) => u - v);
+            if (seg.length < 20) return pt;
+            const skin = seg[seg.length >> 1], thr = skin * 0.55, run = Math.max(4, Math.round(0.012 * fw));
+            if (skin < 25) return pt;
+            const dir = side === 'r' ? -1 : 1;
+            for (let x = Math.round(pt.x); x !== Math.round(mx); x += dir) {
+              let ok = true;
+              for (let k = 0; k < run; k++) { const i = x + k * dir; if (i < 0 || i >= W || sm[i] < thr) { ok = false; break; } }
+              if (ok) { const nx = x + dir * Math.round(run / 2); return Math.abs(nx - pt.x) <= 0.12 * fw ? { x: nx, y: pt.y } : pt; }
+            }
+          } catch (e) { console.warn('edge snap failed', e); }
+          return pt;
+        };
+        [zl, zr, gl, gr].forEach((q, i) => { const sn = snapEdge(q, i % 2 ? 'r' : 'l'); q.x = sn.x; });
         return {
           detected: true, hairEst: hl === null,
           pts: {
@@ -845,8 +870,8 @@ function renderStep2() {
   $('s2Confirm').disabled = n < LM.length;
   $('lmSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.step === s2.stepKey));
   const ax = LM[s2.sel].ax;
-  $('lmName').textContent = T(LM[s2.sel].pt) + (ax === 'y' ? '   ↕' : '   ↔');
-  $('lmPad').querySelectorAll('button').forEach(b => b.classList.toggle('off', (ax === 'y' && +b.dataset.dx !== 0) || (ax === 'x' && +b.dataset.dy !== 0)));
+  $('lmName').textContent = T(LM[s2.sel].pt) + '   ' + (ax === 'y' ? '↕ ' + T('s2_axis_y') : '↔ ' + T('s2_axis_x'));
+
 }
 
 function select(i) {
@@ -858,7 +883,6 @@ function select(i) {
 function nudge(dx, dy, coarse) {
   if (!s2) return;
   const mm = LM[s2.sel], p = s2.pts[mm.id], u = s2.H / 1000;
-  if (mm.ax === 'y') dx = 0; else dy = 0;
   const step = STEP_PX[coarse ? 'coarse' : s2.stepKey] * u;
   p.x = clamp(p.x + dx * step, 0, s2.W); p.y = clamp(p.y + dy * step, 0, s2.H);
   if (!p.seen) { p.seen = true; renderStep2(); }

@@ -255,8 +255,8 @@ export const dict = {
 
     /* ── Step 2: landmark review ── */
     s2_eyebrow: 'Step 2 · Landmarks',
-    s2_text: 'Six points were placed on your face. Select a point, then move it with the arrow pad only. Review every point to continue.',
-    s2_lower_note: 'Sn · Ls · Li · Me measure your lower third. Tr and N complete the facial thirds.',
+    s2_text: 'Fourteen points were placed on your face: six for height and eight for width. Select a point, then move it with the arrow pad only. Review every point to continue.',
+    s2_lower_note: 'Sn · Ls · Li · Me measure your lower third, and Tr and N complete the facial thirds. The width points (cheekbone, jaw corner, mouth corner, nostril edge) move left and right only.',
     s2_detecting: 'Placing landmarks…',
     s2_fallback: 'Automatic detection was not possible — points start at average positions. Review each one carefully.',
     s2_hairline_est: 'Hairline was estimated — check Tr carefully.',
@@ -269,8 +269,7 @@ export const dict = {
     s2_left: 'Move left',
     s2_right: 'Move right',
 
-    tool_ref_cap_dots: 'Reference: the six points we use. Tr, N, Sn, Ls, Li, Me.',
-    tool_ref_cap_thirds: 'Reference: how the face divides into three equal thirds.',
+    tool_ref_cap_dots: 'Reference: the six height points Tr, N, Sn, Ls, Li, Me. Each width point is described when you select it.',
     /* ── gender gate + step 3 ── */
     g_title: 'Select Your Gender',
     g_text: 'Ideal proportions and the rating scale differ for men and women. Choose one to unlock the photo upload.',
@@ -280,7 +279,7 @@ export const dict = {
     g_err: 'Please select your gender before uploading a photo.',
     s3_eyebrow: 'Step 3 · Analysis',
     s3_title: 'Lower Third Analysis',
-    s3_text: 'Measured from your confirmed landmarks. Left: facial thirds. Right: lower-third breakdown. Every value is a share of total face height (Tr–Me).',
+    s3_text: 'Measured from your confirmed landmarks. Left: facial thirds. Right: lower-third breakdown. Heights are shares of total face height (Tr–Me); widths are compared as ratios.',
     s3_cal_label: 'Optional · your real Tr–Me height (mm)',
     s3_cal_note: 'Enter it to show millimetres beside the lines. Left empty, everything stays proportional.',
     s3_mm: 'mm',
@@ -324,7 +323,7 @@ export const dict = {
     s3_hard_short: 'Short lower third: vertical chin lengthening (genioplasty or implant) is the usual option.',
     s3_hard_phil: 'Long nose-to-lip distance: a lip lift is the standard surgical option for shortening it.',
     s3_hard_none: 'No surgical indicators from frontal proportions alone.',
-    s3_disclaimer: 'A community-style estimate from six landmarks, not medical advice. Consult a qualified facial plastic or maxillofacial surgeon before any procedure.',
+    s3_disclaimer: 'A community-style estimate from fourteen landmarks, not medical advice. Consult a qualified facial plastic or maxillofacial surgeon before any procedure.',
     s3_restart: 'Start Over',
 
     /* ── privacy-policy.html ── */
@@ -595,8 +594,8 @@ export const dict = {
 
     /* ── الخطوة ٢: مراجعة النقاط ── */
     s2_eyebrow: 'الخطوة ٢ · النقاط المرجعية',
-    s2_text: 'تم وضع ست نقاط على وجهك. اختر نقطة ثم حرّكها بلوحة الأسهم فقط. راجع كل نقطة للمتابعة.',
-    s2_lower_note: 'النقاط Sn · Ls · Li · Me تقيس الثلث السفلي. أما Tr وN فتكمّلان أثلاث الوجه.',
+    s2_text: 'تم وضع ١٤ نقطة على وجهك: ست نقاط للارتفاع وثماني نقاط للعرض. اختر نقطة ثم حرّكها بلوحة الأسهم فقط. راجع كل نقطة للمتابعة.',
+    s2_lower_note: 'النقاط Sn · Ls · Li · Me تقيس الثلث السفلي، أما Tr وN فتكمّلان أثلاث الوجه. نقاط العرض (الوجنة وزاوية الفك وزاوية الفم وحافة المنخر) تتحرك يميناً ويساراً فقط.',
     s2_detecting: 'جارٍ وضع النقاط…',
     s2_fallback: 'تعذّر الكشف التلقائي — بدأت النقاط من مواضع متوسطة. راجع كل نقطة بعناية.',
     s2_hairline_est: 'تم تقدير خط الشعر — تحقق من نقطة Tr بعناية.',
@@ -609,8 +608,7 @@ export const dict = {
     s2_left: 'تحريك لليسار',
     s2_right: 'تحريك لليمين',
 
-    tool_ref_cap_dots: 'مرجع: النقاط الست التي نستخدمها. Tr, N, Sn, Ls, Li, Me.',
-    tool_ref_cap_thirds: 'مرجع: كيف ينقسم الوجه إلى ثلاثة أثلاث متساوية.',
+    tool_ref_cap_dots: 'مرجع: نقاط الارتفاع الست Tr, N, Sn, Ls, Li, Me. تُشرح كل نقطة عرض عند اختيارها.',
     /* ── gender gate + step 3 ── */
     g_title: 'اختر جنسك',
     g_text: 'تختلف النسب المثالية ومقياس التقييم بين الرجال والنساء. اختر أحدهما لتفعيل رفع الصورة.',
@@ -620,7 +618,7 @@ export const dict = {
     g_err: 'يرجى اختيار الجنس قبل رفع الصورة.',
     s3_eyebrow: 'الخطوة ٣ · التحليل',
     s3_title: 'تحليل الثلث السفلي',
-    s3_text: 'محسوب من النقاط التي أكدتها. اليسار: أثلاث الوجه. اليمين: تفصيل الثلث السفلي. كل قيمة هي نسبة من ارتفاع الوجه الكلي (Tr–Me).',
+    s3_text: 'محسوب من النقاط التي أكدتها. اليسار: أثلاث الوجه. اليمين: تفصيل الثلث السفلي. قيم الارتفاع هي نسبة من ارتفاع الوجه الكلي (Tr–Me)، وقيم العرض تُقارن كنسب.',
     s3_cal_label: 'اختياري · ارتفاع وجهك الفعلي Tr–Me (مم)',
     s3_cal_note: 'أدخله لإظهار المليمترات بجانب الخطوط. وإن تركته فارغاً تبقى كل القيم نسبية.',
     s3_mm: 'مم',
@@ -664,7 +662,7 @@ export const dict = {
     s3_hard_short: 'ثلث سفلي قصير: إطالة الذقن عمودياً (تجميل الذقن أو زرعة) هي الخيار المعتاد.',
     s3_hard_phil: 'مسافة أنف-شفة طويلة: رفع الشفة هو الخيار الجراحي المعتاد لتقصيرها.',
     s3_hard_none: 'لا توجد مؤشرات جراحية من النسب الأمامية وحدها.',
-    s3_disclaimer: 'تقدير بأسلوب المجتمعات الجمالية من ست نقاط، وليس نصيحة طبية. استشر جرّاح تجميل وجه أو فكين مؤهلاً قبل أي إجراء.',
+    s3_disclaimer: 'تقدير بأسلوب المجتمعات الجمالية من ١٤ نقطة، وليس نصيحة طبية. استشر جرّاح تجميل وجه أو فكين مؤهلاً قبل أي إجراء.',
     s3_restart: 'البدء من جديد',
 
     /* ── privacy-policy.html ── */

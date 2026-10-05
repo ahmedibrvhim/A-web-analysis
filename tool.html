@@ -105,11 +105,6 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
 .lm-ref{margin:0 auto 18px;max-width:560px;border:1px solid var(--border);background:var(--panel);overflow:hidden}
 .lm-ref-main{background:#fff;line-height:0}
 .lm-ref-main img{display:block;width:100%;height:auto}
-.lm-ref-thumbs{display:flex;gap:8px;justify-content:center;padding:10px 10px 0;direction:ltr}
-.lm-ref-thumbs button{width:92px;padding:0;border:1px solid var(--border);background:#fff;cursor:pointer;opacity:.55;line-height:0;transition:all .2s}
-.lm-ref-thumbs button img{display:block;width:100%;height:58px;object-fit:cover;object-position:top}
-.lm-ref-thumbs button:hover{opacity:.85}
-.lm-ref-thumbs button.on{opacity:1;border-color:var(--crimson);box-shadow:0 0 10px rgba(220,20,60,.3)}
 .lm-ref-cap{margin:0;padding:8px 12px 10px;font-size:9px;letter-spacing:.5px;line-height:1.7;color:var(--ash);text-align:center}
 .lm-chips{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px;direction:ltr}
 .lm-chip{position:relative;padding:11px 2px;font-size:12px;font-weight:700;letter-spacing:1px;line-height:1.2;text-align:center;color:var(--text);background:var(--panel);border:1px solid var(--border);cursor:pointer;font-family:inherit;transition:all .2s}
@@ -313,11 +308,7 @@ html[dir=rtl] .lm-side{direction:rtl}
       </div>
     </div>
     <figure class="lm-ref" id="lmRef">
-      <div class="lm-ref-main"><img id="lmRefImg" src="landmark-reference-labeled.png" alt="Landmark reference with the six points Tr, N, Sn, Ls, Li, Me"></div>
-      <div class="lm-ref-thumbs">
-        <button type="button" class="on" data-src="landmark-reference-labeled.png" data-cap="tool_ref_cap_dots" aria-label="Landmark points"><img src="landmark-reference-labeled.png" alt=""></button>
-        <button type="button" data-src="thirds.jpeg" data-cap="tool_ref_cap_thirds" aria-label="Facial thirds"><img src="thirds.jpeg" alt=""></button>
-      </div>
+      <div class="lm-ref-main"><img id="lmRefImg" src="landmark-reference-labeled.png" alt="Landmark reference showing the points Tr, N, Sn, Ls, Li, Me"></div>
       <figcaption class="lm-ref-cap" id="lmRefCap" data-i18n="tool_ref_cap_dots"></figcaption>
     </figure>
     <p class="lm-note" style="margin-top:12px" data-i18n="s2_keys_tip"></p>
@@ -936,13 +927,6 @@ $('s2Confirm').addEventListener('click', () => {
 });
 let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { layoutStage(); if ($('step3').classList.contains('active')) drawS3(); }, 120); });
 
-/* ── step 2 reference gallery: dots image is the main one, thirds image swaps in ── */
-document.querySelectorAll('.lm-ref-thumbs button').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('.lm-ref-thumbs button').forEach(x => x.classList.toggle('on', x === b));
-  $('lmRefImg').src = b.dataset.src;
-  $('lmRefCap').setAttribute('data-i18n', b.dataset.cap);
-  $('lmRefCap').textContent = T(b.dataset.cap);
-}));
 
 /* ══════════════════════════════════════════════════════════
    STEP 3 · LOWER THIRD ANALYSIS

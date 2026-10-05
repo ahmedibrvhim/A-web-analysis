@@ -340,7 +340,6 @@ html[dir=rtl] .lm-side{direction:rtl}
     <div class="lm-stage" id="s3Stage" style="margin-top:16px"><canvas id="s3Canvas"></canvas></div>
     <div id="s3Rating" style="margin-top:16px"></div>
     <div id="s3Report"></div>
-    <p class="s3-disc" data-i18n="s3_disclaimer"></p>
     <div class="tool-nav">
       <button class="btn-ghost" type="button" id="s3Back" data-i18n="tool_back">← Back</button>
       <button class="btn-solid" type="button" id="s3Restart" data-i18n="s3_restart">Start Over</button>
@@ -1050,7 +1049,7 @@ function renderS3() {
     <div class="ring"><svg viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9"/>
       <circle cx="65" cy="65" r="54" fill="none" stroke="${TC}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 65 65)" style="filter:drop-shadow(0 0 6px ${TC})"/></svg>
       <div class="num" style="color:${TC}">${nf(m.psl.toFixed(1))}<small>/ 8</small></div></div>
-    <div class="s3-tier"><div class="name" style="color:${TC};text-shadow:0 0 18px ${TC}66">${tierName}</div><p class="desc">${T('s3_tier_' + m.tier)}</p></div>
+    <div class="s3-tier"><div class="name" style="color:${TC};text-shadow:0 0 18px ${TC}66">${tierName}</div></div>
   </div>`;
   box.innerHTML = '';
   drawS3();

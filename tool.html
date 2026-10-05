@@ -189,6 +189,25 @@ html[dir=rtl] .lm-side{direction:rtl}
 .s3-list li{margin-bottom:5px}
 .s3-disc{text-align:center;font-size:9px;line-height:1.8;letter-spacing:.4px;color:var(--ash);max-width:480px;margin:16px auto 0}
 #step3 .tool-nav{flex-wrap:wrap}
+.s3-rate{text-align:center;background:radial-gradient(ellipse at top,rgba(139,0,0,.18),var(--panel) 70%)}
+.s3-rate .ring{position:relative;width:150px;height:150px;margin:0 auto 6px;direction:ltr}
+.s3-rate .ring svg{width:100%;height:100%}
+.s3-rate .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:34px;font-weight:700;line-height:1}
+.s3-rate .num small{font-size:10px;letter-spacing:2px;color:var(--ash);margin-top:4px;font-weight:400}
+.s3-rate .stats{display:flex;justify-content:center;gap:10px;margin:16px 0 4px;flex-wrap:wrap}
+.s3-rate .stats div{min-width:92px;padding:9px 10px;border:1px solid var(--border);background:rgba(0,0,0,.35);display:flex;flex-direction:column;gap:3px}
+.s3-rate .stats b{font-size:14px;color:var(--white);direction:ltr}
+.s3-rate .stats span{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase}
+.skull-card{display:flex;gap:16px;align-items:center;margin-top:16px;padding:16px;border:1px solid var(--border);background:var(--panel)}
+.skull-wrap{position:relative;flex:none;width:130px;height:130px;border-radius:50%;overflow:hidden;background:#000;border:2px solid var(--blood);box-shadow:0 0 22px rgba(139,0,0,.35);transition:box-shadow .3s}
+.skull-wrap.speaking{box-shadow:0 0 34px rgba(220,20,60,.75)}
+.sk-up,.sk-jaw{position:absolute;inset:0;background:url(Skull.png) center/cover}
+.sk-up{clip-path:polygon(0 0,100% 0,100% 100%,74% 100%,74% 76%,28% 76%,28% 100%,0 100%)}
+.sk-jaw{clip-path:polygon(28% 76%,74% 76%,74% 100%,28% 100%);will-change:transform}
+.skull-bubble{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+#skText{font-size:12px;line-height:1.85;color:var(--bone);min-height:5.5em}
+.skull-bubble .btn-ghost{width:auto;align-self:flex-start;padding:8px 16px}
+@media(max-width:520px){.skull-card{flex-direction:column;text-align:center}.skull-bubble .btn-ghost{align-self:center}}
 
 /* ── auth gate ── */
 .auth-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#150000 0%,#000 70%);display:flex;align-items:center;justify-content:center;transition:opacity .3s,visibility .3s}
@@ -313,7 +332,12 @@ html[dir=rtl] .lm-side{direction:rtl}
     <h2 class="tool-title" data-i18n="s3_title">Lower Third Analysis</h2>
     <p class="tool-text" style="margin-bottom:22px" data-i18n="s3_text"></p>
     <div class="msg-bar" id="s3Msg"></div>
-    <div class="lm-stage" id="s3Stage"><canvas id="s3Canvas"></canvas></div>
+    <div id="s3Rating"></div>
+    <div class="lm-stage" id="s3Stage" style="margin-top:16px"><canvas id="s3Canvas"></canvas></div>
+    <div class="skull-card">
+      <div class="skull-wrap" id="skullWrap"><div class="sk-up"></div><div class="sk-jaw" id="skJaw"></div></div>
+      <div class="skull-bubble"><div class="s3-h" style="margin:0" data-i18n="s3_skull_h">The Skull's Verdict</div><div id="skText"></div><button class="btn-ghost" type="button" id="skPlay" data-i18n="s3_say_play">▶ Speak</button></div>
+    </div>
     <div class="s3-cal">
       <label for="s3Cal" data-i18n="s3_cal_label"></label>
       <input id="s3Cal" type="number" inputmode="decimal" min="1" max="400" step="0.1" placeholder="mm">
@@ -331,9 +355,44 @@ html[dir=rtl] .lm-side{direction:rtl}
 
 <script type="module">
 import { auth, onAuthStateChanged, signOut } from './firebase-config.js';
-import { getLang, applyDocumentDirection, applyTranslations, wireLangToggle, t } from './i18n.js';
+import { getLang, applyDocumentDirection, applyTranslations, wireLangToggle, t, dict } from './i18n.js';
 
 const $ = id => document.getElementById(id);
+
+/* ── extra strings for the width points + the talking-skull report ── */
+(() => {
+  const SIDE = { en: ['left in photo', 'right in photo'], ar: ['يسار الصورة', 'يمين الصورة'] };
+  const WP = {
+    Z: { en: ['Cheekbone', 'The widest point of the cheek arch, level with the ear opening.'], ar: ['عظمة الخد', 'أعرض نقطة في قوس الوجنة، بمحاذاة فتحة الأذن.'] },
+    G: { en: ['Jaw corner', 'The corner where the jaw turns up toward the ear, at its widest.'], ar: ['زاوية الفك', 'الزاوية التي ينعطف عندها الفك نحو الأذن، عند أعرض نقطة.'] },
+    C: { en: ['Mouth corner', 'The outer corner where the upper and lower lips meet.'], ar: ['زاوية الفم', 'الزاوية الخارجية التي تلتقي عندها الشفتان.'] },
+    A: { en: ['Nostril edge', 'The outer edge of the nostril wing at its widest.'], ar: ['حافة المنخر', 'الحافة الخارجية لجناح الأنف عند أعرض نقطة.'] }
+  };
+  ['en', 'ar'].forEach(L => Object.keys(WP).forEach(k => ['l', 'r'].forEach((sd, i) => {
+    dict[L]['tool_pt_' + k.toLowerCase() + sd] = `${k}${sd} — ${WP[k][L][0]} (${SIDE[L][i]})`;
+    dict[L]['tool_guide_desc_' + k.toLowerCase() + sd] = `${WP[k][L][1]} (${SIDE[L][i]})`;
+  })));
+  Object.assign(dict.en, {
+    s3_rating: 'Overall Rating', s3_skull_h: 'The Skull\'s Verdict', s3_say_play: '▶ Speak', s3_say_stop: '■ Stop',
+    s3_w_h: 'Width Proportions', s3_m_jaw: 'Jaw : cheekbone width', s3_m_mn: 'Mouth : nose width',
+    s3_say_intro: 'Let me look at you. Your lower third is {lt} of your face height. Your rating is {tier}, around {psl} on the scale.',
+    s3_say_outro: 'That is my verdict. Remember, this is one flat photo, not a medical exam.',
+    s3_jaw_low: 'Your jaw is narrow compared to your cheekbones, ratio {v}. The lower face looks tapered.',
+    s3_jaw_ok: 'Your jaw to cheekbone ratio, {v}, sits in a healthy range.',
+    s3_jaw_high: 'Your jaw is very wide compared to your cheekbones, ratio {v}. The lower face looks square and heavy.',
+    s3_stat_lt: 'Lower third', s3_stat_split: 'Split', s3_stat_jaw: 'Jaw ratio'
+  });
+  Object.assign(dict.ar, {
+    s3_rating: 'التقييم العام', s3_skull_h: 'حكم الجمجمة', s3_say_play: '▶ تكلّم', s3_say_stop: '■ إيقاف',
+    s3_w_h: 'نسب العرض', s3_m_jaw: 'الفك : عرض الوجنتين', s3_m_mn: 'الفم : عرض الأنف',
+    s3_say_intro: 'دعني أنظر إليك. الثلث السفلي لديك {lt} من ارتفاع وجهك. تقييمك {tier}، حوالي {psl} على المقياس.',
+    s3_say_outro: 'هذا حكمي. تذكّر أنها صورة واحدة مسطحة وليست فحصًا طبيًا.',
+    s3_jaw_low: 'فكك ضيق مقارنة بالوجنتين، النسبة {v}. يبدو الوجه السفلي مدببًا.',
+    s3_jaw_ok: 'نسبة الفك إلى الوجنتين، {v}، ضمن المدى الصحي.',
+    s3_jaw_high: 'فكك عريض جدًا مقارنة بالوجنتين، النسبة {v}. يبدو الوجه السفلي مربعًا وثقيلًا.',
+    s3_stat_lt: 'الثلث السفلي', s3_stat_split: 'التقسيم', s3_stat_jaw: 'نسبة الفك'
+  });
+})();
 
 /* ── AUTH ── */
 function renderUserPill(user) {
@@ -589,7 +648,8 @@ const LM = [
   { id: 'Sn', pt: 'tool_pt_sn', desc: 'tool_guide_desc_sn', lower: true },
   { id: 'Ls', pt: 'tool_pt_ls', desc: 'tool_guide_desc_ls', lower: true },
   { id: 'Li', pt: 'tool_pt_li', desc: 'tool_guide_desc_li', lower: true },
-  { id: 'Me', pt: 'tool_pt_me', desc: 'tool_guide_desc_me', lower: true }
+  { id: 'Me', pt: 'tool_pt_me', desc: 'tool_guide_desc_me', lower: true },
+  ...['Zl', 'Zr', 'Gl', 'Gr', 'Cl', 'Cr', 'Al', 'Ar'].map(id => ({ id, pt: 'tool_pt_' + id.toLowerCase(), desc: 'tool_guide_desc_' + id.toLowerCase(), w: true }))
 ];
 const STEP_PX = { fine: 0.5, normal: 2, coarse: 8 };   // image px per 1000 px of image height
 const DOT_R = 1.5;                                      // css px — deliberately tiny
@@ -688,14 +748,20 @@ async function detectLandmarks(img) {
             Sn: p2,                                         // base of the nose where the columella meets the lip
             Ls: { x: P(0).x, y: lsY ?? P(0).y - 0.012 * fh },  // upper-lip vermilion border (snapped to the bright ridge; mesh runs low here)
             Li: P(17),                                      // lower-lip vermilion border
-            Me: P(152)                                      // chin bottom
+            Me: P(152),                                     // chin bottom
+            Zl: P(234), Zr: P(454),                         // cheekbones (widest face points)
+            Gl: P(172), Gr: P(397),                         // jaw corners
+            Cl: P(61),  Cr: P(291),                         // mouth corners
+            Al: P(129), Ar: P(358)                          // nostril wings
           }
         };
       }
     } catch (e) { console.error(e); }
   }
   const f = (y) => ({ x: W / 2, y: H * y });                // average positions for a cropped portrait
-  return { detected: false, hairEst: false, pts: { Tr: f(.20), N: f(.45), Sn: f(.70), Ls: f(.76), Li: f(.82), Me: f(.91) } };
+  return { detected: false, hairEst: false, pts: { Tr: f(.20), N: f(.45), Sn: f(.70), Ls: f(.76), Li: f(.82), Me: f(.91),
+    Zl: { x: W * .22, y: H * .45 }, Zr: { x: W * .78, y: H * .45 }, Gl: { x: W * .28, y: H * .78 }, Gr: { x: W * .72, y: H * .78 },
+    Cl: { x: W * .40, y: H * .78 }, Cr: { x: W * .60, y: H * .78 }, Al: { x: W * .43, y: H * .68 }, Ar: { x: W * .57, y: H * .68 } } };
 }
 
 async function openStep2() {
@@ -754,7 +820,7 @@ function draw() {
       g.moveTo(x, y - R - 4 * d); g.lineTo(x, y - gap); g.moveTo(x, y + gap); g.lineTo(x, y + R + 4 * d);
       g.stroke();
     }
-    g.fillStyle = on ? '#ff3c5a' : (m.lower ? '#ffc933' : '#ffffff');
+    g.fillStyle = on ? '#ff3c5a' : (m.w ? '#5ecbff' : m.lower ? '#ffc933' : '#ffffff');
     g.strokeStyle = 'rgba(0,0,0,.75)'; g.lineWidth = .8 * d;
     g.beginPath(); g.arc(x, y, (on ? DOT_R + .3 : DOT_R) * d, 0, 7); g.fill(); g.stroke();
   });
@@ -836,6 +902,7 @@ $('s2Confirm').addEventListener('click', () => {
   $('step2').classList.remove('active');
   $('step3').classList.add('active');
   renderS3();
+  skSpeak(s3 && !s3.bad ? s3.say : '');
   scrollTo({ top: 0, behavior: 'smooth' });
 });
 let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { layoutStage(); if ($('step3').classList.contains('active')) drawS3(); }, 120); });
@@ -880,10 +947,17 @@ function s3Measure() {
     up: Math.abs(pct.up - IDEAL) / IDEAL, mid: Math.abs(pct.mid - IDEAL) / IDEAL,
     low: Math.abs(pct.low - IDEAL) / IDEAL, split: Math.abs(r - 1 / 3) / (1 / 3)
   };
-  const penalty = 0.5 * (dev.up + dev.mid + dev.low) / 3 + 0.5 * dev.split;
+  const hy = (a, b) => Math.hypot(P[a].x - P[b].x, P[a].y - P[b].y);
+  const wd = { zyg: hy('Zl', 'Zr'), gon: hy('Gl', 'Gr'), mou: hy('Cl', 'Cr'), nos: hy('Al', 'Ar') };
+  if (Object.values(wd).some(n => !(n > 0))) return { bad: true };
+  const jaw = wd.gon / wd.zyg, mn = wd.mou / wd.nos;
+  const REF = { jaw: (gender || 'male') === 'male' ? [0.78, 0.92] : [0.72, 0.86], mn: [1.35, 1.65] };   // reference conventions, not hard rules
+  const rd = (x, [a, b]) => x < a ? (a - x) / a : x > b ? (x - b) / b : 0;
+  dev.jaw = rd(jaw, REF.jaw); dev.mn = rd(mn, REF.mn);
+  const penalty = 0.45 * (dev.up + dev.mid + dev.low) / 3 + 0.40 * dev.split + 0.15 * (dev.jaw + dev.mn) / 2;
   const psl = clamp(7.8 - 22 * penalty, 2, 7.8);
   const tier = psl < 4 ? 'sub5' : psl < 4.5 ? 'lt' : psl < 5.5 ? 'mt' : psl < 6.5 ? 'ht' : psl < 7.5 ? 'htplus' : 'elite';
-  return { v, tot, pct, r, x, dev, psl, tier, stm };
+  return { v, tot, pct, r, x, dev, psl, tier, stm, wd, jaw, mn, REF };
 }
 
 const fmtPct = n => nf(n.toFixed(1)) + '%';
@@ -895,7 +969,7 @@ function renderS3() {
   const box = $('s3Report'), msg = $('s3Msg');
   msg.className = 'msg-bar'; msg.textContent = '';
   if (!s3 || s3.bad) {
-    box.innerHTML = '';
+    box.innerHTML = ''; $('s3Rating').innerHTML = '';
     if (s3) { msg.className = 'msg-bar error'; msg.textContent = T('s3_err_order'); }
     drawS3(); return;
   }
@@ -934,6 +1008,22 @@ function renderS3() {
     .map(([k, c]) => `<span style="width:${m.pct[k].toFixed(2)}%;background:${c}">${fmtPct(m.pct[k])}</span>`).join('');
   const bar2 = `<span style="width:${(m.v.snStm / m.v.low * 100).toFixed(2)}%;background:${S3C.phil}">1</span><span style="width:${(m.v.stmMe / m.v.low * 100).toFixed(2)}%;background:${S3C.chin}">${nf(m.x.toFixed(2))}</span>`;
 
+  const jawKey = m.jaw < m.REF.jaw[0] ? 's3_jaw_low' : m.jaw > m.REF.jaw[1] ? 's3_jaw_high' : 's3_jaw_ok';
+  const tierName = TIERS[g][m.tier], TC = { sub5: '#ff5555', lt: '#ff8a4c', mt: '#ffc933', ht: '#9be564', htplus: '#5ecb96', elite: '#5ecbff' }[m.tier];
+  m.say = [T('s3_say_intro', { lt: ltTxt, tier: tierName.replace('+', ' plus ').replace('·', ','), psl: nf(m.psl.toFixed(1)) }),
+    T(balKey, { lt: ltTxt }), T(splitKey, { x: xTxt }), T(jawKey, { v: nf(m.jaw.toFixed(2)) }), limit, T('s3_say_outro')].join(' ');
+  const C = 2 * Math.PI * 54, frac = clamp(m.psl / 8, 0, 1);
+  $('s3Rating').innerHTML = `
+  <div class="s3-card s3-rate">
+    <div class="s3-h">${T('s3_rating')}</div>
+    <div class="ring"><svg viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9"/>
+      <circle cx="65" cy="65" r="54" fill="none" stroke="${TC}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 65 65)" style="filter:drop-shadow(0 0 6px ${TC})"/></svg>
+      <div class="num" style="color:${TC}">${nf(m.psl.toFixed(1))}<small>/ 8</small></div></div>
+    <div class="s3-tier"><div class="name" style="color:${TC};text-shadow:0 0 18px ${TC}66">${tierName}</div><p class="desc">${T('s3_tier_' + m.tier)}</p></div>
+    <div class="stats"><div><b>${fmtPct(m.pct.low)}</b><span>${T('s3_stat_lt')}</span></div><div><b>1 : ${xTxt}</b><span>${T('s3_stat_split')}</span></div><div><b>${nf(m.jaw.toFixed(2))}</b><span>${T('s3_stat_jaw')}</span></div></div>
+    <p class="s3-p" style="text-align:center">${limit}</p>
+  </div>`;
+  const rrange = r => nf(r[0].toFixed(2)) + ' – ' + nf(r[1].toFixed(2));
   box.innerHTML = `
   <div class="s3-card">
     <div class="s3-h">${T('s3_h1')}</div>
@@ -952,13 +1042,12 @@ function renderS3() {
     <p class="s3-p dim">${T('s3_dim_need')}</p>
   </div>
   <div class="s3-card">
-    <div class="s3-h">${T('s3_h2')}</div>
-    <div class="s3-tier">
-      <div class="name">${TIERS[g][m.tier]}</div>
-      <div class="score">${T('s3_score', { psl: nf(m.psl.toFixed(1)) })}</div>
-      <p class="desc">${T('s3_tier_' + m.tier)}</p>
-    </div>
-    <p class="s3-p" style="text-align:center">${limit}</p>
+    <div class="s3-h">${T('s3_w_h')}</div>
+    <table class="s3-tbl"><thead><tr><th>${T('s3_col_metric')}</th><th>${T('s3_col_value')}</th><th>${T('s3_col_ideal')}</th><th></th></tr></thead><tbody>
+      ${row(T('s3_m_jaw'), nf(m.jaw.toFixed(2)), rrange(m.REF.jaw), m.dev.jaw)}
+      ${row(T('s3_m_mn'), nf(m.mn.toFixed(2)), rrange(m.REF.mn), m.dev.mn)}
+    </tbody></table>
+    <p class="s3-p">${T(jawKey, { v: nf(m.jaw.toFixed(2)) })}</p>
   </div>
   <div class="s3-card">
     <div class="s3-h">${T('s3_h3')}</div>
@@ -1046,6 +1135,15 @@ function drawS3() {
     c.fillStyle = '#fff'; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1;
     c.beginPath(); c.arc(X(id), Y(id), 2.5, 0, 7); c.fill(); c.stroke();
   });
+  // width lines (labels = % of cheekbone width)
+  const wl = (a, b, lab) => {
+    c.strokeStyle = '#5ecbff'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(X(a), Y(a)); c.lineTo(X(b), Y(b)); c.stroke();
+    [a, b].forEach(id => { c.fillStyle = '#5ecbff'; c.beginPath(); c.arc(X(id), Y(id), 2.4, 0, 7); c.fill(); });
+    c.font = '600 ' + fs1 + 'px ' + fam; c.textAlign = 'center'; c.textBaseline = 'bottom';
+    c.fillText(lab, (X(a) + X(b)) / 2, (Y(a) + Y(b)) / 2 - 3);
+  };
+  const pc = n => nf(Math.round(n / m.wd.zyg * 100)) + '%';
+  wl('Zl', 'Zr', pc(m.wd.zyg)); wl('Gl', 'Gr', pc(m.wd.gon)); wl('Cl', 'Cr', pc(m.wd.mou)); wl('Al', 'Ar', pc(m.wd.nos));
 }
 
 $('s3Cal').addEventListener('input', e => {
@@ -1054,12 +1152,47 @@ $('s3Cal').addEventListener('input', e => {
   renderS3();
 });
 $('s3Back').addEventListener('click', () => {
+  skStop();
   $('step3').classList.remove('active');
   $('step2').classList.add('active');
   layoutStage(); renderStep2();
   scrollTo({ top: 0, behavior: 'smooth' });
 });
 $('s3Restart').addEventListener('click', () => location.reload());
+
+/* ══ TALKING SKULL — the jaw is a separate layer of Skull.png; it opens with the voice ══ */
+const sk = { on: false, raf: 0, tm: 0, bump: 0, full: '' };
+function skFrame(t) {
+  const o = sk.on ? clamp(0.12 + 0.6 * Math.abs(Math.sin(t / 95)) * (0.6 + 0.4 * Math.abs(Math.sin(t / 310))) + sk.bump, 0, 1) : 0;
+  sk.bump *= 0.8;
+  $('skJaw').style.transform = `translateY(${(o * 9).toFixed(2)}%)`;
+  $('skullWrap').classList.toggle('speaking', sk.on);
+  if (sk.on || o > 0.01) sk.raf = requestAnimationFrame(skFrame);
+}
+function skStop() {
+  sk.on = false; clearInterval(sk.tm);
+  try { speechSynthesis.cancel(); } catch (e) {}
+  if (sk.full) $('skText').textContent = sk.full;
+  $('skPlay').textContent = T('s3_say_play');
+}
+function skSpeak(text) {
+  skStop();
+  if (!text) { $('skText').textContent = ''; return; }
+  sk.full = text; sk.on = true; $('skPlay').textContent = T('s3_say_stop');
+  cancelAnimationFrame(sk.raf); sk.raf = requestAnimationFrame(skFrame);
+  let i = 0; $('skText').textContent = '';
+  sk.tm = setInterval(() => { i += 2; $('skText').textContent = text.slice(0, i); if (i >= text.length) clearInterval(sk.tm); }, 40);
+  if (!('speechSynthesis' in window)) { setTimeout(() => { if (sk.full === text) skStop(); }, text.length * 40 + 300); return; }
+  const u = new SpeechSynthesisUtterance(text), want = lang === 'ar' ? 'ar' : 'en';
+  u.lang = lang === 'ar' ? 'ar-SA' : 'en-US'; u.rate = 0.92; u.pitch = 0.55;
+  const v = speechSynthesis.getVoices().find(x => x.lang.toLowerCase().startsWith(want));
+  if (v) u.voice = v;
+  u.onboundary = () => { sk.bump = 0.5; };
+  u.onend = u.onerror = () => { if (sk.full === text) skStop(); };
+  speechSynthesis.speak(u);
+}
+$('skPlay').addEventListener('click', () => { if (sk.on) skStop(); else skSpeak(s3 && !s3.bad ? s3.say : ''); });
+addEventListener('pagehide', skStop);
 
 getLandmarker();   // warm the model up while the user picks a photo
 </script>

@@ -128,6 +128,7 @@ body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weigh
 .lm-pad button:hover{border-color:var(--crimson)}
 .lm-pad button:active,.lm-pad button.hold{background:var(--blood);color:var(--white);border-color:var(--crimson)}
 .lm-pad svg{width:20px;height:20px}
+.lm-pad button.off{opacity:.18;pointer-events:none}
 .lm-pad .c{display:flex;align-items:center;justify-content:center}
 .lm-pad .c i{width:5px;height:5px;border-radius:50%;background:var(--smoke)}
 .lm-side{display:flex;flex-direction:column;gap:12px;min-width:150px;direction:inherit}
@@ -332,12 +333,12 @@ html[dir=rtl] .lm-side{direction:rtl}
     <h2 class="tool-title" data-i18n="s3_title">Lower Third Analysis</h2>
     <p class="tool-text" style="margin-bottom:22px" data-i18n="s3_text"></p>
     <div class="msg-bar" id="s3Msg"></div>
-    <div id="s3Rating"></div>
-    <div class="lm-stage" id="s3Stage" style="margin-top:16px"><canvas id="s3Canvas"></canvas></div>
-    <div class="skull-card">
+    <div class="skull-card" style="margin-top:0">
       <div class="skull-wrap" id="skullWrap"><div class="sk-up"></div><div class="sk-jaw" id="skJaw"></div></div>
       <div class="skull-bubble"><div class="s3-h" style="margin:0" data-i18n="s3_skull_h">The Skull's Verdict</div><div id="skText"></div><button class="btn-ghost" type="button" id="skPlay" data-i18n="s3_say_play">▶ Replay</button></div>
     </div>
+    <div class="lm-stage" id="s3Stage" style="margin-top:16px"><canvas id="s3Canvas"></canvas></div>
+    <div id="s3Rating" style="margin-top:16px"></div>
     <div id="s3Report"></div>
     <p class="s3-disc" data-i18n="s3_disclaimer"></p>
     <div class="tool-nav">
@@ -646,6 +647,7 @@ const LM = [
   { id: 'Me', pt: 'tool_pt_me', desc: 'tool_guide_desc_me', lower: true },
   ...['Zl', 'Zr', 'Gl', 'Gr', 'Cl', 'Cr', 'Al', 'Ar'].map(id => ({ id, pt: 'tool_pt_' + id.toLowerCase(), desc: 'tool_guide_desc_' + id.toLowerCase(), w: true }))
 ];
+LM.forEach(m => m.ax = m.w ? 'x' : 'y');   // vertical-proportion points move ↕ only, width points move ↔ only
 const STEP_PX = { fine: 0.5, normal: 2, coarse: 8 };   // image px per 1000 px of image height
 const DOT_R = 1.5;                                      // css px — deliberately tiny
 let s2 = null;   // { src, img, W, H, k, dpr, pts:{id:{x,y,ax,ay,seen}}, sel, stepKey, detected, hairEst }
@@ -735,19 +737,20 @@ async function detectLandmarks(img) {
         const hl = findHairline(img, p10, p9, fw, fh);
         const lsY = findUpperLip(img, P(0), P(13), P(14), fw, fh);
         const mix = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+        const mx = [10, 168, 2, 0, 17, 152].reduce((t, i) => t + P(i).x, 0) / 6;   // one shared facial midline
+        const pr = (i, j) => { const A = P(i), B = P(j), y = (A.y + B.y) / 2, [l, r] = A.x <= B.x ? [A, B] : [B, A]; return [{ x: l.x, y }, { x: r.x, y }]; };
+        const [zl, zr] = pr(234, 454), [gl, gr] = pr(58, 288), [cl, cr] = pr(61, 291), [al, ar] = pr(129, 358);
+        const V = (y) => ({ x: mx, y });
         return {
           detected: true, hairEst: hl === null,
           pts: {
-            Tr: { x: p10.x, y: hl ?? p10.y - 0.14 * fh },   // true hairline (scan) — mesh top sits mid-forehead
-            N:  mix(p9, p168, 0.5),                         // brow dip, between glabella and bridge
-            Sn: p2,                                         // base of the nose where the columella meets the lip
-            Ls: { x: P(0).x, y: lsY ?? P(0).y - 0.012 * fh },  // upper-lip vermilion border (snapped to the bright ridge; mesh runs low here)
-            Li: P(17),                                      // lower-lip vermilion border
-            Me: P(152),                                     // chin bottom
-            Zl: P(234), Zr: P(454),                         // cheekbones (widest face points)
-            Gl: P(172), Gr: P(397),                         // jaw corners
-            Cl: P(61),  Cr: P(291),                         // mouth corners
-            Al: P(129), Ar: P(358)                          // nostril wings
+            Tr: V(hl ?? p10.y - 0.14 * fh),                 // true hairline (scan) — mesh top sits mid-forehead
+            N:  V(mix(p9, p168, 0.5).y),                    // brow dip, between glabella and bridge
+            Sn: V(p2.y),                                    // base of the nose where the columella meets the lip
+            Ls: V(lsY ?? P(0).y - 0.012 * fh),              // upper-lip vermilion border (snapped to the bright ridge)
+            Li: V(P(17).y),                                 // lower-lip vermilion border
+            Me: V(P(152).y),                                // chin bottom
+            Zl: zl, Zr: zr, Gl: gl, Gr: gr, Cl: cl, Cr: cr, Al: al, Ar: ar   // width pairs share one level height
           }
         };
       }
@@ -803,7 +806,11 @@ function draw() {
   const cur = LM[s2.sel].id, cp = s2.pts[cur];
   // faint level guide through the selected point
   g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = d; g.beginPath();
-  g.moveTo(0, cp.y * sc); g.lineTo(cv.width, cp.y * sc); g.stroke();
+  if (LM[s2.sel].ax === 'x') { g.moveTo(cp.x * sc, 0); g.lineTo(cp.x * sc, cv.height); }   // width points: vertical guide
+  else { g.moveTo(0, cp.y * sc); g.lineTo(cv.width, cp.y * sc); }                           // proportion points: level guide
+  g.stroke();
+  g.strokeStyle = 'rgba(94,203,255,.35)';
+  [['Zl', 'Zr'], ['Gl', 'Gr'], ['Cl', 'Cr'], ['Al', 'Ar']].forEach(([a, b]) => { g.beginPath(); g.moveTo(s2.pts[a].x * sc, s2.pts[a].y * sc); g.lineTo(s2.pts[b].x * sc, s2.pts[b].y * sc); g.stroke(); });
   LM.forEach(m => {
     const p = s2.pts[m.id], x = p.x * sc, y = p.y * sc, on = m.id === cur;
     if (on) {                                               // thin ring + ticks so the tiny dot is findable
@@ -837,6 +844,9 @@ function renderStep2() {
   $('lmProgress').textContent = T('s2_progress', { n: nf(n), total: nf(LM.length) });
   $('s2Confirm').disabled = n < LM.length;
   $('lmSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.step === s2.stepKey));
+  const ax = LM[s2.sel].ax;
+  $('lmName').textContent = T(LM[s2.sel].pt) + (ax === 'y' ? '   ↕' : '   ↔');
+  $('lmPad').querySelectorAll('button').forEach(b => b.classList.toggle('off', (ax === 'y' && +b.dataset.dx !== 0) || (ax === 'x' && +b.dataset.dy !== 0)));
 }
 
 function select(i) {
@@ -847,7 +857,8 @@ function select(i) {
 }
 function nudge(dx, dy, coarse) {
   if (!s2) return;
-  const p = s2.pts[LM[s2.sel].id], u = s2.H / 1000;
+  const mm = LM[s2.sel], p = s2.pts[mm.id], u = s2.H / 1000;
+  if (mm.ax === 'y') dx = 0; else dy = 0;
   const step = STEP_PX[coarse ? 'coarse' : s2.stepKey] * u;
   p.x = clamp(p.x + dx * step, 0, s2.W); p.y = clamp(p.y + dy * step, 0, s2.H);
   if (!p.seen) { p.seen = true; renderStep2(); }
@@ -942,7 +953,7 @@ function s3Measure() {
     up: Math.abs(pct.up - IDEAL) / IDEAL, mid: Math.abs(pct.mid - IDEAL) / IDEAL,
     low: Math.abs(pct.low - IDEAL) / IDEAL, split: Math.abs(r - 1 / 3) / (1 / 3)
   };
-  const hy = (a, b) => Math.hypot(P[a].x - P[b].x, P[a].y - P[b].y);
+  const hy = (a, b) => Math.abs(P[a].x - P[b].x);   // width = horizontal distance only; heights above use y only
   const wd = { zyg: hy('Zl', 'Zr'), gon: hy('Gl', 'Gr'), mou: hy('Cl', 'Cr'), nos: hy('Al', 'Ar') };
   if (Object.values(wd).some(n => !(n > 0))) return { bad: true };
   const jaw = wd.gon / wd.zyg, mn = wd.mou / wd.nos;
@@ -1015,40 +1026,8 @@ function renderS3() {
       <circle cx="65" cy="65" r="54" fill="none" stroke="${TC}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 65 65)" style="filter:drop-shadow(0 0 6px ${TC})"/></svg>
       <div class="num" style="color:${TC}">${nf(m.psl.toFixed(1))}<small>/ 8</small></div></div>
     <div class="s3-tier"><div class="name" style="color:${TC};text-shadow:0 0 18px ${TC}66">${tierName}</div><p class="desc">${T('s3_tier_' + m.tier)}</p></div>
-    <div class="stats"><div><b>${fmtPct(m.pct.low)}</b><span>${T('s3_stat_lt')}</span></div><div><b>1 : ${xTxt}</b><span>${T('s3_stat_split')}</span></div><div><b>${nf(m.jaw.toFixed(2))}</b><span>${T('s3_stat_jaw')}</span></div></div>
-    <p class="s3-p" style="text-align:center">${limit}</p>
   </div>`;
-  const rrange = r => nf(r[0].toFixed(2)) + ' – ' + nf(r[1].toFixed(2));
-  box.innerHTML = `
-  <div class="s3-card">
-    <div class="s3-h">${T('s3_h1')}</div>
-    <table class="s3-tbl"><thead><tr><th>${T('s3_col_metric')}</th><th>${T('s3_col_value')}</th><th>${T('s3_col_ideal')}</th><th></th></tr></thead><tbody>
-      ${row(T('s3_m_up'), withMm('up'), '33.3%', m.dev.up)}
-      ${row(T('s3_m_mid'), withMm('mid'), '33.3%', m.dev.mid)}
-      ${row(T('s3_m_low'), withMm('low'), '33.3%', m.dev.low)}
-      ${row(T('s3_m_split'), '1 : ' + xTxt, '1 : 2', m.dev.split)}
-    </tbody></table>
-    <div class="s3-bar-cap">Tr–N · N–Sn · Sn–Me</div><div class="s3-bar">${bar}</div>
-    <div class="s3-bar-cap">Sn–Stm : Stm–Me</div><div class="s3-bar">${bar2}</div>
-    <p class="s3-p dim">${T('s3_split_note')}</p>
-    <p class="s3-p">${T(balKey, { lt: ltTxt })}</p>
-    <p class="s3-p">${T(splitKey, { x: xTxt })}</p>
-    <p class="s3-p">${T(male ? 's3_dim_m' : 's3_dim_f')}</p>
-    <p class="s3-p dim">${T('s3_dim_need')}</p>
-  </div>
-  <div class="s3-card">
-    <div class="s3-h">${T('s3_w_h')}</div>
-    <table class="s3-tbl"><thead><tr><th>${T('s3_col_metric')}</th><th>${T('s3_col_value')}</th><th>${T('s3_col_ideal')}</th><th></th></tr></thead><tbody>
-      ${row(T('s3_m_jaw'), nf(m.jaw.toFixed(2)), rrange(m.REF.jaw), m.dev.jaw)}
-      ${row(T('s3_m_mn'), nf(m.mn.toFixed(2)), rrange(m.REF.mn), m.dev.mn)}
-    </tbody></table>
-    <p class="s3-p">${T(jawKey, { v: nf(m.jaw.toFixed(2)) })}</p>
-  </div>
-  <div class="s3-card">
-    <div class="s3-h">${T('s3_h3')}</div>
-    <div class="s3-sub">${T('s3_soft_title')}</div><ul class="s3-list">${li(soft)}</ul>
-    <div class="s3-sub">${T('s3_hard_title')}</div><ul class="s3-list">${li(hard)}</ul>
-  </div>`;
+  box.innerHTML = '';
   drawS3();
 }
 

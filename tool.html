@@ -430,7 +430,7 @@ $('navLinks').addEventListener('click', e => {
 renderStatic();
 
 /* ── FACE ANALYSIS (runs fully in the browser with MediaPipe) ── */
-const T = (key, params = {}) => t(key, lang).replace(/\{(\w+)\}/g, (_, k) => params[k] ?? '');
+const T = (key, params = {}) => String(t(key, lang) ?? key).replace(/\{(\w+)\}/g, (_, k) => params[k] ?? '');
 const RULES = {
   yawMax: 15,       // deg — beyond this the head is turned (¾ view / profile)
   rollLevel: 0.5    // deg — below this the pupillary line counts as already level
@@ -931,8 +931,8 @@ $('s2Confirm').addEventListener('click', () => {
   document.dispatchEvent(new CustomEvent('landmarks:confirmed', { detail: window.lowerThirdLandmarks }));
   $('step2').classList.remove('active');
   $('step3').classList.add('active');
-  renderS3();
-  skSpeak(s3 && !s3.bad ? s3.say : '');
+  try { renderS3(); } catch (e) { console.error('renderS3 failed', e); }
+  skSpeak(s3 && !s3.bad && s3.say ? s3.say : '');
   scrollTo({ top: 0, behavior: 'smooth' });
 });
 let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { layoutStage(); if ($('step3').classList.contains('active')) drawS3(); }, 120); });
@@ -1015,11 +1015,12 @@ function renderS3() {
   const xTxt = nf(m.x.toFixed(2));
 
   // limiting factor
-  const names = { up: 's3_m_up', mid: 's3_m_mid', low: 's3_m_low', split: 's3_m_split' };
+  const names = { up: 's3_m_up', mid: 's3_m_mid', low: 's3_m_low', split: 's3_m_split', jaw: 's3_m_jaw', mn: 's3_m_mn' };
+  const rrange = r => nf(r[0].toFixed(2)) + ' – ' + nf(r[1].toFixed(2));
   const worst = Object.keys(m.dev).reduce((a, b) => m.dev[a] >= m.dev[b] ? a : b);
-  const valOf = k => k === 'split' ? '1 : ' + xTxt : fmtPct(m.pct[k]);
+  const valOf = k => k === 'split' ? '1 : ' + xTxt : k === 'jaw' ? nf(m.jaw.toFixed(2)) : k === 'mn' ? nf(m.mn.toFixed(2)) : fmtPct(m.pct[k]);
   const limit = m.dev[worst] > 0.10
-    ? T('s3_limit', { m: T(names[worst]), v: valOf(worst), i: worst === 'split' ? '1 : 2' : '33.3%' })
+    ? T('s3_limit', { m: T(names[worst]), v: valOf(worst), i: worst === 'split' ? '1 : 2' : worst === 'jaw' ? rrange(m.REF.jaw) : worst === 'mn' ? rrange(m.REF.mn) : '33.3%' })
     : T('s3_limit_none');
 
   // fixes

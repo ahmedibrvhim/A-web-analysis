@@ -418,7 +418,7 @@ function renderStatic() {
   $('uploaderCta').innerHTML = `${t('tool_drop_prefix', lang)} <span class="browse-word">${t('tool_drop_browse', lang)}</span>`;
   const lb = $('logoutBtn'); if (lb) lb.textContent = t('sign_out', lang);
 }
-function onLangChange(next) { lang = next; applyDocumentDirection(next); applyTranslations(next); renderStatic(); if (validation && $('previewBox').style.display !== 'none') renderVerdict(validation); renderStep2(); if ($('step3').classList.contains('active')) renderS3(); }
+function onLangChange(next) { lang = next; applyDocumentDirection(next); applyTranslations(next); renderStatic(); if (validation && $('previewBox').style.display !== 'none') renderVerdict(validation); renderStep2(); if ($('step3').classList.contains('active')) { renderS3(); skRelang(); } }
 wireLangToggle($('navLang'), lang, onLangChange);
 window.toggleMobileNav = () => {
   ['hamburger', 'navLinks', 'navRight'].forEach(id => $(id).classList.toggle(id === 'hamburger' ? 'open' : 'mobile-open'));
@@ -1183,6 +1183,15 @@ function skSpeak(text) {
     sk.tm = setTimeout(step, end ? 320 : comma ? 160 : sp ? 45 : 34);
   };
   step();
+}
+/* language toggled while the report is open: swap the skull's text (and restart the typing if it was talking) */
+function skRelang() {
+  const was = sk.on, say = s3 && !s3.bad && s3.say ? s3.say : '';
+  skStop();                                   // cancel the old typing loop
+  sk.full = say;
+  $('skText').textContent = say;
+  $('skPlay').textContent = T('s3_say_play');
+  if (was && say) skSpeak(say);               // it was mid-speech: continue in the new language
 }
 const skToggle = () => { if (sk.on) skStop(); else skSpeak(s3 && !s3.bad ? s3.say : ''); };
 $('skPlay').addEventListener('click', skToggle);

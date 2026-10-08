@@ -1044,20 +1044,20 @@ function s3Measure() {
   const r = v.snStm / v.low, x = v.stmMe / v.snStm;
   const jaw = wd.gon / wd.zyg, mn = wd.mou / wd.nos;
   const M = [
-    { k: 'up',    name: 's3_m_up',    val: pct.up,  r: [31, 35.7],                    w: G(.6, .8),  f: 'pct' },
-    { k: 'mid',   name: 's3_m_mid',   val: pct.mid, r: [31, 35.7],                    w: G(.8, 1),   f: 'pct' },
-    { k: 'low',   name: 's3_m_low',   val: pct.low, r: G([32, 36], [30.5, 34.5]),     w: G(1.2, .9), f: 'pct' },
-    { k: 'split', name: 's3_m_split', val: r,       r: [0.30, 0.37],                  w: 1,          f: 'split' },
-    { k: 'jaw',   name: 's3_m_jaw',   val: jaw,     r: G([.78, .92], [.72, .86]),     w: G(1.6, 1),  f: 'n2' },
-    { k: 'mn',    name: 's3_m_mn',    val: mn,      r: G([1.35, 1.65], [1.4, 1.7]),   w: G(.6, .8),  f: 'n2' },
-    { k: 'fwhr',  name: 's3_m_fwhr',  val: wd.zyg / (y('Ls') - y('Br')), r: G([1.85, 2.2], [1.7, 2.0]), w: G(1.5, .6), f: 'n2' },
-    { k: 'fidx',  name: 's3_m_fidx',  val: tot / wd.zyg, r: G([1.3, 1.5], [1.3, 1.52]), w: G(.8, .9), f: 'n2' },
-    { k: 'ipdz',  name: 's3_m_ipdz',  val: wd.ipd / wd.zyg, r: [.43, .5],             w: G(.5, .7),  f: 'n2' },
-    { k: 'esp',   name: 's3_m_esp',   val: wd.icd / wd.eye, r: G([.95, 1.2], [.95, 1.15]), w: G(.8, 1.2), f: 'n2' },
-    { k: 'tilt',  name: 's3_m_tilt',  val: tilt,    r: G([2, 8], [4, 10]),            w: G(1.2, 1.3), f: 'deg', scale: 6 },
-    { k: 'midR',  name: 's3_m_midR',  val: wd.ipd / midH, r: G([.92, 1.1], [.95, 1.15]), w: G(1.2, 1.4), f: 'n2' },
-    { k: 'nic',   name: 's3_m_nic',   val: wd.nos / wd.icd, r: G([1, 1.25], [.92, 1.15]), w: G(.5, .8), f: 'n2' },
-    { k: 'sym',   name: 's3_m_sym',   val: asym,    r: G([0, 4], [0, 3.5]),           w: G(1.3, 1.5), f: 'asym' }
+    { k: 'up',    name: 's3_m_up',    val: pct.up,  r: G([30.30, 35.03], [31, 35.7]),            w: G(5.76, .8),  f: 'pct' },
+    { k: 'mid',   name: 's3_m_mid',   val: pct.mid, r: G([28.83, 31.26], [31, 35.7]),            w: G(1.58, 1),   f: 'pct' },
+    { k: 'low',   name: 's3_m_low',   val: pct.low, r: G([36.27, 37.26], [30.5, 34.5]),     w: G(4.81, .9), f: 'pct' },
+    { k: 'split', name: 's3_m_split', val: r,       r: G([0.305, 0.321], [0.30, 0.37]),    w: G(2.61, 1),  f: 'split' },
+    { k: 'jaw',   name: 's3_m_jaw',   val: jaw,     r: G([0.816, 0.851], [.72, .86]),     w: G(7.73, 1),  f: 'n2' },
+    { k: 'mn',    name: 's3_m_mn',    val: mn,      r: G([1.239, 1.319], [1.4, 1.7]),   w: G(4.18, .8),  f: 'n2' },
+    { k: 'fwhr',  name: 's3_m_fwhr',  val: wd.zyg / (y('Ls') - y('Br')), r: G([1.610, 1.706], [1.7, 2.0]), w: G(8.47, .6), f: 'n2' },
+    { k: 'fidx',  name: 's3_m_fidx',  val: tot / wd.zyg, r: G([1.316, 1.491], [1.3, 1.52]), w: G(0.00, .9), f: 'n2' },
+    { k: 'ipdz',  name: 's3_m_ipdz',  val: wd.ipd / wd.zyg, r: G([0.461, 0.481], [.43, .5]),     w: G(13.13, .7),  f: 'n2' },
+    { k: 'esp',   name: 's3_m_esp',   val: wd.icd / wd.eye, r: G([1.155, 1.230], [.95, 1.15]), w: G(0.00, 1.2), f: 'n2' },
+    { k: 'tilt',  name: 's3_m_tilt',  val: tilt,    r: G([3.45, 6.46], [4, 10]),            w: G(0.00, 1.3), f: 'deg', scale: 6 },
+    { k: 'midR',  name: 's3_m_midR',  val: wd.ipd / midH, r: G([0.866, 0.908], [.95, 1.15]), w: G(8.05, 1.4), f: 'n2' },
+    { k: 'nic',   name: 's3_m_nic',   val: wd.nos / wd.icd, r: G([1.228, 1.292], [.92, 1.15]), w: G(16.36, .8), f: 'n2' },
+    { k: 'sym',   name: 's3_m_sym',   val: asym,    r: G([1.42, 3.19], [0, 3.5]),           w: G(0.18, 1.5), f: 'asym' }
   ];
   M.forEach(it => {
     const [a, b] = it.r, out = it.val < a ? a - it.val : it.val > b ? it.val - b : 0;
@@ -1065,7 +1065,9 @@ function s3Measure() {
   });
   const dev = {}; M.forEach(it => dev[it.k] = it.dev);
   const penalty = M.reduce((t, it) => t + it.w * it.dev, 0) / M.reduce((t, it) => t + it.w, 0);
-  const psl = clamp(7.8 - 26 * penalty, 2, 7.8);
+  // Male: calibrated on 60 self-rated faces (ideal bands = middle 50% of faces rated 7+, weights fitted by non-negative least squares).
+  // Female: not calibrated, original formula kept.
+  const psl = male ? clamp(8 - M.reduce((t, it) => t + it.w * it.dev, 0), 1, 8) : clamp(7.8 - 26 * penalty, 2, 7.8);
   const tier = psl < 4 ? 'sub5' : psl < 4.5 ? 'lt' : psl < 5.5 ? 'mt' : psl < 6.5 ? 'ht' : psl < 7.5 ? 'htplus' : 'elite';
   return { v, tot, pct, r, x, M, dev, psl, tier, stm: y('St'), wd, jaw, mn, tilt, tiltL, tiltR, asym };
 }
@@ -1157,7 +1159,7 @@ function renderS3() {
   const m = s3, g = gender || 'male', male = g === 'male';
 
   // weak points: every metric that is outside its range, worst first
-  const flaws = m.M.filter(it => it.dev > 0.04).sort((a, b) => b.w * b.dev - a.w * a.dev).map(it => {
+  const flaws = m.M.filter(it => it.dev > 0.04 && it.w > 0.05).sort((a, b) => b.w * b.dev - a.w * a.dev).map(it => {
     const major = it.dev > 0.12, dir = it.val < it.r[0] ? 'low' : 'high';
     return { major, text: (major ? L('Major flaw: ', 'عيب كبير: ') : L('Noticeable: ', 'ملحوظ: ')) + flawText(it.k, dir, male) };
   });

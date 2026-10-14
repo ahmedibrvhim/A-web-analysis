@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mr Skull | Potential Morph</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+.nav-logo .logo-mark{font-size:16px;letter-spacing:1px;white-space:nowrap}
+.nav-logo .logo-tag{display:block}
+body.lang-ar .nav-logo .logo-mark{font-family:'Tajawal',sans-serif;font-weight:700}
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:1px solid var(--blood);padding:8px 10px;cursor:pointer;margin-left:auto;flex-shrink:0}
+.hamburger span{display:block;width:22px;height:2px;background:var(--blood);transition:all .3s}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media (max-width:768px){
+  nav{flex-wrap:wrap;padding:0 14px;gap:0;height:auto;min-height:58px}
+  .nav-logo{padding:10px 0;flex:1}
+  .hamburger{display:flex}
+  .nav-links{display:none;flex-direction:column;width:100%;order:3;border-top:1px solid var(--border);padding:8px 0;gap:0}
+  .nav-links.mobile-open{display:flex}
+  .nav-links li{width:100%}
+  .nav-links a{display:block;padding:12px 4px;border-bottom:1px solid rgba(255,255,255,.04);font-size:10px;letter-spacing:3px}
+  .nav-right{display:none;flex-direction:column;width:100%;order:4;padding:10px 0 14px;gap:8px;border-top:1px solid var(--border)}
+  .nav-right.mobile-open{display:flex}
+  .btn-ghost{width:100%;text-align:center;justify-content:center}
+  .user-pill{flex-wrap:wrap;width:100%;gap:8px}
+}
+
+#morphWrap{max-width:760px;margin:0 auto;padding:0 20px 100px}
+.m-head{padding:40px 0 6px;text-align:center}
+.m-eyebrow{font-size:9px;letter-spacing:5px;color:var(--blood);text-transform:uppercase;margin-bottom:10px}
+.m-title{font-family:'Cinzel Decorative',cursive;font-size:clamp(20px,3.6vw,28px);color:var(--white);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px}
+body.lang-ar .m-title{font-family:'Tajawal',sans-serif;font-weight:900;letter-spacing:0;text-transform:none}
+.m-text{font-size:12px;color:var(--text);line-height:1.9;max-width:520px;margin:0 auto 26px}
+.msg-bar{padding:11px 16px;font-size:10px;letter-spacing:1px;text-align:center;margin-bottom:18px;border:1px solid transparent;display:none}
+.msg-bar.error{display:block;background:rgba(220,20,60,.08);border-color:var(--blood);color:#ff8080}
+.msg-bar.info{display:block;background:rgba(139,0,0,.06);border-color:var(--smoke);color:var(--bone)}
+
+.gender-box{margin-bottom:18px;text-align:center}
+.gender-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:380px;margin:0 auto}
+.gender-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 10px 12px;background:var(--panel);border:1px solid var(--border);color:var(--text);cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:2px;text-transform:uppercase;transition:all .25s}
+.gender-btn .sym{font-size:28px;line-height:1;color:var(--ash);transition:color .25s}
+.gender-btn:hover{border-color:var(--blood)}
+.gender-btn.on{border-color:var(--crimson);background:rgba(139,0,0,.18);color:var(--white);box-shadow:0 0 16px rgba(220,20,60,.25)}
+.gender-btn.on .sym{color:var(--crimson)}
+
+.uploader{border:1.5px dashed var(--smoke);background:var(--panel);padding:50px 24px;text-align:center;cursor:pointer;transition:all .3s;display:flex;flex-direction:column;align-items:center}
+.uploader:hover,.uploader.drag{border-color:var(--blood);background:rgba(139,0,0,.07)}
+.uploader.locked{opacity:.35;pointer-events:none;filter:grayscale(1)}
+.uploader-icon{width:64px;height:64px;border-radius:50%;margin-bottom:18px;display:flex;align-items:center;justify-content:center;background:rgba(139,0,0,.1);border:1px solid var(--smoke)}
+.uploader-icon svg{width:26px;height:26px;color:var(--crimson)}
+.uploader-cta{font-size:11px;letter-spacing:1px;color:var(--text);line-height:1.7;margin-bottom:6px}
+.uploader-cta .browse-word{color:var(--crimson);text-decoration:underline;text-underline-offset:3px}
+.uploader-sub{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase}
+.uploader input{display:none}
+
+.busy{display:none;align-items:center;justify-content:center;gap:12px;padding:30px;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.mini-spinner{width:20px;height:20px;border:2px solid var(--smoke);border-top-color:var(--blood);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#studio{display:none}
+.ba{position:relative;background:#000;border:1px solid var(--border);overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;margin:0 auto;direction:ltr}
+.ba canvas{display:block;width:100%;height:auto}
+.ba .after-wrap{position:absolute;inset:0;overflow:hidden;clip-path:inset(0 0 0 50%)}
+.ba .after-wrap canvas{position:absolute;inset:0;width:100%;height:100%}
+.ba .handle{position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--crimson);box-shadow:0 0 10px var(--crimson);cursor:ew-resize;touch-action:none}
+.ba .handle::after{content:'‹ ›';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:var(--blood);border:1px solid var(--crimson);color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;letter-spacing:2px}
+.ba .tag{position:absolute;top:10px;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:4px 9px;background:rgba(0,0,0,.65);color:var(--white);border:1px solid var(--smoke)}
+.ba .tag.l{left:10px}.ba .tag.r{right:10px;border-color:var(--blood)}
+
+.card{margin-top:16px;padding:18px;border:1px solid var(--border);background:var(--panel)}
+.card h3{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--white);margin-bottom:14px}
+body.lang-ar .card h3{font-family:'Tajawal',sans-serif;letter-spacing:0}
+.sl{display:grid;grid-template-columns:130px 1fr 44px;gap:12px;align-items:center;margin-bottom:12px;direction:ltr}
+.sl label{font-size:10px;letter-spacing:1px;color:var(--text);text-transform:uppercase}
+html[dir=rtl] .sl label{text-align:right;direction:rtl}
+.sl output{font-size:11px;color:var(--white);font-weight:700;text-align:right}
+.sl input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:var(--smoke);outline:none}
+.sl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--crimson);border:2px solid #000;box-shadow:0 0 8px var(--crimson);cursor:pointer}
+.sl input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--crimson);border:2px solid #000;cursor:pointer}
+.sl.master label{color:var(--white);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:7px 11px;font-size:10px;letter-spacing:1px;border:1px solid var(--smoke);background:rgba(0,0,0,.35);color:var(--bone)}
+.chip b{color:var(--white)}
+.note{font-size:10px;line-height:1.8;color:var(--ash);margin-top:12px}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+.disc{text-align:center;font-size:9px;line-height:1.8;letter-spacing:.4px;color:var(--ash);max-width:520px;margin:18px auto 0}
+@media (max-width:520px){.sl{grid-template-columns:96px 1fr 38px;gap:8px}}
+
+.auth-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#150000 0%,#000 70%);display:flex;align-items:center;justify-content:center;transition:opacity .3s,visibility .3s}
+.auth-gate.auth-gate-hidden{opacity:0;visibility:hidden;pointer-events:none}
+.auth-gate-inner{text-align:center}
+.auth-gate-skull{width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid var(--blood);box-shadow:0 0 30px rgba(139,0,0,.4);margin:0 auto 16px;display:block}
+.auth-gate-text{font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div id="authGate" class="auth-gate">
+  <div class="auth-gate-inner">
+    <img src="Skull.png" alt="" class="auth-gate-skull">
+    <div class="auth-gate-text" data-i18n="auth_gate_checking">Checking your session…</div>
+  </div>
+</div>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <img src="Skull.png" alt="Mr Skull">
+    <div>
+      <div class="logo-mark" data-i18n="brand_name">Mr Skull</div>
+      <div class="logo-tag" data-i18n="brand_tag">Face Analysis</div>
+    </div>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="home.html" data-i18n="nav_home">Home</a></li>
+    <li><a href="tool.html" data-i18n="nav_tool">Analysis</a></li>
+    <li><a href="morph.html" class="active" data-i18n="nav_morph">Morph</a></li>
+    <li><a href="privacy-policy.html" data-i18n="nav_privacy">Privacy Policy</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu"><span></span><span></span><span></span></button>
+  <div class="nav-right" id="navRight">
+    <button class="nav-lang" id="navLang" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      <span><span class="lang-cur" id="langCur">EN</span> <span class="lang-sep">/</span> <span id="langOther">AR</span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="page-wrap">
+<div id="morphWrap">
+  <div class="m-head">
+    <div class="m-eyebrow" data-i18n="mp_eyebrow">☠ Potential Morph ☠</div>
+    <h1 class="m-title" data-i18n="mp_title">See Your High Potential</h1>
+    <p class="m-text" data-i18n="mp_text">Upload one front photo and the engine measures your face, then nudges each feature toward its ideal range inside safe limits, so you still look like you. Tune every part with the sliders.</p>
+  </div>
+
+  <div class="msg-bar" id="mMsg"></div>
+
+  <div class="gender-box" id="genderBox">
+    <div class="gender-opts" role="group">
+      <button type="button" class="gender-btn" data-g="male" aria-pressed="false"><span class="sym">♂</span><span data-i18n="g_male">Male</span></button>
+      <button type="button" class="gender-btn" data-g="female" aria-pressed="false"><span class="sym">♀</span><span data-i18n="g_female">Female</span></button>
+    </div>
+  </div>
+
+  <label class="uploader locked" id="uploader">
+    <input type="file" accept="image/*" id="fileInput" disabled>
+    <span class="uploader-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span>
+    <p class="uploader-cta" id="uploaderCta"></p>
+    <p class="uploader-sub">JPG · PNG · HEIC</p>
+  </label>
+  <div class="busy" id="busy"><span class="mini-spinner"></span><span id="busyTxt"></span></div>
+
+  <section id="studio">
+    <div class="ba" id="ba">
+      <canvas id="cBefore"></canvas>
+      <div class="after-wrap" id="afterWrap"><canvas id="cAfter"></canvas></div>
+      <span class="tag l" data-i18n="mp_before">Before</span>
+      <span class="tag r" data-i18n="mp_after">Potential</span>
+      <div class="handle" id="handle"></div>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="mp_controls">Morph Controls</h3>
+      <div class="sl master"><label for="sAll" data-i18n="mp_s_all">Overall strength</label><input type="range" id="sAll" min="0" max="100" value="60"><output id="oAll">60</output></div>
+      <div class="sl"><label for="sJaw" data-i18n="mp_s_jaw">Jaw & chin</label><input type="range" id="sJaw" min="0" max="100" value="100"><output id="oJaw">100</output></div>
+      <div class="sl"><label for="sEyes" data-i18n="mp_s_eyes">Eyes</label><input type="range" id="sEyes" min="0" max="100" value="100"><output id="oEyes">100</output></div>
+      <div class="sl"><label for="sSym" data-i18n="mp_s_sym">Symmetry</label><input type="range" id="sSym" min="0" max="100" value="100"><output id="oSym">100</output></div>
+      <div class="sl"><label for="sCheek" data-i18n="mp_s_cheek">Cheekbones</label><input type="range" id="sCheek" min="0" max="100" value="100"><output id="oCheek">100</output></div>
+      <div class="sl"><label for="sSkin" data-i18n="mp_s_skin">Skin & light</label><input type="range" id="sSkin" min="0" max="100" value="60"><output id="oSkin">60</output></div>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="mp_changes">What Was Adjusted</h3>
+      <div class="chips" id="chips"></div>
+      <p class="note" id="note"></p>
+    </div>
+
+    <div class="actions">
+      <button class="btn-ghost" type="button" id="btnNew" data-i18n="mp_new">New Photo</button>
+      <button class="btn-solid" type="button" id="btnSave" data-i18n="mp_download">Download Result</button>
+    </div>
+    <p class="disc" data-i18n="mp_disc">A visual preview built from face-landmark geometry, not a prediction. Real results depend on bone structure, health and lifestyle. Photos are processed in your browser and never uploaded.</p>
+  </section>
+</div>
+</div>
+
+<script type="module">
+import { auth, onAuthStateChanged, signOut } from './firebase-config.js';
+import { getLang, applyDocumentDirection, applyTranslations, wireLangToggle, t, dict } from './i18n.js';
+
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+/* ── page strings (EN / AR) ── */
+Object.assign(dict.en, {
+  nav_tool: 'Analysis', nav_morph: 'Morph',
+  mp_eyebrow: '☠ Potential Morph ☠', mp_title: 'See Your High Potential',
+  mp_text: 'Upload one front photo and the engine measures your face, then nudges each feature toward its ideal range inside safe limits, so you still look like you. Tune every part with the sliders.',
+  mp_before: 'Before', mp_after: 'Potential', mp_controls: 'Morph Controls',
+  mp_s_all: 'Overall strength', mp_s_jaw: 'Jaw & chin', mp_s_eyes: 'Eyes', mp_s_sym: 'Symmetry', mp_s_cheek: 'Cheekbones', mp_s_skin: 'Skin & light',
+  mp_changes: 'What Was Adjusted', mp_new: 'New Photo', mp_download: 'Download Result',
+  mp_disc: 'A visual preview built from face-landmark geometry, not a prediction. Real results depend on bone structure, health and lifestyle. Photos are processed in your browser and never uploaded.',
+  mp_detecting: 'Reading your face…', mp_err_gender: 'Please select your gender first.',
+  mp_err_model: 'The face model could not be loaded. Check your connection and try again.',
+  mp_err_none: 'No face was detected. Use a clear, front-facing photo.', mp_err_multi: 'More than one face was detected. Use a photo of one person.',
+  mp_err_turn: 'The head is turned too far. Use a straight, front-facing photo.', mp_err_img: 'Could not read this image. Try a JPG or PNG.',
+  mp_c_jaw_in: 'Jaw narrowed', mp_c_jaw_out: 'Jaw widened', mp_c_chin_up: 'Chin shortened', mp_c_chin_dn: 'Chin lengthened',
+  mp_c_tilt: 'Eye tilt lifted', mp_c_sym: 'Symmetry balanced', mp_c_cheek: 'Cheekbones widened', mp_c_skin: 'Skin & light refined', mp_c_none: 'Already close to ideal',
+  mp_note: 'Every change is capped at a few percent of face size. Move a slider to 0 to switch that part off.'
+});
+Object.assign(dict.ar, {
+  nav_tool: 'التحليل', nav_morph: 'التحويل',
+  mp_eyebrow: '☠ تحويل الإمكانات ☠', mp_title: 'شاهد إمكاناتك العالية',
+  mp_text: 'ارفع صورة أمامية واحدة وسيقيس المحرك وجهك ثم يقرّب كل ملمح من نطاقه المثالي ضمن حدود آمنة، فتبقى تشبه نفسك. اضبط كل جزء بالمنزلقات.',
+  mp_before: 'قبل', mp_after: 'الإمكانات', mp_controls: 'أدوات التحكم',
+  mp_s_all: 'القوة الكلية', mp_s_jaw: 'الفك والذقن', mp_s_eyes: 'العينان', mp_s_sym: 'التناظر', mp_s_cheek: 'الوجنتان', mp_s_skin: 'البشرة والإضاءة',
+  mp_changes: 'ما الذي تم تعديله', mp_new: 'صورة جديدة', mp_download: 'تحميل النتيجة',
+  mp_disc: 'معاينة بصرية مبنية على هندسة نقاط الوجه وليست تنبؤاً. النتائج الحقيقية تعتمد على بنية العظام والصحة ونمط الحياة. تتم معالجة الصور في متصفحك ولا يتم رفعها أبداً.',
+  mp_detecting: 'جارٍ قراءة وجهك…', mp_err_gender: 'الرجاء اختيار الجنس أولاً.',
+  mp_err_model: 'تعذّر تحميل نموذج الوجه. تحقق من اتصالك وحاول مجدداً.',
+  mp_err_none: 'لم يتم اكتشاف وجه. استخدم صورة أمامية واضحة.', mp_err_multi: 'تم اكتشاف أكثر من وجه. استخدم صورة لشخص واحد.',
+  mp_err_turn: 'الرأس مُدار أكثر من اللازم. استخدم صورة أمامية مستقيمة.', mp_err_img: 'تعذّرت قراءة هذه الصورة. جرّب JPG أو PNG.',
+  mp_c_jaw_in: 'تضييق الفك', mp_c_jaw_out: 'توسيع الفك', mp_c_chin_up: 'تقصير الذقن', mp_c_chin_dn: 'إطالة الذقن',
+  mp_c_tilt: 'رفع ميل العين', mp_c_sym: 'موازنة التناظر', mp_c_cheek: 'توسيع الوجنتين', mp_c_skin: 'تحسين البشرة والإضاءة', mp_c_none: 'قريب أصلاً من المثالي',
+  mp_note: 'كل تعديل محدود بنسبة صغيرة من حجم الوجه. اجعل المنزلق 0 لإيقاف ذلك الجزء.'
+});
+
+/* ── AUTH + I18N (same pattern as tool.html) ── */
+let lang = getLang();
+applyDocumentDirection(lang); applyTranslations(lang);
+const T = (k, p = {}) => String(t(k, lang) ?? k).replace(/\{(\w+)\}/g, (_, x) => p[x] ?? '');
+function renderStatic() {
+  $('uploaderCta').innerHTML = `${t('tool_drop_prefix', lang)} <span class="browse-word">${t('tool_drop_browse', lang)}</span>`;
+  const lb = $('logoutBtn'); if (lb) lb.textContent = t('sign_out', lang);
+}
+function onLangChange(next) { lang = next; applyDocumentDirection(next); applyTranslations(next); renderStatic(); if (state) renderChips(); }
+function renderUserPill(user) {
+  const avatar = (user.photoURL && user.photoURL.startsWith('http')) ? user.photoURL : 'Skull.png';
+  const stored = JSON.parse(localStorage.getItem('brandA_user') || '{}');
+  const name = user.displayName || stored.name?.trim() || (user.email ? user.email.split('@')[0] : '');
+  $('navRight').innerHTML =
+    '<button class="nav-lang" id="navLang" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span><span class="lang-cur" id="langCur">EN</span> <span class="lang-sep">/</span> <span id="langOther">AR</span></span></button>' +
+    '<div class="user-pill"><img class="user-avatar" id="navAvatarImg"><span class="user-name"></span><button class="btn-logout" id="logoutBtn"></button></div>';
+  document.querySelector('.user-name').textContent = name;
+  $('logoutBtn').textContent = t('sign_out', lang);
+  const img = $('navAvatarImg'); img.src = avatar; img.onerror = function () { this.onerror = null; this.src = 'Skull.png'; };
+  $('logoutBtn').onclick = () => signOut(auth).then(() => { localStorage.removeItem('brandA_user'); location.href = 'home.html'; });
+  wireLangToggle($('navLang'), lang, onLangChange);
+}
+onAuthStateChanged(auth, user => {
+  if (!user) { sessionStorage.setItem('authRequired', '1'); location.href = 'login.html'; return; }
+  renderUserPill(user); $('authGate').classList.add('auth-gate-hidden');
+});
+wireLangToggle($('navLang'), lang, onLangChange);
+window.toggleMobileNav = () => ['hamburger', 'navLinks', 'navRight'].forEach(id => $(id).classList.toggle(id === 'hamburger' ? 'open' : 'mobile-open'));
+renderStatic();
+
+/* ── MediaPipe (runs in the browser, same model as tool.html) ── */
+let landmarker = null, modelFailed = false;
+async function getLandmarker() {
+  if (landmarker || modelFailed) return landmarker;
+  try {
+    const base = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+    const vision = await import(base + '/vision_bundle.mjs');
+    const files = await vision.FilesetResolver.forVisionTasks(base + '/wasm');
+    const opts = d => ({ baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task', delegate: d }, runningMode: 'IMAGE', numFaces: 2, outputFacialTransformationMatrixes: true });
+    try { landmarker = await vision.FaceLandmarker.createFromOptions(files, opts('GPU')); }
+    catch (e) { landmarker = await vision.FaceLandmarker.createFromOptions(files, opts('CPU')); }
+  } catch (e) { console.error('MediaPipe load failed', e); modelFailed = true; landmarker = null; }
+  return landmarker;
+}
+getLandmarker();
+
+/* ── gender + upload ── */
+let gender = null, state = null;
+function showMsg(key, type = 'error') { const el = $('mMsg'); el.textContent = key ? T(key) : ''; el.className = 'msg-bar' + (key ? ' ' + type : ''); }
+document.querySelectorAll('.gender-btn').forEach(b => b.addEventListener('click', () => {
+  gender = b.dataset.g;
+  document.querySelectorAll('.gender-btn').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
+  $('uploader').classList.remove('locked'); $('fileInput').disabled = false; showMsg('');
+  if (state) { state.gender = gender; plan(); render(); }
+}));
+const up = $('uploader');
+['dragenter', 'dragover'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.add('drag'); }));
+['dragleave', 'drop'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.remove('drag'); }));
+up.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
+$('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
+const loadImage = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+function setBusy(on, key) { $('busy').style.display = on ? 'flex' : 'none'; if (key) $('busyTxt').textContent = T(key); }
+
+/* Downscale + bake EXIF orientation so everything works on a canvas of sane size. */
+async function toCanvas(file, maxSide = 1280) {
+  let src;
+  if (window.createImageBitmap) { try { src = await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) {} }
+  if (!src) src = await loadImage(URL.createObjectURL(file));
+  const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight, k = Math.min(1, maxSide / Math.max(w, h));
+  const c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  return c;
+}
+
+async function handleFile(file) {
+  if (!gender) { showMsg('mp_err_gender'); return; }
+  if (!file || !file.type.startsWith('image/')) { showMsg('mp_err_img'); return; }
+  showMsg(''); $('uploader').style.display = 'none'; $('studio').style.display = 'none'; setBusy(true, 'mp_detecting');
+  let src;
+  try { src = await toCanvas(file); } catch (e) { return fail('mp_err_img'); }
+  const lmk = await getLandmarker();
+  if (!lmk) return fail('mp_err_model');
+  let res;
+  try { res = lmk.detect(src); } catch (e) { console.error(e); return fail('mp_err_img'); }
+  const n = res?.faceLandmarks?.length || 0;
+  if (n === 0) return fail('mp_err_none');
+  if (n > 1) return fail('mp_err_multi');
+  const m = res.facialTransformationMatrixes?.[0]?.data;
+  const yaw = m ? Math.asin(clamp(-m[2], -1, 1)) * 180 / Math.PI : 0;
+  if (Math.abs(yaw) > 20) return fail('mp_err_turn');
+  const W = src.width, H = src.height;
+  const pts = res.faceLandmarks[0].map(p => ({ x: p.x * W, y: p.y * H }));
+  state = { src, W, H, pts, gender, ctl: [], info: [] };
+  setBusy(false); $('studio').style.display = 'block';
+  setupCanvases(); plan(); render();
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+function fail(key) { setBusy(false); showMsg(key); $('uploader').style.display = 'flex'; $('fileInput').value = ''; }
+
+/* ══════════════════════════════════════════════════════════
+   MORPH PLANNER
+   Measures the mesh, compares with the same ideal ranges used on
+   the analysis page, and turns the gap into small control-point
+   displacements (px). Every move is capped as a share of face size.
+   Control points sit on the 478-point MediaPipe mesh.
+══════════════════════════════════════════════════════════ */
+const IDX = {
+  jawL: [172, 136, 150, 149, 176], jawR: [397, 365, 379, 378, 400], chin: 152, chinSide: [148, 377],
+  gonL: 172, gonR: 397, zygL: 234, zygR: 454, cheekL: [116, 123, 50], cheekR: [345, 352, 280],
+  exL: 33, exR: 263, enL: 133, enR: 362, mid: [10, 168, 2, 0, 17, 152]
+};
+// symmetric pairs (left idx, right idx) used for the symmetry pass
+const PAIRS = [[234, 454], [93, 323], [132, 361], [58, 288], [172, 397], [136, 365], [150, 379], [149, 378], [176, 400], [148, 377], [33, 263], [133, 362], [159, 386], [145, 374], [61, 291], [129, 358], [70, 300], [105, 334]];
+
+function plan() {
+  const s = state, P = s.pts, male = s.gender === 'male', G = (a, b) => male ? a : b;
+  const X = i => P[i].x, Y = i => P[i].y;
+  let x0 = 0; IDX.mid.forEach(i => x0 += X(i)); x0 /= IDX.mid.length;
+  const faceW = Math.abs(X(IDX.zygR) - X(IDX.zygL)) || 1;
+  const faceH = Math.abs(Y(IDX.chin) - Y(10)) || 1;
+  const jawRatio = Math.abs(X(IDX.gonR) - X(IDX.gonL)) / faceW;
+  const jawIdeal = G([.80, .90], [.74, .84]);
+  const tiltOf = (en, ex) => Math.atan2(Y(en) - Y(ex), Math.abs(X(ex) - X(en))) * 180 / Math.PI;
+  const tilt = (tiltOf(IDX.enL, IDX.exL) + tiltOf(IDX.enR, IDX.exR)) / 2;
+  const tiltIdeal = G([3, 7], [5, 9]);
+  const lower = (Y(IDX.chin) - Y(2)) / (Y(IDX.chin) - Y(10));         // nose base → chin vs forehead → chin (mesh-based)
+  // Sn–Me as a share of the mesh height (mid-forehead → chin). The analysis page's 32–36% (male) / 30.5–34.5% (female)
+  // of Tr–Me becomes ≈ .365–.41 / .35–.395 here, because the mesh top sits below the true hairline.
+  const lowerIdeal = G([.365, .41], [.35, .395]);
+
+  const dirOf = (v, [a, b]) => v < a ? (a - v) : v > b ? -(v - b) : 0;     // + = need more, − = need less
+  const dJaw = dirOf(jawRatio, jawIdeal);                                    // in ratio units
+  const dTilt = dirOf(tilt, tiltIdeal);                                      // in degrees
+  const dLow = dirOf(lower, lowerIdeal);
+
+  const D = [];                                                              // [idx, dx, dy, group]
+  const push = (i, dx, dy, grp) => D.push([i, dx, dy, grp]);
+  const info = [];
+
+  // JAW — move the gonial points + jaw chain horizontally toward the ideal width (≤ 5% of face width)
+  const jawMove = clamp(dJaw * faceW * 0.5, -0.05 * faceW, 0.05 * faceW);
+  if (Math.abs(jawMove) > 0.002 * faceW) {
+    IDX.jawL.forEach((i, k) => push(i, -jawMove * [1, .9, .65, .4, .2][k], 0, 'jaw'));
+    IDX.jawR.forEach((i, k) => push(i, +jawMove * [1, .9, .65, .4, .2][k], 0, 'jaw'));
+    info.push({ k: jawMove > 0 ? 'mp_c_jaw_out' : 'mp_c_jaw_in', v: Math.abs(jawMove) / faceW * 100 });
+  }
+  // CHIN — lengthen / shorten the lower third (≤ 3% of face height)
+  const chinMove = clamp(dLow * faceH * 0.5, -0.03 * faceH, 0.03 * faceH);
+  if (Math.abs(chinMove) > 0.002 * faceH) {
+    push(IDX.chin, 0, chinMove, 'jaw'); IDX.chinSide.forEach(i => push(i, 0, chinMove * .8, 'jaw'));
+    info.push({ k: chinMove > 0 ? 'mp_c_chin_dn' : 'mp_c_chin_up', v: Math.abs(chinMove) / faceH * 100 });
+  }
+  // EYES — raise the outer corners to approach the ideal canthal tilt (≤ 3.5° equivalent)
+  const tiltMove = clamp(dTilt, -3.5, 3.5);
+  if (Math.abs(tiltMove) > 0.15) {
+    const eyeW = (Math.abs(X(IDX.exL) - X(IDX.enL)) + Math.abs(X(IDX.exR) - X(IDX.enR))) / 2;
+    const dy = -Math.tan(tiltMove * Math.PI / 180) * eyeW;                   // negative y = up
+    [[IDX.exL, [246, 161, 160]], [IDX.exR, [466, 388, 387]]].forEach(([ex, lid]) => { push(ex, 0, dy, 'eyes'); lid.forEach(i => push(i, 0, dy * .55, 'eyes')); });
+    info.push({ k: 'mp_c_tilt', v: Math.abs(tiltMove) });
+  }
+  // CHEEKBONES — a gentle width + lift on the zygomatic arch (≤ 1.5% of face width)
+  const ch = 0.015 * faceW;
+  push(IDX.zygL, -ch, -ch * .5, 'cheek'); push(IDX.zygR, ch, -ch * .5, 'cheek');
+  IDX.cheekL.forEach(i => push(i, -ch * .5, -ch * .35, 'cheek')); IDX.cheekR.forEach(i => push(i, ch * .5, -ch * .35, 'cheek'));
+  info.push({ k: 'mp_c_cheek', v: 1.5 });
+  // SYMMETRY — pull each pair toward its mirror image about the facial midline (60% of the gap, ≤ 3% of face width)
+  let symUsed = 0;
+  PAIRS.forEach(([l, r]) => {
+    const a = x0 - X(l), b = X(r) - x0, avg = (a + b) / 2;                   // distances from the midline
+    const dl = clamp((avg - a) * .6, -.03 * faceW, .03 * faceW), dr = clamp((b - avg) * .6, -.03 * faceW, .03 * faceW);
+    const yl = Y(l), yr = Y(r), ym = (yl + yr) / 2;
+    const vl = clamp((ym - yl) * .6, -.02 * faceH, .02 * faceH), vr = clamp((ym - yr) * .6, -.02 * faceH, .02 * faceH);
+    push(l, -dl, vl, 'sym'); push(r, -dr, vr, 'sym'); symUsed = Math.max(symUsed, Math.abs(dl), Math.abs(dr));
+  });
+  if (symUsed > 0.002 * faceW) info.push({ k: 'mp_c_sym', v: symUsed / faceW * 100 });
+  info.push({ k: 'mp_c_skin', v: null });
+  s.ctl = D; s.info = info; s.faceW = faceW; s.faceH = faceH; s.x0 = x0;
+}
+
+/* ── strengths ── */
+const SL = { all: $('sAll'), jaw: $('sJaw'), eyes: $('sEyes'), sym: $('sSym'), cheek: $('sCheek'), skin: $('sSkin') };
+const OUT = { all: $('oAll'), jaw: $('oJaw'), eyes: $('oEyes'), sym: $('oSym'), cheek: $('oCheek'), skin: $('oSkin') };
+const val = k => +SL[k].value / 100;
+Object.keys(SL).forEach(k => SL[k].addEventListener('input', () => { OUT[k].textContent = SL[k].value; schedule(); }));
+
+/* ══════════════════════════════════════════════════════════
+   RENDER — smooth displacement field → grid mesh → affine triangle warp
+══════════════════════════════════════════════════════════ */
+const GRID = 56;                                    // cells along the longer side
+function setupCanvases() {
+  const s = state;
+  [$('cBefore'), $('cAfter')].forEach(c => { c.width = s.W; c.height = s.H; });
+  $('cBefore').getContext('2d').drawImage(s.src, 0, 0);
+  $('ba').style.maxWidth = Math.min(720, s.W * (innerHeight * .75 / s.H)) + 'px';
+  $('ba').style.aspectRatio = s.W + ' / ' + s.H;
+  setSplit(.5);
+}
+
+// Gaussian-weighted displacement from the control points, with zero-displacement anchors on the face border + frame.
+function field(gx, gy, ctl, sigma, anchors) {
+  let sx = 0, sy = 0, sw = 0;
+  const s2 = 2 * sigma * sigma;
+  for (let i = 0; i < ctl.length; i++) {
+    const c = ctl[i], dx = gx - c.x, dy = gy - c.y, w = Math.exp(-(dx * dx + dy * dy) / s2);
+    sx += w * c.dx; sy += w * c.dy; sw += w;
+  }
+  let aw = 0;
+  for (let i = 0; i < anchors.length; i++) {
+    const a = anchors[i], dx = gx - a.x, dy = gy - a.y; aw += Math.exp(-(dx * dx + dy * dy) / s2) * 1.2;
+  }
+  const tot = sw + aw + 1e-6;
+  return [sx / tot, sy / tot];
+}
+
+let raf = 0; const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); };
+function render() {
+  const s = state; if (!s) return;
+  const S = { jaw: val('jaw'), eyes: val('eyes'), sym: val('sym'), cheek: val('cheek') }, all = val('all');
+  const P = s.pts;
+  // control points for the active groups
+  const ctl = [];
+  s.ctl.forEach(([i, dx, dy, grp]) => {
+    const k = S[grp] * all; if (k <= 0.001) return;
+    ctl.push({ x: P[i].x, y: P[i].y, dx: dx * k, dy: dy * k });
+  });
+  // anchors: ring around the face + image frame so the background and hairline don't move
+  const anchors = [];
+  const cx = s.x0, cy = (P[10].y + P[152].y) / 2, rx = s.faceW * .78, ry = s.faceH * .72;
+  for (let a = 0; a < 24; a++) { const t = a / 24 * Math.PI * 2; anchors.push({ x: cx + Math.cos(t) * rx, y: cy + Math.sin(t) * ry }); }
+  [P[10], P[152]].forEach(p => anchors.push({ x: p.x, y: p.y + (p === P[10] ? -1 : 1) * s.faceH * .12 }));
+  const gx = s.W / GRID, gy = gx, cols = Math.ceil(s.W / gx), rows = Math.ceil(s.H / gy);
+  const sigma = s.faceW * .13;
+
+  const dst = $('cAfter'), g = dst.getContext('2d');
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, s.W, s.H);
+  g.drawImage(s.src, 0, 0);                                   // untouched pixels come straight from the original
+  const pos = new Float32Array((cols + 1) * (rows + 1) * 2), moved = new Uint8Array((cols + 1) * (rows + 1));
+  for (let r = 0; r <= rows; r++) for (let c = 0; c <= cols; c++) {
+    const x = Math.min(c * gx, s.W), y = Math.min(r * gy, s.H), v = r * (cols + 1) + c, k = v * 2;
+    if (!ctl.length || Math.hypot(x - cx, y - cy) > Math.max(rx, ry) * 1.35) { pos[k] = x; pos[k + 1] = y; continue; }
+    const [dx, dy] = field(x, y, ctl, sigma, anchors);
+    pos[k] = x + dx; pos[k + 1] = y + dy;
+    if (Math.abs(dx) + Math.abs(dy) > 0.02) moved[v] = 1;
+  }
+  const at = (c, r) => { const k = (r * (cols + 1) + c) * 2; return [pos[k], pos[k + 1]]; };
+  const srcOf = (c, r) => [Math.min(c * gx, s.W), Math.min(r * gy, s.H)];
+  const mv = (c, r) => moved[r * (cols + 1) + c];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const tri = [[c, r, c + 1, r, c, r + 1], [c + 1, r, c + 1, r + 1, c, r + 1]];
+    tri.forEach(([c0, r0, c1, r1, c2, r2]) => {
+      if (!(mv(c0, r0) || mv(c1, r1) || mv(c2, r2))) return;   // nothing moved here, the original already shows
+      drawTri(g, s.src, srcOf(c0, r0), srcOf(c1, r1), srcOf(c2, r2), at(c0, r0), at(c1, r1), at(c2, r2));
+    });
+  }
+  retouch(g, val('skin') * all === 0 ? 0 : val('skin') * (0.4 + 0.6 * all));
+  renderChips();
+}
+
+// Affine-map the source triangle onto the destination triangle (slightly expanded to hide seams).
+function drawTri(g, img, s0, s1, s2, d0, d1, d2) {
+  const det = (s1[0] - s0[0]) * (s2[1] - s0[1]) - (s2[0] - s0[0]) * (s1[1] - s0[1]);
+  if (Math.abs(det) < 1e-6) return;
+  const a = ((d1[0] - d0[0]) * (s2[1] - s0[1]) - (d2[0] - d0[0]) * (s1[1] - s0[1])) / det;
+  const b = ((d1[1] - d0[1]) * (s2[1] - s0[1]) - (d2[1] - d0[1]) * (s1[1] - s0[1])) / det;
+  const c = ((d2[0] - d0[0]) * (s1[0] - s0[0]) - (d1[0] - d0[0]) * (s2[0] - s0[0])) / det;
+  const d = ((d2[1] - d0[1]) * (s1[0] - s0[0]) - (d1[1] - d0[1]) * (s2[0] - s0[0])) / det;
+  const e = d0[0] - a * s0[0] - c * s0[1], f = d0[1] - b * s0[0] - d * s0[1];
+  const cxm = (d0[0] + d1[0] + d2[0]) / 3, cym = (d0[1] + d1[1] + d2[1]) / 3, grow = .6;
+  const ex = p => { const vx = p[0] - cxm, vy = p[1] - cym, l = Math.hypot(vx, vy) || 1; return [p[0] + vx / l * grow, p[1] + vy / l * grow]; };
+  const e0 = ex(d0), e1 = ex(d1), e2 = ex(d2);
+  g.save(); g.beginPath(); g.moveTo(e0[0], e0[1]); g.lineTo(e1[0], e1[1]); g.lineTo(e2[0], e2[1]); g.closePath(); g.clip();
+  g.transform(a, b, c, d, e, f); g.drawImage(img, 0, 0); g.restore();
+}
+
+/* Skin + light: feathered face-oval mask, frequency-style smoothing (keeps pores/edges), soft lift. */
+let ovalCache = null;
+function faceOval() {
+  const s = state; if (ovalCache && ovalCache.s === s) return ovalCache.pts;
+  const O = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
+  ovalCache = { s, pts: O.map(i => s.pts[i]) }; return ovalCache.pts;
+}
+function retouch(g, amt) {
+  if (amt <= 0.01) return;
+  const s = state, W = s.W, H = s.H;
+  const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+  // 1. masks (built once per photo, they do not depend on the sliders): face oval minus eyes + mouth, and the eyes alone
+  if (!s.masks) {
+    const m = mk(), mg = m.getContext('2d');
+    mg.filter = `blur(${Math.round(s.faceW * .025)}px)`; mg.fillStyle = '#fff'; mg.beginPath();
+    faceOval().forEach((p, i) => i ? mg.lineTo(p.x, p.y) : mg.moveTo(p.x, p.y)); mg.closePath(); mg.fill(); mg.filter = 'none';
+    mg.globalCompositeOperation = 'destination-out'; mg.filter = `blur(${Math.round(s.faceW * .008)}px)`;
+    [[33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246], [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398], [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 409, 270, 269, 267, 0, 37, 39, 40, 185]].forEach(ring => {
+      mg.beginPath(); ring.forEach((i, k) => { const p = s.pts[i]; k ? mg.lineTo(p.x, p.y) : mg.moveTo(p.x, p.y); }); mg.closePath(); mg.fill();
+    });
+    const e = mk(), eg = e.getContext('2d');
+    eg.filter = `blur(${Math.round(s.faceW * .004)}px)`; eg.fillStyle = '#fff';
+    [[33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246], [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]].forEach(ring => {
+      eg.beginPath(); ring.forEach((i, k) => { const p = s.pts[i]; k ? eg.lineTo(p.x, p.y) : eg.moveTo(p.x, p.y); }); eg.closePath(); eg.fill();
+    });
+    s.masks = { m, e };
+  }
+  const m = s.masks.m, e = s.masks.e;
+  // 2. smoothed layer (low-pass) blended back through the mask at reduced strength
+  const sm = mk(), sg = sm.getContext('2d');
+  sg.filter = `blur(${Math.max(1, Math.round(s.faceW * .006))}px) saturate(${1 + .08 * amt}) brightness(${1 + .05 * amt}) contrast(${1 + .04 * amt})`;
+  sg.drawImage(g.canvas, 0, 0); sg.filter = 'none';
+  sg.globalCompositeOperation = 'destination-in'; sg.drawImage(m, 0, 0);
+  g.save(); g.globalAlpha = clamp(.55 * amt, 0, .55); g.drawImage(sm, 0, 0); g.restore();
+  // 3. eye brightening: tiny lift of the sclera/iris region
+  const eb = mk(), ebg = eb.getContext('2d'); ebg.filter = `brightness(${1 + .18 * amt}) contrast(${1 + .1 * amt})`; ebg.drawImage(g.canvas, 0, 0); ebg.filter = 'none';
+  ebg.globalCompositeOperation = 'destination-in'; ebg.drawImage(e, 0, 0);
+  g.save(); g.globalAlpha = .7; g.drawImage(eb, 0, 0); g.restore();
+}
+
+function renderChips() {
+  const s = state; if (!s) return;
+  const grpOf = { mp_c_jaw_in: 'jaw', mp_c_jaw_out: 'jaw', mp_c_chin_up: 'jaw', mp_c_chin_dn: 'jaw', mp_c_tilt: 'eyes', mp_c_sym: 'sym', mp_c_cheek: 'cheek', mp_c_skin: 'skin' };
+  const all = val('all');
+  const items = s.info.filter(i => val(grpOf[i.k]) * (grpOf[i.k] === 'skin' ? 1 : all) > 0.01);
+  const nf = n => lang === 'ar' ? String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n);
+  $('chips').innerHTML = (items.length ? items : [{ k: 'mp_c_none', v: null }]).map(i => {
+    const g = grpOf[i.k], k = g ? val(g) * (g === 'skin' ? 1 : all) : 1;
+    const unit = i.k === 'mp_c_tilt' ? '°' : '%';
+    return `<span class="chip">${T(i.k)}${i.v != null ? ` <b>${nf((i.v * k).toFixed(1))}${unit}</b>` : ''}</span>`;
+  }).join('');
+  $('note').textContent = T('mp_note');
+}
+
+/* ── before / after slider ── */
+function setSplit(p) {
+  p = clamp(p, 0, 1);
+  $('afterWrap').style.clipPath = `inset(0 0 0 ${(p * 100).toFixed(2)}%)`;
+  $('handle').style.left = (p * 100).toFixed(2) + '%';
+}
+(() => {
+  const ba = $('ba'); let drag = false;
+  const move = e => { const r = ba.getBoundingClientRect(); setSplit(((e.touches ? e.touches[0].clientX : e.clientX) - r.left) / r.width); };
+  ba.addEventListener('pointerdown', e => { drag = true; ba.setPointerCapture?.(e.pointerId); move(e); });
+  ba.addEventListener('pointermove', e => { if (drag) move(e); });
+  ['pointerup', 'pointercancel'].forEach(ev => ba.addEventListener(ev, () => drag = false));
+})();
+
+/* ── actions ── */
+$('btnNew').addEventListener('click', () => {
+  state = null; ovalCache = null; $('studio').style.display = 'none'; $('uploader').style.display = 'flex'; $('fileInput').value = ''; showMsg('');
+  scrollTo({ top: 0, behavior: 'smooth' });
+});
+$('btnSave').addEventListener('click', () => {
+  if (!state) return;
+  const a = document.createElement('a');
+  a.download = 'mr-skull-potential.jpg'; a.href = $('cAfter').toDataURL('image/jpeg', .94); a.click();
+});
+let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { if (state) $('ba').style.maxWidth = Math.min(720, state.W * (innerHeight * .75 / state.H)) + 'px'; }, 120); });
+</script>
+</body>
+</html>

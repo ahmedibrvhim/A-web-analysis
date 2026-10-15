@@ -2,235 +2,106 @@
 <html lang="en" id="htmlRoot">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Mr Skull | Face Analysis</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mr Skull | Side Profile</title>
 <link rel="stylesheet" href="style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-/* ── NAV BRANDING (same as home.html) ── */
-.nav-logo .logo-mark {
-  font-size:16px; letter-spacing:1px; white-space:nowrap;
-}
-.nav-logo .logo-tag { display:block; }
-body.lang-ar .nav-logo .logo-mark { font-family:'Tajawal',sans-serif; font-weight:700; }
+.nav-logo .logo-mark{font-size:16px;letter-spacing:1px;white-space:nowrap}.nav-logo .logo-tag{display:block}
+body.lang-ar .nav-logo .logo-mark{font-family:'Tajawal',sans-serif;font-weight:700}
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:1px solid var(--blood);padding:8px 10px;cursor:pointer;margin-left:auto;flex-shrink:0}
+.hamburger span{display:block;width:22px;height:2px;background:var(--blood);transition:all .3s}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}.hamburger.open span:nth-child(2){opacity:0}.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media(max-width:768px){nav{flex-wrap:wrap;padding:0 14px;gap:0;height:auto;min-height:58px}.nav-logo{padding:10px 0;flex:1}.hamburger{display:flex}
+.nav-links{display:none;flex-direction:column;width:100%;order:3;border-top:1px solid var(--border);padding:8px 0;gap:0}.nav-links.mobile-open{display:flex}.nav-links li{width:100%}
+.nav-links a{display:block;padding:12px 4px;border-bottom:1px solid rgba(255,255,255,.04);font-size:10px;letter-spacing:3px}
+.nav-right{display:none;flex-direction:column;width:100%;order:4;padding:10px 0 14px;gap:8px;border-top:1px solid var(--border)}.nav-right.mobile-open{display:flex}
+.btn-ghost{width:100%;text-align:center;justify-content:center}.user-pill{flex-wrap:wrap;width:100%;gap:8px}}
 
-/* ── MOBILE NAV (same as home.html) ── */
-.hamburger {
-  display: none; flex-direction: column; justify-content: center;
-  gap: 5px; background: none; border: 1px solid var(--blood);
-  padding: 8px 10px; cursor: pointer; margin-left: auto; flex-shrink: 0;
-}
-.hamburger span { display: block; width: 22px; height: 2px; background: var(--blood); transition: all .3s; }
-.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.hamburger.open span:nth-child(2) { opacity: 0; }
-.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-@media (max-width: 768px) {
-  nav { flex-wrap: wrap; padding: 0 14px; gap: 0; height: auto; min-height: 58px; }
-  .nav-logo { padding: 10px 0; flex: 1; }
-  .hamburger { display: flex; }
-  .nav-links { display: none; flex-direction: column; width: 100%; order: 3; border-top: 1px solid var(--border); padding: 8px 0; gap: 0; }
-  .nav-links.mobile-open { display: flex; }
-  .nav-links li { width: 100%; }
-  .nav-links a { display: block; padding: 12px 4px; border-bottom: 1px solid rgba(255,255,255,.04); font-size: 10px; letter-spacing: 3px; }
-  .nav-right { display: none; flex-direction: column; width: 100%; order: 4; padding: 10px 0 14px; gap: 8px; border-top: 1px solid var(--border); }
-  .nav-right.mobile-open { display: flex; }
-  .btn-ghost { width: 100%; text-align: center; justify-content: center; }
-  .user-pill { flex-wrap: wrap; width: 100%; gap: 8px; }
-}
-
-/* ── layout ── */
-#toolWrap{max-width:720px;margin:0 auto;padding:0 20px 100px}
-.tool-progress{display:flex;align-items:center;justify-content:center;gap:8px;padding:34px 0 6px}
-.tool-dot{width:7px;height:7px;border-radius:50%;background:var(--smoke);transition:all .3s}
-.tool-dot.active{background:var(--crimson);box-shadow:0 0 10px var(--crimson);width:22px;border-radius:4px}
-.tool-dot.done{background:var(--blood)}
-.tool-step{display:none}
-.tool-step.active{display:block;animation:stepIn .45s ease}
-@keyframes stepIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+#toolWrap{max-width:720px;margin:0 auto;padding:34px 20px 100px}
 .tool-eyebrow{font-size:9px;letter-spacing:5px;color:var(--blood);text-transform:uppercase;text-align:center;margin-bottom:10px}
 .tool-title{font-family:'Cinzel Decorative',cursive;font-size:clamp(20px,3.6vw,28px);color:var(--white);letter-spacing:3px;text-transform:uppercase;text-align:center;margin-bottom:14px}
-.tool-text{font-size:12px;color:var(--text);line-height:1.9;text-align:center;max-width:480px;margin:0 auto 34px}
-.tool-nav{display:flex;gap:14px;justify-content:center;margin-top:28px}
-.tool-nav button:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
-.tool-hint{text-align:center;font-size:10px;letter-spacing:1px;color:var(--ash);margin-top:16px}
+body.lang-ar .tool-title,body.lang-ar .tool-eyebrow{font-family:'Tajawal',sans-serif;letter-spacing:0;text-transform:none}
+.tool-text{font-size:12px;color:var(--text);line-height:1.9;text-align:center;max-width:480px;margin:0 auto 26px}
+.tool-step{display:none}.tool-step.active{display:block;animation:stepIn .45s ease}
+@keyframes stepIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.tool-nav{display:flex;gap:14px;justify-content:center;margin-top:24px;flex-wrap:wrap}.tool-nav button:disabled{opacity:.35;pointer-events:none}
 .msg-bar{padding:11px 16px;font-size:10px;letter-spacing:1px;text-align:center;margin-bottom:18px;border:1px solid transparent;display:none}
 .msg-bar.error{display:block;background:rgba(220,20,60,.08);border-color:var(--blood);color:#ff8080}
-.msg-bar.info{display:block;background:rgba(139,0,0,.06);border-color:var(--smoke);color:var(--bone)}
-
-/* ── uploader ── */
+.gender-box{margin-bottom:22px;text-align:center}.gb-title{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--white);margin-bottom:8px}
+.gb-text{font-size:11px;line-height:1.8;color:var(--text);max-width:440px;margin:0 auto 16px}
+.gender-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:380px;margin:0 auto}
+.gender-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 10px 14px;background:var(--panel);border:1px solid var(--border);color:var(--text);cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:2px;transition:all .25s}
+.gender-btn .sym{font-size:30px;line-height:1;color:var(--ash)}.gender-btn:hover{border-color:var(--blood)}
+.gender-btn.on{border-color:var(--crimson);background:rgba(139,0,0,.18);color:var(--white);box-shadow:0 0 16px rgba(220,20,60,.25)}.gender-btn.on .sym{color:var(--crimson)}
+.lock-hint{text-align:center;font-size:10px;letter-spacing:1px;color:var(--ash);margin:-8px 0 14px}
 .uploader{border:1.5px dashed var(--smoke);background:var(--panel);padding:54px 24px;text-align:center;cursor:pointer;transition:all .3s;display:flex;flex-direction:column;align-items:center}
-.uploader:hover,.uploader.drag{border-color:var(--blood);background:rgba(139,0,0,.07)}
-.uploader-icon{width:64px;height:64px;border-radius:50%;margin-bottom:18px;display:flex;align-items:center;justify-content:center;background:rgba(139,0,0,.1);border:1px solid var(--smoke)}
-.uploader-icon svg{width:26px;height:26px;color:var(--crimson)}
-.uploader-cta{font-size:11px;letter-spacing:1px;color:var(--text);line-height:1.7;margin-bottom:6px}
-.uploader-cta .browse-word{color:var(--crimson);text-decoration:underline;text-underline-offset:3px}
-.uploader-sub{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase}
-.uploader input{display:none}
+.uploader:hover,.uploader.drag{border-color:var(--blood);background:rgba(139,0,0,.07)}.uploader.locked{opacity:.35;pointer-events:none;filter:grayscale(1)}
+.uploader input{display:none}.uploader-icon{width:64px;height:64px;border-radius:50%;margin-bottom:18px;display:flex;align-items:center;justify-content:center;background:rgba(139,0,0,.1);border:1px solid var(--smoke)}
+.uploader-icon svg{width:26px;height:26px;color:var(--crimson)}.uploader-cta{font-size:11px;letter-spacing:1px;color:var(--text);line-height:1.7}
+.browse-word{color:var(--crimson);text-decoration:underline;text-underline-offset:3px}
 .upload-preview{border:1px solid var(--border);background:var(--panel);overflow:hidden}
-.upload-preview-img-wrap{position:relative;width:100%;aspect-ratio:3/4;max-height:420px;margin:0 auto;background:var(--black);display:flex;align-items:center;justify-content:center;overflow:hidden}
-.upload-preview-img-wrap img{display:block;width:100%;height:100%;object-fit:contain}
+.upload-preview-img-wrap{width:100%;max-height:440px;background:#000;display:flex;justify-content:center}.upload-preview-img-wrap img{max-width:100%;max-height:440px;object-fit:contain}
 .upload-preview-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--border)}
-.upload-preview-name{font-size:9px;letter-spacing:.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.upload-preview-name{font-size:9px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.tool-hint{text-align:center;font-size:10px;line-height:1.8;color:var(--ash);margin-top:14px}
 
-
-/* ── validation verdict ── */
-.verdict{margin-top:18px;border:1px solid var(--border);background:var(--panel);padding:20px 20px 18px;text-align:left}
-.verdict.ok{border-color:#0a5;background:rgba(0,160,90,.05)}
-.verdict.bad{border-color:var(--blood);background:rgba(220,20,60,.06)}
-.verdict-head{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
-.verdict.ok .verdict-head{color:#5ecb96}
-.verdict.bad .verdict-head{color:#ff8080}
-.verdict p{font-size:11px;line-height:1.8;color:var(--text);margin-bottom:8px}
-.verdict-stats{display:flex;gap:22px;flex-wrap:wrap;margin:14px 0 4px;direction:ltr}
-.verdict-stat .val{font-size:16px;color:var(--white);font-weight:700}
-.verdict-stat .lbl{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-top:3px}
-.verdict-steps{margin:10px 0 0;padding-left:18px;font-size:11px;line-height:1.9;color:var(--text)}
-.verdict-refs{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:9px;line-height:1.8;color:var(--ash);letter-spacing:.3px}
-.verdict-loading{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
-.mini-spinner{width:20px;height:20px;border:2px solid var(--smoke);border-top-color:var(--blood);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-.tool-nav{display:flex;gap:14px;justify-content:center;margin-top:22px}
-.tool-nav button:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
-.next-panel{border:1px dashed var(--smoke);background:var(--panel);padding:60px 24px;text-align:center;font-size:10px;letter-spacing:3px;color:var(--ash);text-transform:uppercase}
-
-
-/* ── STEP 2 · landmark review ── */
-#step2{display:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-#step2.active{display:block;animation:stepIn .45s ease}
 .lm-stage{position:relative;background:#000;border:1px solid var(--border);display:flex;justify-content:center;overflow:hidden}
-.lm-stage canvas{display:block;max-width:100%;pointer-events:none;user-select:none;-webkit-user-select:none}
-.lm-busy{position:absolute;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;gap:12px;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
-.lm-ref{margin:0 auto 18px;max-width:380px;border:1px solid var(--border);background:var(--panel);overflow:hidden}
-.lm-ref-main{background:#fff;line-height:0;padding:6px}
-.lm-ref-main:empty{display:none}
-.lm-ref-main svg{display:block;width:100%;height:auto}
-.lm-ref-main img{display:block;width:100%;height:auto}
-.lm-chips{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:12px;direction:ltr}
-.lm-chip{position:relative;padding:11px 2px;font-size:12px;font-weight:700;letter-spacing:1px;line-height:1.2;text-align:center;color:var(--text);background:var(--panel);border:1px solid var(--border);cursor:pointer;font-family:inherit;transition:all .2s}
-.lm-chip:hover{border-color:var(--blood)}
+.lm-stage canvas{display:block;max-width:100%;cursor:crosshair}
+.lm-chips{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0;direction:ltr}
+.lm-chip{position:relative;padding:11px 2px;font-size:13px;font-weight:700;text-align:center;color:var(--text);background:var(--panel);border:1px solid var(--border);cursor:pointer;font-family:inherit}
 .lm-chip.sel{border-color:var(--crimson);background:rgba(139,0,0,.16);color:var(--white);box-shadow:0 0 14px rgba(220,20,60,.25)}
 .lm-chip.seen::after{content:'';position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:#5ecb96}
-.lm-chip bdi{unicode-bidi:isolate}
-.lm-name{margin:14px 0 0;text-align:center;font-size:11px;letter-spacing:1px;color:var(--white);font-weight:700}
-.lm-desc{min-height:3.2em;margin:4px auto 0;max-width:460px;text-align:center;font-size:11px;line-height:1.8;color:var(--bone)}
-.lm-note{margin:6px auto 0;max-width:460px;text-align:center;font-size:9px;letter-spacing:.5px;line-height:1.8;color:var(--ash)}
+.lm-name{text-align:center;font-size:11px;letter-spacing:1px;color:var(--white);font-weight:700;margin:14px 0 0}
+.lm-desc{min-height:3.2em;margin:4px auto 12px;max-width:460px;text-align:center;font-size:11px;line-height:1.8;color:var(--bone)}
 .lm-dash{display:flex;gap:22px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:18px;padding:20px 16px;border:1px solid var(--border);background:var(--panel);direction:ltr}
-.lm-cap{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-top:7px}
+.lm-cap{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-bottom:6px}
 .lm-pad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:5px}
-.lm-pad button{touch-action:none;-webkit-touch-callout:none;display:flex;align-items:center;justify-content:center;background:rgba(139,0,0,.12);border:1px solid var(--smoke);color:var(--crimson);cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;transition:background .15s,border-color .15s}
-.lm-pad button:hover{border-color:var(--crimson)}
-.lm-pad button:active,.lm-pad button.hold{background:var(--blood);color:var(--white);border-color:var(--crimson)}
-.lm-pad svg{width:20px;height:20px}
-.lm-pad button.off{opacity:.18;pointer-events:none}
-.lm-pad .c{display:flex;align-items:center;justify-content:center}
-.lm-pad .c i{width:5px;height:5px;border-radius:50%;background:var(--smoke)}
-.lm-side{display:flex;flex-direction:column;gap:12px;min-width:150px;direction:inherit}
-html[dir=rtl] .lm-side{direction:rtl}
-.lm-seg{display:flex;border:1px solid var(--smoke)}
-.lm-seg button{flex:1;padding:8px 6px;font-size:9px;letter-spacing:1px;background:none;border:0;color:var(--ash);cursor:pointer;font-family:inherit}
-.lm-seg button+button{border-inline-start:1px solid var(--smoke)}
-.lm-seg button.on{background:var(--blood);color:var(--white)}
-.lm-side .btn-ghost{width:100%;text-align:center;justify-content:center}
+.lm-pad button{display:flex;align-items:center;justify-content:center;background:rgba(139,0,0,.12);border:1px solid var(--smoke);color:var(--crimson);cursor:pointer;touch-action:manipulation;user-select:none}
+.lm-pad button:active,.lm-pad button.hold{background:var(--blood);color:var(--white);border-color:var(--crimson)}.lm-pad svg{width:20px;height:20px}
+.lm-pad .c{display:flex;align-items:center;justify-content:center}.lm-pad .c i{width:5px;height:5px;border-radius:50%;background:var(--smoke)}
+.lm-side{display:flex;flex-direction:column;gap:14px;min-width:150px}
+.lm-seg{display:flex;border:1px solid var(--smoke)}.lm-seg button{flex:1;padding:8px 6px;font-size:9px;letter-spacing:1px;background:none;border:0;color:var(--ash);cursor:pointer;font-family:inherit}
+.lm-seg button+button{border-inline-start:1px solid var(--smoke)}.lm-seg button.on{background:var(--blood);color:var(--white)}
 .lm-progress{text-align:center;font-size:10px;letter-spacing:2px;color:var(--muted);margin-top:16px;text-transform:uppercase}
-@media (max-width:520px){.lm-dash{gap:16px}.lm-chip{font-size:11px;letter-spacing:0}}
 
-
-/* ── gender gate ── */
-.gender-box{margin-bottom:22px;text-align:center}
-.gender-box .gb-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--white);margin-bottom:8px}
-.gender-box .gb-text{font-size:11px;line-height:1.8;color:var(--text);max-width:440px;margin:0 auto 16px}
-.gender-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:380px;margin:0 auto}
-.gender-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 10px 14px;background:var(--panel);border:1px solid var(--border);color:var(--text);cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:2px;text-transform:uppercase;transition:all .25s}
-.gender-btn .sym{font-size:30px;line-height:1;color:var(--ash);transition:color .25s}
-.gender-btn:hover{border-color:var(--blood)}
-.gender-btn.on{border-color:var(--crimson);background:rgba(139,0,0,.18);color:var(--white);box-shadow:0 0 16px rgba(220,20,60,.25)}
-.gender-btn.on .sym{color:var(--crimson)}
-.uploader.locked{opacity:.35;pointer-events:none;filter:grayscale(1)}
-.lock-hint{text-align:center;font-size:10px;letter-spacing:1px;color:var(--ash);margin:-8px 0 0}
-
-/* ── STEP 3 · analysis ── */
-#step3{display:none}
-#step3.active{display:block;animation:stepIn .45s ease}
-#s3Stage{padding:0}
-.s3-cal{margin-top:14px;padding:14px 16px;border:1px solid var(--border);background:var(--panel);display:flex;flex-direction:column;align-items:center;gap:8px}
-.s3-cal label{font-size:9px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;text-align:center}
-.s3-cal input{width:130px;padding:9px 10px;text-align:center;font-size:13px;font-family:inherit;color:var(--white);background:var(--black);border:1px solid var(--smoke);outline:none;direction:ltr}
-.s3-cal input:focus{border-color:var(--crimson)}
-.s3-cal .lm-note{margin:0}
-.s3-card{margin-top:16px;padding:18px 18px 16px;border:1px solid var(--border);background:var(--panel)}
-.s3-h{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--white);margin-bottom:14px}
-.s3-tbl{width:100%;border-collapse:collapse;font-size:11px;color:var(--text)}
-.s3-tbl th{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;font-weight:400;padding:0 6px 8px;text-align:start}
-.s3-tbl td{padding:9px 6px;border-top:1px solid var(--border);vertical-align:middle}
-.s3-tbl td.v{direction:ltr;text-align:start;color:var(--white);font-weight:700;white-space:nowrap}
-.s3-tbl td.i{direction:ltr;text-align:start;color:var(--ash);white-space:nowrap}
-.s3-chip{display:inline-block;padding:3px 8px;font-size:9px;letter-spacing:1px;border:1px solid;white-space:nowrap}
-.s3-chip.ok{color:#5ecb96;border-color:#0a5;background:rgba(0,160,90,.08)}
-.s3-chip.warn{color:#ffc933;border-color:#8a6d00;background:rgba(255,201,51,.07)}
-.s3-weak{list-style:none;margin:10px 0 0;padding:0}.s3-weak li{padding:11px 13px;margin-bottom:8px;border:1px solid var(--border);border-inline-start:3px solid var(--blood);background:rgba(220,20,60,.05);font-size:13px;line-height:1.9;color:var(--bone)}.s3-weak li.major{border-inline-start-color:var(--crimson);background:rgba(220,20,60,.11);color:var(--white)}
-.s3-chip.bad{color:#ff8080;border-color:var(--blood);background:rgba(220,20,60,.08)}
-.s3-bar{display:flex;height:24px;margin:14px 0 4px;direction:ltr;border:1px solid var(--border)}
-.s3-bar span{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#000;overflow:hidden;white-space:nowrap}
-.s3-bar-cap{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-top:10px}
+.s3-card{margin-top:16px;padding:18px;border:1px solid var(--border);background:var(--panel)}
+.s3-h{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--white);margin-bottom:12px}
 .s3-p{font-size:11px;line-height:1.85;color:var(--text);margin:10px 0 0}
-.s3-p.dim{color:var(--ash);font-size:10px}
-.s3-tier{text-align:center;padding:6px 0 4px}
-.s3-tier .name{font-family:'Cinzel Decorative',cursive;font-size:clamp(26px,6vw,38px);letter-spacing:3px;color:var(--crimson);text-shadow:0 0 18px rgba(220,20,60,.35)}
-.s3-tier .score{font-size:11px;letter-spacing:2px;color:var(--white);margin-top:6px;direction:ltr}
-.s3-tier .desc{font-size:11px;line-height:1.8;color:var(--bone);max-width:460px;margin:10px auto 0}
-.s3-sub{font-size:9px;letter-spacing:3px;color:var(--blood);text-transform:uppercase;margin:16px 0 6px}
-.s3-sub:first-of-type{margin-top:0}
-.s3-list{margin:0;padding-inline-start:18px;font-size:11px;line-height:1.85;color:var(--text)}
-.s3-list li{margin-bottom:5px}
-.s3-disc{text-align:center;font-size:9px;line-height:1.8;letter-spacing:.4px;color:var(--ash);max-width:480px;margin:16px auto 0}
-#step3 .tool-nav{flex-wrap:wrap}
 .s3-rate{text-align:center;background:radial-gradient(ellipse at top,rgba(139,0,0,.18),var(--panel) 70%)}
-.s3-rate .ring{position:relative;width:150px;height:150px;margin:0 auto 6px;direction:ltr}
-.s3-rate .ring svg{width:100%;height:100%}
-.s3-rate .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:34px;font-weight:700;line-height:1}
-.s3-rate .num small{font-size:10px;letter-spacing:2px;color:var(--ash);margin-top:4px;font-weight:400}
-.s3-rate .stats{display:flex;justify-content:center;gap:10px;margin:16px 0 4px;flex-wrap:wrap}
-.s3-rate .stats div{min-width:92px;padding:9px 10px;border:1px solid var(--border);background:rgba(0,0,0,.35);display:flex;flex-direction:column;gap:3px}
-.s3-rate .stats b{font-size:14px;color:var(--white);direction:ltr}
-.s3-rate .stats span{font-size:8px;letter-spacing:2px;color:var(--ash);text-transform:uppercase}
-.skull-card{display:flex;gap:16px;align-items:center;margin-top:16px;padding:16px;border:1px solid var(--border);background:var(--panel)}
-.skull-wrap{cursor:pointer;position:relative;flex:none;width:130px;height:130px;border-radius:50%;overflow:hidden;background:#000;border:2px solid var(--blood);box-shadow:0 0 22px rgba(139,0,0,.35);transition:box-shadow .3s}
+.rot-name{font-family:'Cinzel Decorative',cursive;font-size:clamp(26px,6vw,38px);letter-spacing:3px}
+body.lang-ar .rot-name{font-family:'Tajawal',sans-serif;font-weight:900;letter-spacing:0}
+.rot-sub{font-size:11px;letter-spacing:2px;color:var(--white);margin-top:6px}
+.gauge{position:relative;height:10px;margin:26px 6px 8px;border-radius:5px;direction:ltr;background:linear-gradient(90deg,#5ecbff,#6ee7b7 25%,#cfcfcf 50%,#ff9a4c 75%,#ff5555)}
+.gauge::before,.gauge::after{content:'';position:absolute;top:-4px;bottom:-4px;width:1px;background:rgba(255,255,255,.35)}.gauge::before{left:38.9%}.gauge::after{left:61.1%}
+.gauge i{position:absolute;top:-7px;width:4px;height:24px;margin-left:-2px;background:#fff;box-shadow:0 0 10px #000,0 0 8px #fff}
+.gauge-lbl{display:flex;justify-content:space-between;font-size:8px;letter-spacing:1px;color:var(--ash);text-transform:uppercase;direction:ltr}
+.stats{display:flex;justify-content:center;gap:10px;margin:18px 0 4px;flex-wrap:wrap}
+.stats div{min-width:120px;padding:9px 10px;border:1px solid var(--border);background:rgba(0,0,0,.35);display:flex;flex-direction:column;gap:3px}
+.stats b{font-size:15px;color:var(--white);direction:ltr}.stats span{font-size:8px;letter-spacing:1px;color:var(--ash);text-transform:uppercase}
+.desc{font-size:11px;line-height:1.9;color:var(--bone);max-width:470px;margin:14px auto 0}
+.s3-disc{text-align:center;font-size:9px;line-height:1.8;color:var(--ash);max-width:480px;margin:16px auto 0}
+.skull-card{display:flex;gap:16px;align-items:center;padding:16px;border:1px solid var(--border);background:var(--panel)}
+.skull-wrap{cursor:pointer;position:relative;flex:none;width:130px;height:130px;border-radius:50%;overflow:hidden;background:#000;border:2px solid var(--blood);box-shadow:0 0 22px rgba(139,0,0,.35)}
 .skull-wrap.speaking{box-shadow:0 0 34px rgba(220,20,60,.75)}
 .sk-up,.sk-jaw{position:absolute;inset:0;background:url(Skull.png) center/cover}
 .sk-up{clip-path:polygon(0 0,100% 0,100% 100%,74% 100%,74% 76%,28% 76%,28% 100%,0 100%)}
 .sk-jaw{clip-path:polygon(28% 76%,74% 76%,74% 100%,28% 100%);will-change:transform}
-.skull-bubble{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
-#skText{font-size:12px;line-height:1.85;color:var(--bone);min-height:5.5em}
+.skull-bubble{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}#skText{font-size:12px;line-height:1.85;color:var(--bone);min-height:5.5em}
 .skull-bubble .btn-ghost{width:auto;align-self:flex-start;padding:8px 16px}
-@media(max-width:520px){.skull-card{flex-direction:column;text-align:center}.skull-bubble .btn-ghost{align-self:center}}
-
-/* ── auth gate ── */
+@media(max-width:520px){.skull-card{flex-direction:column;text-align:center}.skull-bubble .btn-ghost{align-self:center}.lm-chip{font-size:11px}}
 .auth-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#150000 0%,#000 70%);display:flex;align-items:center;justify-content:center;transition:opacity .3s,visibility .3s}
-.auth-gate.auth-gate-hidden{opacity:0;visibility:hidden;pointer-events:none}
-.auth-gate-inner{text-align:center}
+.auth-gate.auth-gate-hidden{opacity:0;visibility:hidden;pointer-events:none}.auth-gate-inner{text-align:center}
 .auth-gate-skull{width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid var(--blood);box-shadow:0 0 30px rgba(139,0,0,.4);margin:0 auto 16px;display:block}
-.auth-gate-text{font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
+.auth-gate-text{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
 </style>
 </head>
 <body>
-
-<div id="authGate" class="auth-gate">
-  <div class="auth-gate-inner">
-    <img src="Skull.png" alt="" class="auth-gate-skull">
-    <div class="auth-gate-text" data-i18n="auth_gate_checking">Checking your session…</div>
-  </div>
-</div>
+<div id="authGate" class="auth-gate"><div class="auth-gate-inner"><img src="Skull.png" alt="" class="auth-gate-skull"><div class="auth-gate-text" data-i18n="auth_gate_checking">Checking your session…</div></div></div>
 
 <nav>
-  <a class="nav-logo" href="index.html">
-    <img src="Skull.png" alt="Mr Skull">
-    <div>
-      <div class="logo-mark" data-i18n="brand_name">Mr Skull</div>
-      <div class="logo-tag" data-i18n="brand_tag">Face Analysis</div>
-    </div>
-  </a>
+  <a class="nav-logo" href="index.html"><img src="Skull.png" alt="Mr Skull"><div><div class="logo-mark" data-i18n="brand_name">Mr Skull</div><div class="logo-tag" data-i18n="brand_tag">Face Analysis</div></div></a>
   <ul class="nav-links" id="navLinks">
     <li><a href="index.html" data-i18n="nav_home">Home</a></li>
     <li><a href="tool.html" class="active" data-i18n="nav_tool">Analysis</a></li>
@@ -238,1038 +109,377 @@ html[dir=rtl] .lm-side{direction:rtl}
   </ul>
   <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="nav-right" id="navRight">
-    <button class="nav-lang" id="navLang" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
-      <span><span class="lang-cur" id="langCur">EN</span> <span class="lang-sep">/</span> <span id="langOther">AR</span></span>
-    </button>
+    <button class="nav-lang" id="navLang" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span><span class="lang-cur" id="langCur">EN</span> <span class="lang-sep">/</span> <span id="langOther">AR</span></span></button>
   </div>
 </nav>
 
-<div class="page-wrap">
-<div id="toolWrap">
+<div class="page-wrap"><div id="toolWrap">
   <div class="msg-bar" id="toolMsg"></div>
 
-  <div class="gender-box" id="genderBox">
-    <div class="gb-title" data-i18n="g_title">Select Your Gender</div>
-    <p class="gb-text" data-i18n="g_text"></p>
-    <div class="gender-opts" role="group">
-      <button type="button" class="gender-btn" data-g="male" aria-pressed="false"><span class="sym">♂</span><span data-i18n="g_male">Male</span></button>
-      <button type="button" class="gender-btn" data-g="female" aria-pressed="false"><span class="sym">♀</span><span data-i18n="g_female">Female</span></button>
+  <section class="tool-step active" id="step1">
+    <div class="tool-eyebrow" id="tEye"></div>
+    <h2 class="tool-title" id="tTitle"></h2>
+    <p class="tool-text" id="tText"></p>
+    <div class="gender-box">
+      <div class="gb-title" data-i18n="g_title">Select Your Gender</div>
+      <p class="gb-text" data-i18n="g_text"></p>
+      <div class="gender-opts">
+        <button type="button" class="gender-btn" data-g="male"><span class="sym">♂</span><span data-i18n="g_male">Male</span></button>
+        <button type="button" class="gender-btn" data-g="female"><span class="sym">♀</span><span data-i18n="g_female">Female</span></button>
+      </div>
     </div>
-  </div>
-  <p class="lock-hint" id="lockHint" data-i18n="g_locked"></p>
-
-  <label class="uploader locked" id="uploader">
-    <input type="file" accept="image/*" id="fileInput" disabled>
-    <span class="uploader-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span>
-    <p class="uploader-cta" id="uploaderCta"></p>
-    <p class="uploader-sub">JPG · PNG · HEIC</p>
-  </label>
-  <div class="upload-preview" id="previewBox" style="display:none">
-    <div class="upload-preview-img-wrap"><img id="previewImg" alt="Photo preview"></div>
-    <div class="upload-preview-bar">
-      <span class="upload-preview-name" id="fileName"></span>
-      <button class="btn-ghost" id="changeBtn" type="button" data-i18n="tool_change_photo">Change Photo</button>
+    <p class="lock-hint" id="lockHint" data-i18n="g_locked"></p>
+    <label class="uploader locked" id="uploader">
+      <input type="file" accept="image/*" id="fileInput" disabled>
+      <span class="uploader-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span>
+      <p class="uploader-cta" id="uploaderCta"></p>
+    </label>
+    <div class="upload-preview" id="previewBox" style="display:none">
+      <div class="upload-preview-img-wrap"><img id="previewImg" alt=""></div>
+      <div class="upload-preview-bar"><span class="upload-preview-name" id="fileName"></span><button class="btn-ghost" id="changeBtn" type="button" data-i18n="tool_change_photo">Change Photo</button></div>
     </div>
-  </div>
-  <div class="verdict" id="verdict" style="display:none"></div>
-  <div class="tool-nav" id="continueNav" style="display:none">
-    <button class="btn-solid" id="continueBtn" type="button" disabled data-i18n="tool_continue">Continue →</button>
-  </div>
+    <p class="tool-hint" id="tHint"></p>
+    <div class="tool-nav" id="continueNav" style="display:none"><button class="btn-solid" id="continueBtn" type="button" data-i18n="tool_continue">Continue →</button></div>
+  </section>
 
-  <section id="step2" aria-live="polite">
+  <section class="tool-step" id="step2">
     <div class="tool-eyebrow" data-i18n="s2_eyebrow">Step 2 · Landmarks</div>
-    <h2 class="tool-title" data-i18n="tool_step_adjust_title">Confirm The Landmarks</h2>
-    <figure class="lm-ref" id="lmRef">
-      <div class="lm-ref-main" id="lmRefSvg"></div>
-    </figure>
+    <h2 class="tool-title" id="s2Title"></h2>
+    <p class="tool-text" id="s2Text" style="margin-bottom:16px"></p>
     <p class="lm-name" id="lmName"></p>
     <p class="lm-desc" id="lmDesc"></p>
-    <div class="msg-bar" id="s2Msg"></div>
     <div class="lm-chips" id="lmChips"></div>
-    <div class="lm-stage" id="lmStage" style="margin-top:12px">
-      <canvas id="lmCanvas"></canvas>
-      <div class="lm-busy" id="lmBusy"><span class="mini-spinner"></span><span id="lmBusyTxt"></span></div>
-    </div>
+    <div class="lm-stage"><canvas id="lmCanvas"></canvas></div>
     <div class="lm-dash">
       <div class="lm-pad" id="lmPad">
-        <span></span><button type="button" data-dx="0" data-dy="-1" data-k="up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button><span></span>
-        <button type="button" data-dx="-1" data-dy="0" data-k="left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
-        <span class="c"><i></i></span>
-        <button type="button" data-dx="1" data-dy="0" data-k="right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
-        <span></span><button type="button" data-dx="0" data-dy="1" data-k="down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><span></span>
+        <span></span><button type="button" data-dx="0" data-dy="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button><span></span>
+        <button type="button" data-dx="-1" data-dy="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><span class="c"><i></i></span>
+        <button type="button" data-dx="1" data-dy="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        <span></span><button type="button" data-dx="0" data-dy="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><span></span>
       </div>
       <div class="lm-side">
-        <div>
-          <div class="lm-cap" style="margin:0 0 6px" id="lmStepLbl"></div>
-          <div class="lm-seg" id="lmSeg">
-            <button type="button" data-step="fine" data-i18n="tool_dash_step_fine">Fine</button>
-            <button type="button" data-step="normal" class="on" data-i18n="tool_dash_step_normal">Normal</button>
-            <button type="button" data-step="coarse" data-i18n="tool_dash_step_coarse">Coarse</button>
-          </div>
-        </div>
+        <div><div class="lm-cap" id="lmStepLbl"></div><div class="lm-seg" id="lmSeg"><button type="button" data-step="fine" data-i18n="tool_dash_step_fine">Fine</button><button type="button" data-step="normal" class="on" data-i18n="tool_dash_step_normal">Normal</button><button type="button" data-step="coarse" data-i18n="tool_dash_step_coarse">Coarse</button></div></div>
+        <div><div class="lm-cap" id="faceLbl"></div><div class="lm-seg" id="faceSeg"><button type="button" data-face="left" id="fL"></button><button type="button" data-face="right" class="on" id="fR"></button></div></div>
       </div>
     </div>
     <div class="lm-progress" id="lmProgress"></div>
-    <div class="tool-nav">
-      <button class="btn-ghost" type="button" id="s2Back" data-i18n="tool_back">← Back</button>
-      <button class="btn-solid" type="button" id="s2Confirm" disabled data-i18n="s2_confirm">Confirm Landmarks →</button>
-    </div>
+    <div class="tool-nav"><button class="btn-ghost" type="button" id="s2Back" data-i18n="tool_back">← Back</button><button class="btn-solid" type="button" id="s2Confirm" disabled data-i18n="s2_confirm">Confirm Landmarks →</button></div>
   </section>
 
-  <section id="step3" aria-live="polite">
+  <section class="tool-step" id="step3">
     <div class="tool-eyebrow" data-i18n="s3_eyebrow">Step 3 · Analysis</div>
-    <h2 class="tool-title" data-i18n="s3_title">Full Face Analysis</h2>
+    <h2 class="tool-title" id="s3Title"></h2>
     <div class="msg-bar" id="s3Msg"></div>
-    <div class="skull-card" style="margin-top:0">
-      <div class="skull-wrap" id="skullWrap"><div class="sk-up"></div><div class="sk-jaw" id="skJaw"></div></div>
-      <div class="skull-bubble"><div class="s3-h" style="margin:0" data-i18n="s3_skull_h">The Skull's Verdict</div><div id="skText"></div><button class="btn-ghost" type="button" id="skPlay" data-i18n="s3_say_play">▶ Replay</button></div>
-    </div>
+    <div class="skull-card"><div class="skull-wrap" id="skullWrap"><div class="sk-up"></div><div class="sk-jaw" id="skJaw"></div></div>
+      <div class="skull-bubble"><div class="s3-h" style="margin:0" id="skH"></div><div id="skText"></div><button class="btn-ghost" type="button" id="skPlay"></button></div></div>
     <div class="lm-stage" id="s3Stage" style="margin-top:16px"><canvas id="s3Canvas"></canvas></div>
-    <div id="s3Rating" style="margin-top:16px"></div>
-    <div id="s3Report"></div>
-    <div class="tool-nav">
-      <button class="btn-ghost" type="button" id="s3Back" data-i18n="tool_back">← Back</button>
-      <button class="btn-solid" type="button" id="s3Restart" data-i18n="s3_restart">Start Over</button>
-    </div>
+    <div id="s3Rating"></div>
+    <div class="tool-nav"><button class="btn-ghost" type="button" id="s3Back" data-i18n="tool_back">← Back</button><button class="btn-solid" type="button" id="s3Restart" data-i18n="s3_restart">Start Over</button></div>
   </section>
-</div>
-</div>
+</div></div>
 
 <script type="module">
 import { auth, onAuthStateChanged, signOut } from './firebase-config.js';
-import { getLang, applyDocumentDirection, applyTranslations, wireLangToggle, t, dict } from './i18n.js';
-
+import { getLang, applyDocumentDirection, applyTranslations, wireLangToggle, t } from './i18n.js';
 const $ = id => document.getElementById(id);
+let lang = getLang(), gender = null, photo = null, s2 = null, s3 = null;
+const L = (a, b) => lang === 'ar' ? b : a;
+const nf = n => lang === 'ar' ? String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const T = k => String(t(k, lang) ?? k);
 
-/* ── extra strings for the width points + the talking-skull report ── */
-(() => {
-  const SIDE = { en: ['left in photo', 'right in photo'], ar: ['يسار الصورة', 'يمين الصورة'] };
-  const WP = {
-    Z: { en: ['Cheekbone', 'The widest point of the cheek arch, level with the ear opening.'], ar: ['عظمة الخد', 'أعرض نقطة في قوس الوجنة، بمحاذاة فتحة الأذن.'] },
-    G: { en: ['Jaw corner', 'The corner where the jaw turns up toward the ear, at its widest.'], ar: ['زاوية الفك', 'الزاوية التي ينعطف عندها الفك نحو الأذن، عند أعرض نقطة.'] },
-    C: { en: ['Mouth corner', 'The outer corner where the upper and lower lips meet.'], ar: ['زاوية الفم', 'الزاوية الخارجية التي تلتقي عندها الشفتان.'] },
-    A: { en: ['Nostril edge', 'The outer edge of the nostril wing at its widest.'], ar: ['حافة المنخر', 'الحافة الخارجية لجناح الأنف عند أعرض نقطة.'] },
-    P:  { en: ['Pupil', 'The center of the pupil, looking straight at the camera.'], ar: ['بؤبؤ العين', 'مركز بؤبؤ العين وأنت تنظر مباشرة إلى الكاميرا.'] },
-    En: { en: ['Inner eye corner', 'Where the upper and lower eyelids meet, beside the nose.'], ar: ['زاوية العين الداخلية', 'حيث يلتقي الجفنان العلوي والسفلي بجانب الأنف.'] },
-    Ex: { en: ['Outer eye corner', 'Where the upper and lower eyelids meet, on the temple side.'], ar: ['زاوية العين الخارجية', 'حيث يلتقي الجفنان العلوي والسفلي من جهة الصدغ.'] }
-  };
-  ['en', 'ar'].forEach(L => Object.keys(WP).forEach(k => ['l', 'r'].forEach((sd, i) => {
-    dict[L]['tool_pt_' + k.toLowerCase() + sd] = `${k}${sd} — ${WP[k][L][0]} (${SIDE[L][i]})`;
-    dict[L]['tool_guide_desc_' + k.toLowerCase() + sd] = `${WP[k][L][1]} (${SIDE[L][i]})`;
-  })));
-  Object.assign(dict.en, {
-    s3_rating: 'Overall Rating', s3_skull_h: 'The Skull\'s Verdict', s3_say_play: '▶ Replay', s3_say_stop: '■ Stop',
-    s3_w_h: 'Width Proportions', s3_m_jaw: 'Jaw : cheekbone width', s3_m_mn: 'Mouth : nose width',
-    s3_say_outro: 'That is my verdict. Remember, this is one flat photo, not a medical exam.',
-    s3_jaw_low: 'Your jaw is narrow compared to your cheekbones, ratio {v}. The lower face looks tapered.',
-    s3_jaw_ok: 'Your jaw to cheekbone ratio, {v}, sits in a healthy range.',
-    s3_jaw_high: 'Your jaw is very wide compared to your cheekbones, ratio {v}. The lower face looks square and heavy.',
-    s2_axis_y: 'measures height', s2_axis_x: 'measures width', s3_stat_lt: 'Lower third', s3_stat_split: 'Split', s3_stat_jaw: 'Jaw ratio'
-  });
-  Object.assign(dict.ar, {
-    s3_rating: 'التقييم العام', s3_skull_h: 'حكم الجمجمة', s3_say_play: '▶ إعادة', s3_say_stop: '■ إيقاف',
-    s3_w_h: 'نسب العرض', s3_m_jaw: 'الفك : عرض الوجنتين', s3_m_mn: 'الفم : عرض الأنف',
-    s3_say_outro: 'هذا حكمي. تذكّر أنها صورة واحدة مسطحة وليست فحصًا طبيًا.',
-    s3_jaw_low: 'فكك ضيق مقارنة بالوجنتين، النسبة {v}. يبدو الوجه السفلي مدببًا.',
-    s3_jaw_ok: 'نسبة الفك إلى الوجنتين، {v}، ضمن المدى الصحي.',
-    s3_jaw_high: 'فكك عريض جدًا مقارنة بالوجنتين، النسبة {v}. يبدو الوجه السفلي مربعًا وثقيلًا.',
-    s2_axis_y: 'يقيس الارتفاع', s2_axis_x: 'يقيس العرض', s3_stat_lt: 'الثلث السفلي', s3_stat_split: 'التقسيم', s3_stat_jaw: 'نسبة الفك'
-  });
-  Object.assign(dict.en, {
-    s2_axis_xy: 'measures eye position',
-    tool_pt_br: 'Br — Brow top', tool_guide_desc_br: 'The highest point of the eyebrows, on the midline. Used for the facial width-to-height ratio.',
-    tool_pt_st: 'St — Stomion (mouth line)', tool_guide_desc_st: 'The line where the upper and lower lips meet, on the midline.',
-    s3_m_split: 'Philtrum : chin (Sn–St : St–Me)',
-    s3_m_fwhr: 'Facial width : height (fWHR)', s3_m_fidx: 'Face height : width', s3_m_ipdz: 'Eye distance : cheekbone width',
-    s3_m_esp: 'Eye spacing (gap : eye width)', s3_m_tilt: 'Canthal tilt', s3_m_midR: 'Midface ratio',
-    s3_m_nic: 'Nose width : eye gap', s3_m_sym: 'Facial asymmetry',
-    s3_h_all: 'All Measurements',
-    s3_algo_m: 'Scored with the male algorithm. Ideal ranges and weights are tuned for men, with extra weight on the jaw, fWHR and canthal tilt.',
-    s3_algo_f: 'Scored with the female algorithm. Ideal ranges and weights are tuned for women, with extra weight on the eyes, midface and symmetry.',
-    s3_stat_tilt: 'Canthal tilt', s3_stat_sym: 'Asymmetry',
-    s3_say_intro: 'Let me look at you. I measured {n} proportions on your face. Your rating is {tier}, around {psl} on the scale.',
-    s3_say_algo_m: 'I scored you with the male algorithm.', s3_say_algo_f: 'I scored you with the female algorithm.',
-    s3_tilt_low: 'Your canthal tilt is {v}, flatter than the ideal. The eyes look neutral or tired.',
-    s3_tilt_ok: 'Your canthal tilt is {v}, inside the attractive positive range.',
-    s3_tilt_high: 'Your canthal tilt is {v}, very upward. The eyes look sharp and angled.',
-    s3_sym_ok: 'Your face is well balanced left to right, with an asymmetry of {v}.',
-    s3_sym_bad: 'There is noticeable left to right asymmetry, {v}. A straight, evenly lit photo can help.',
-    s3_say_best: 'Your strongest feature is {m}, at {v}.'
-  });
-  Object.assign(dict.ar, {
-    s2_axis_xy: 'تقيس موضع العين',
-    tool_pt_br: 'Br — أعلى الحاجب', tool_guide_desc_br: 'أعلى نقطة في الحاجبين على خط المنتصف. تُستخدم لنسبة عرض الوجه إلى ارتفاعه.',
-    tool_pt_st: 'St — خط الفم (ستوميون)', tool_guide_desc_st: 'الخط الذي تلتقي عنده الشفتان العليا والسفلى، على خط المنتصف.',
-    s3_m_split: 'الفيلترم : الذقن (Sn–St : St–Me)',
-    s3_m_fwhr: 'عرض الوجه : ارتفاعه (fWHR)', s3_m_fidx: 'ارتفاع الوجه : عرضه', s3_m_ipdz: 'المسافة بين العينين : عرض الوجنتين',
-    s3_m_esp: 'تباعد العينين (الفاصل : عرض العين)', s3_m_tilt: 'ميل زاوية العين', s3_m_midR: 'نسبة الوجه الأوسط',
-    s3_m_nic: 'عرض الأنف : الفاصل بين العينين', s3_m_sym: 'عدم تناظر الوجه',
-    s3_h_all: 'كل القياسات',
-    s3_algo_m: 'تم التقييم بخوارزمية الذكور. المعدلات المثالية والأوزان مضبوطة للرجال، مع وزن أكبر للفك وfWHR وميل زاوية العين.',
-    s3_algo_f: 'تم التقييم بخوارزمية الإناث. المعدلات المثالية والأوزان مضبوطة للنساء، مع وزن أكبر للعينين والوجه الأوسط والتناظر.',
-    s3_stat_tilt: 'ميل العين', s3_stat_sym: 'عدم التناظر',
-    s3_say_intro: 'دعني أنظر إليك. قست {n} نسبة على وجهك. تقييمك {tier}، حوالي {psl} على المقياس.',
-    s3_say_algo_m: 'قيّمتك بخوارزمية الذكور.', s3_say_algo_f: 'قيّمتك بخوارزمية الإناث.',
-    s3_tilt_low: 'ميل زاوية عينك {v}، أكثر استواءً من المثالي. تبدو العينان محايدتين أو متعبتين.',
-    s3_tilt_ok: 'ميل زاوية عينك {v}، ضمن المدى الإيجابي الجذاب.',
-    s3_tilt_high: 'ميل زاوية عينك {v}، مرتفع جداً. تبدو العينان حادتين ومائلتين للأعلى.',
-    s3_sym_ok: 'وجهك متوازن من اليمين إلى اليسار، وعدم التناظر {v}.',
-    s3_sym_bad: 'هناك عدم تناظر واضح بين اليمين واليسار، {v}. صورة مستقيمة وبإضاءة متساوية قد تساعد.',
-    s3_say_best: 'أقوى ملامحك هي {m}، بقيمة {v}.'
-  });
-})();
-
-/* ── AUTH ── */
+/* ── AUTH (same gate as tool.html) ── */
 function renderUserPill(user) {
   const avatar = (user.photoURL && user.photoURL.startsWith('http')) ? user.photoURL : 'Skull.png';
-  const stored = JSON.parse(localStorage.getItem('brandA_user') || '{}');
-  const name = user.displayName || stored.name?.trim() || (user.email ? user.email.split('@')[0] : '');
-  $('navRight').innerHTML =
-    '<button class="nav-lang" id="navLang" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span><span class="lang-cur" id="langCur">EN</span> <span class="lang-sep">/</span> <span id="langOther">AR</span></span></button>' +
-    '<div class="user-pill"><img class="user-avatar" id="navAvatarImg"><span class="user-name"></span><button class="btn-logout" id="logoutBtn"></button></div>';
+  const name = user.displayName || (user.email ? user.email.split('@')[0] : '');
+  $('navRight').innerHTML = '<button class="nav-lang" id="navLang" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span><span class="lang-cur" id="langCur">EN</span> <span class="lang-sep">/</span> <span id="langOther">AR</span></span></button><div class="user-pill"><img class="user-avatar" id="navAvatarImg"><span class="user-name"></span><button class="btn-logout" id="logoutBtn"></button></div>';
   document.querySelector('.user-name').textContent = name;
   $('logoutBtn').textContent = t('sign_out', lang);
-  const img = $('navAvatarImg');
-  img.src = avatar; img.onerror = function () { this.onerror = null; this.src = 'Skull.png'; };
+  const img = $('navAvatarImg'); img.src = avatar; img.onerror = function () { this.onerror = null; this.src = 'Skull.png'; };
   $('logoutBtn').onclick = () => signOut(auth).then(() => { localStorage.removeItem('brandA_user'); location.href = 'home.html'; });
   wireLangToggle($('navLang'), lang, onLangChange);
 }
 onAuthStateChanged(auth, user => {
   if (!user) { sessionStorage.setItem('authRequired', '1'); location.href = 'login.html'; return; }
-  renderUserPill(user);
-  $('authGate').classList.add('auth-gate-hidden');
+  renderUserPill(user); $('authGate').classList.add('auth-gate-hidden');
 });
+window.toggleMobileNav = () => ['hamburger', 'navLinks', 'navRight'].forEach(id => $(id).classList.toggle(id === 'hamburger' ? 'open' : 'mobile-open'));
 
-/* ── I18N ── */
-let lang = getLang();
-applyDocumentDirection(lang);
-applyTranslations(lang);
-function renderStatic() {
-  $('uploaderCta').innerHTML = `${t('tool_drop_prefix', lang)} <span class="browse-word">${t('tool_drop_browse', lang)}</span>`;
+/* ── TEXT ── */
+const PT = [
+  { id: 'Po', n: ['Po — Porion (ear canal)', 'Po — البوريون (قناة الأذن)'], d: ['The top of the ear-canal opening: the upper edge of the small flap (tragus) in front of the ear hole.', 'أعلى فتحة قناة الأذن: الحافة العليا للنتوء الصغير (الزُّنَيم) أمام الأذن.'] },
+  { id: 'Or', n: ['Or — Orbitale (under the eye)', 'Or — الأوربيتال (تحت العين)'], d: ['The lowest point of the bony eye-socket rim, just under the eyeball.', 'أخفض نقطة في حافة محجر العين العظمية، تحت مقلة العين مباشرة.'] },
+  { id: 'Ra', n: ['Ra — Ramus (rear jaw edge)', 'Ra — الراموس (حافة الفك الخلفية)'], d: ['A point on the rear edge of the jaw, on the upright bone rising toward the ear, about a third of the way up.', 'نقطة على الحافة الخلفية للفك، على العظم العمودي الصاعد نحو الأذن، على بعد ثلثه تقريباً.'] },
+  { id: 'Go', n: ['Go — Gonion (jaw corner)', 'Go — الجونيون (زاوية الفك)'], d: ['The corner of the jaw where the rear edge meets the bottom edge.', 'زاوية الفك حيث تلتقي الحافة الخلفية بالحافة السفلية.'] },
+  { id: 'Me', n: ['Me — Menton (chin bottom)', 'Me — المنتون (أسفل الذقن)'], d: ['The lowest point of the chin.', 'أخفض نقطة في الذقن.'] }
+];
+const CL = [
+  { t: ['Chad · Elite Tier', 'Chad · فئة النخبة'], c: '#5ecbff', n: ['Strong CCW', 'CCW قوي'], s: ['Strong forward growth', 'نمو أمامي قوي'],
+    d: ['Your jaw swings far forward and up. This is strong horizontal growth: a short, deep lower face, a projecting chin and a powerful jawline from the side. Watch for a very deep bite.', 'فكك يدور كثيراً للأمام والأعلى. هذا نمو أفقي قوي: وجه سفلي قصير وعميق وذقن بارزة وفك قوي من الجانب. انتبه لعضة عميقة جداً.'] },
+  { t: ['Chadlite · High Tier', 'Chadlite · فئة عالية'], c: '#6ee7b7', n: ['CCW', 'CCW'], s: ['Forward growth', 'نمو أمامي'],
+    d: ['Your jaw rotates forward. The jaw plane runs flatter than average, which gives a well-supported lower face, good chin projection and a defined jawline in profile.', 'فكك يدور للأمام. مستوى الفك أكثر استواءً من المتوسط، وهذا يمنح وجهاً سفلياً مدعوماً وذقناً بارزة وفكاً واضحاً من الجانب.'] },
+  { t: ['Normie · Average', 'عادي · متوسط'], c: '#e6e6e6', n: ['Neutral', 'محايد'], s: ['Balanced growth', 'نمو متوازن'],
+    d: ['Your jaw sits in the average range, with no clear forward or downward tilt. Your profile will be decided more by chin projection and soft tissue than by rotation.', 'فكك ضمن المعدل المتوسط بلا ميل واضح للأمام أو للأسفل. شكل جانب وجهك يحدده بروز الذقن والأنسجة الرخوة أكثر من الدوران.'] },
+  { t: ['Below Average · Weak', 'دون المتوسط · ضعيف'], c: '#ff9a4c', n: ['CW', 'CW'], s: ['Downward growth', 'نمو نحو الأسفل'],
+    d: ['Your jaw rotates downward and back. The jaw plane is steeper than average, which lengthens the lower face, pulls the chin back and softens the jawline in profile.', 'فكك يدور للأسفل والخلف. مستوى الفك أكثر انحداراً من المتوسط، فيطيل الوجه السفلي ويسحب الذقن للخلف ويُليّن خط الفك من الجانب.'] },
+  { t: ['Sub-3 · Severe', 'Sub-3 · شديد'], c: '#ff5555', n: ['Strong CW', 'CW قوي'], s: ['Strong downward growth', 'نمو قوي نحو الأسفل'],
+    d: ['Your jaw is steeply rotated: a long lower face, a recessed chin and a weak jawline from the side. This pattern is usually skeletal, so see an orthodontist or maxillofacial surgeon for a real lateral X-ray before deciding anything.', 'فكك مائل بشدة: وجه سفلي طويل وذقن متراجعة وفك ضعيف من الجانب. هذا النمط غالباً هيكلي، فراجع طبيب تقويم أو جراح فكين لإجراء أشعة جانبية حقيقية قبل أي قرار.'] }
+];
+function applyStatic() {
+  const set = (id, a, b) => { $(id).textContent = L(a, b); };
+  set('tEye', '☠ Side Profile ☠', '☠ الجانب ☠'); set('tTitle', 'CCW / CW Jaw Rotation', 'دوران الفك CCW / CW');
+  set('tText', 'Upload one true side photo. Mr Skull measures whether your jaw grows forward (CCW) or downward (CW).', 'ارفع صورة جانبية حقيقية واحدة. يقيس Mr Skull ما إذا كان فكك ينمو للأمام (CCW) أم للأسفل (CW).');
+  set('tHint', 'Turn your head 90° so your ear and the whole jawline show. Look straight ahead, teeth together, hair away from the ear and jaw.', 'أدر رأسك ٩٠° ليظهر أذنك وخط الفك كاملاً. انظر للأمام، الأسنان متلامسة، وأبعد الشعر عن الأذن والفك.');
+  $('uploaderCta').innerHTML = `${T('tool_drop_prefix')} <span class="browse-word">${T('tool_drop_browse')}</span>`;
+  set('s2Title', 'Place The Landmarks', 'ضع النقاط المرجعية');
+  set('s2Text', 'Tap the photo to drop the selected point there, then fine-tune it with the arrows. Check all 5 points.', 'اضغط على الصورة لوضع النقطة المختارة، ثم اضبطها بالأسهم. راجع النقاط الخمس كلها.');
+  set('faceLbl', 'Photo faces', 'اتجاه الوجه'); set('fL', '← Left', '← يسار'); set('fR', 'Right →', 'يمين →');
+  set('s3Title', 'Jaw Rotation Result', 'نتيجة دوران الفك'); set('skH', "The Skull's Verdict", 'حكم الجمجمة');
+  $('skPlay').textContent = sk.on ? L('■ Stop', '■ إيقاف') : L('▶ Replay', '▶ إعادة');
   const lb = $('logoutBtn'); if (lb) lb.textContent = t('sign_out', lang);
 }
-function onLangChange(next) { lang = next; applyDocumentDirection(next); applyTranslations(next); renderStatic(); if (validation && $('previewBox').style.display !== 'none') renderVerdict(validation); renderStep2(); if ($('step3').classList.contains('active')) { renderS3(); skRelang(); } }
+function onLangChange(next) {
+  lang = next; applyDocumentDirection(next); applyTranslations(next); applyStatic();
+  if (s2) renderStep2();
+  if ($('step3').classList.contains('active')) { renderS3(); skRelang(); }
+}
+applyDocumentDirection(lang); applyTranslations(lang);
 wireLangToggle($('navLang'), lang, onLangChange);
-window.toggleMobileNav = () => {
-  ['hamburger', 'navLinks', 'navRight'].forEach(id => $(id).classList.toggle(id === 'hamburger' ? 'open' : 'mobile-open'));
-};
-$('navLinks').addEventListener('click', e => {
-  if (e.target.tagName === 'A') ['hamburger', 'navLinks', 'navRight'].forEach(id => $(id).classList.remove('open', 'mobile-open'));
-});
-renderStatic();
 
-/* ── FACE ANALYSIS (runs fully in the browser with MediaPipe) ── */
-const T = (key, params = {}) => String(t(key, lang) ?? key).replace(/\{(\w+)\}/g, (_, k) => params[k] ?? '');
-const RULES = {
-  yawMax: 15,       // deg — beyond this the head is turned (¾ view / profile)
-  rollLevel: 0.5    // deg — below this the pupillary line counts as already level
-};
-let landmarker = null, modelFailed = false;
-async function getLandmarker() {
-  if (landmarker || modelFailed) return landmarker;
-  try {
-    const base = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
-    const vision = await import(base + '/vision_bundle.mjs');
-    const files = await vision.FilesetResolver.forVisionTasks(base + '/wasm');
-    landmarker = await vision.FaceLandmarker.createFromOptions(files, {
-      baseOptions: {
-        modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
-        delegate: 'GPU'
-      },
-      runningMode: 'IMAGE',
-      numFaces: 2,                                  // 2 so a second person can be caught
-      outputFacialTransformationMatrixes: true
-    });
-  } catch (e) { console.error('MediaPipe load failed', e); modelFailed = true; landmarker = null; }
-  return landmarker;
-}
-
-// Head yaw (deg) from MediaPipe's 4x4 column-major transform.
-function headYaw(result) {
-  const m = result.facialTransformationMatrixes?.[0]?.data;
-  return m ? Math.asin(Math.max(-1, Math.min(1, -m[2]))) * 180 / Math.PI : null;
-}
-
-// Pupil centers in pixels + the line angle vs true horizontal.
-// Image y points down, so a positive angle = line slopes down to the right (visually clockwise).
-function pupils(lm, w, h) {
-  const hasIris = lm.length > 473;
-  const A = hasIris ? lm[468] : lm[33], B = hasIris ? lm[473] : lm[263];
-  const [L, R] = A.x <= B.x ? [A, B] : [B, A];     // L = left in the picture
-  const l = { x: L.x * w, y: L.y * h }, r = { x: R.x * w, y: R.y * h };
-  return { angle: Math.atan2(r.y - l.y, r.x - l.x) * 180 / Math.PI, mid: { x: (l.x + r.x) / 2, y: (l.y + r.y) / 2 } };
-}
-
-// Level the photo (rotate so the pupil line is horizontal), then crop to head + hair.
-// The mesh only covers the face (forehead→chin), so the box is the face extents padded for hair/ears.
-// pad = space above AND below the face (as a fraction of face height) -> face sits in the vertical middle.
-// side = extra space left/right of the face (fraction of face width). Raise pad for more hair/shoulders.
-const CROP = { pad: 0.42, side: 0.32, aspect: 4 / 5, maxSide: 1600 };
-function levelAndCrop(img, lm, rollDeg, pivot) {
-  const W = img.naturalWidth, H = img.naturalHeight, r = rollDeg * Math.PI / 180;
-  const cos = Math.cos(r), sin = Math.sin(r);
-  // landmarks in the LEVELED frame: rotate by -roll around the pivot
-  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
-  lm.forEach(p => {
-    const dx = p.x * W - pivot.x, dy = p.y * H - pivot.y;
-    const x = pivot.x + dx * cos + dy * sin, y = pivot.y - dx * sin + dy * cos;
-    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
-  });
-  const fw = x1 - x0, fh = y1 - y0;
-  // Horizontal centre = facial midline (forehead, nose bridge, nose tip, chin), not the mesh bbox,
-  // so a slightly turned head or ear landmarks don't push the face off-centre.
-  let mx = 0;
-  [10, 168, 1, 152].forEach(i => {
-    const p = lm[i], dx = p.x * W - pivot.x, dy = p.y * H - pivot.y;
-    mx += pivot.x + dx * cos + dy * sin;
-  });
-  const cx = mx / 4;
-  const cy = (y0 + y1) / 2;                       // vertical centre of the face (forehead -> chin)
-  let h = fh * (1 + 2 * CROP.pad), w = Math.max(fw * (1 + 2 * CROP.side), h * CROP.aspect);
-  h = Math.max(h, w / CROP.aspect);
-  const bx = cx - w / 2, by = cy - h / 2;        // face centred on both axes
-  const k = Math.min(1, CROP.maxSide / Math.max(w, h));
-  const c = document.createElement('canvas');
-  c.width = Math.round(w * k); c.height = Math.round(h * k);
-  const g = c.getContext('2d');
-  g.fillStyle = '#0b0b0b'; g.fillRect(0, 0, c.width, c.height);   // only visible if the box leaves the photo
-  g.scale(k, k); g.translate(-bx, -by);
-  g.translate(pivot.x, pivot.y); g.rotate(-r); g.translate(-pivot.x, -pivot.y);
-  g.drawImage(img, 0, 0);
-  return c.toDataURL('image/jpeg', 0.92);
-}
-
-async function analyze(img) {
-  const lmk = await getLandmarker();
-  if (!lmk) return { error: 'tv_err_model' };
-  let res;
-  try { res = lmk.detect(img); } catch (e) { console.error(e); return { error: 'tv_err_analyze' }; }
-  const faces = res?.faceLandmarks?.length || 0;
-
-  // 1. Object detection & strict compliance
-  if (faces !== 1) return { ok: false, head: ['tv_rej_human'], reason: [faces === 0 ? 'tv_rej_human_none' : 'tv_rej_human_multi'] };
-
-  const yaw = headYaw(res);
-  if (yaw === null) return { error: 'tv_err_pose' };
-  const lm = res.faceLandmarks[0];
-  const eyes = pupils(lm, img.naturalWidth, img.naturalHeight);
-  const roll = eyes.angle, abs = Math.abs(roll);
-  const stats = { yaw, roll };
-
-  if (Math.abs(yaw) > RULES.yawMax) return { ok: false, stats, head: ['tv_rej_front'],
-    reason: ['tv_rej_front_why', { deg: Math.abs(yaw).toFixed(1), max: RULES.yawMax }] };
-
-  // 2. Smart geometric correction — actually applied to the image
-  const level = abs < RULES.rollLevel;
-  const deg = abs.toFixed(1);
-  const steps = level
-    ? [['tv_step_level', { deg: roll.toFixed(2) }]]
-    : [['tv_step1'], ['tv_step2', { deg }], ['tv_step3', { deg, dir: roll > 0 ? 'tv_ccw' : 'tv_cw' }], ['tv_step4']];
-  return { ok: true, stats, steps, level,
-    cropUrl: levelAndCrop(img, lm, level ? 0 : roll, eyes.mid),
-    correctionDeg: level ? 0 : -roll,
-    head: ['tv_ok_head'], reason: level ? ['tv_ok_level'] : ['tv_ok_tilt', { deg }] };
-}
-
-const txt = a => T(a[0], a[1] ? Object.fromEntries(Object.entries(a[1]).map(([k, v]) => [k, (k === 'dir') ? T(v) : v])) : {});
-function renderVerdict(r) {
-  const box = $('verdict');
-  box.style.display = 'block';
-  const esc = v => String(v).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
-  if (r.error) {
-    box.className = 'verdict bad';
-    box.innerHTML = `<div class="verdict-head">${esc(T('tv_failed'))}</div><p>${esc(T(r.error))}</p>`;
-    return;
-  }
-  box.className = 'verdict ' + (r.ok ? 'ok' : 'bad');
-  box.innerHTML = `<div class="verdict-head">${esc(txt(r.head))}</div><p>${esc(txt(r.reason))}</p>`;
-  if (r.ok) { $('continueNav').style.display = 'flex'; $('continueBtn').disabled = false; }
-}
-
-/* ── GENDER GATE (must be chosen before a photo can be picked) ── */
-let gender = null;   // 'male' | 'female'
-function setGender(g) {
-  gender = g;
-  document.querySelectorAll('.gender-btn').forEach(b => { const on = b.dataset.g === g; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
-  $('uploader').classList.remove('locked');
-  $('fileInput').disabled = false;
-  $('lockHint').style.display = 'none';
-  showMsg('');
+/* ── STEP 1 · gender + upload ── */
+const showMsg = m => { const el = $('toolMsg'); el.textContent = m || ''; el.className = 'msg-bar' + (m ? ' error' : ''); };
+document.querySelectorAll('.gender-btn').forEach(b => b.addEventListener('click', () => {
+  gender = b.dataset.g;
+  document.querySelectorAll('.gender-btn').forEach(x => x.classList.toggle('on', x === b));
+  $('uploader').classList.remove('locked'); $('fileInput').disabled = false; $('lockHint').style.display = 'none'; showMsg('');
   if ($('step3').classList.contains('active')) renderS3();
-}
-document.querySelectorAll('.gender-btn').forEach(b => b.addEventListener('click', () => setGender(b.dataset.g)));
-
-/* ── UPLOADER ── */
-let currentImage = null;   // HTMLImageElement of the uploaded photo
-let validation = null;     // last verdict — { ok, stats, correctionDeg, cropUrl, cropped (leveled Image), ... }
-
-function showMsg(key) {
-  const el = $('toolMsg');
-  el.textContent = key ? T(key) : '';
-  el.className = 'msg-bar' + (key ? ' error' : '');
-}
-function loadImage(src) {
-  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
-}
-function resetVerdict() {
-  validation = null;
-  $('verdict').style.display = 'none';
-  $('continueNav').style.display = 'none';
-  $('continueBtn').disabled = true;
-}
+}));
+const loadImage = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
 async function handleFile(file) {
-  if (!gender) { showMsg('g_err'); return; }
-  if (!file || !file.type.startsWith('image/')) { showMsg('tv_err_not_image'); return; }
-  let img;
-  try { img = await loadImage(URL.createObjectURL(file)); }
-  catch (e) { showMsg('tv_err_read'); return; }
-  currentImage = img; resetVerdict(); s2 = null;
-  $('previewImg').src = img.src;
-  $('fileName').textContent = file.name;
-  $('uploader').style.display = 'none';
-  $('previewBox').style.display = 'block';
-  showMsg('');
-
-  const box = $('verdict');
-  box.className = 'verdict'; box.style.display = 'block';
-  box.innerHTML = `<div class="verdict-loading"><span class="mini-spinner"></span>${T('tv_analyzing')}</div>`;
-  const r = await analyze(img);
-  if (img !== currentImage) return;            // user swapped the photo mid-analysis
-  validation = r;
-  if (r.ok && r.cropUrl) { $('previewImg').src = r.cropUrl; try { r.cropped = await loadImage(r.cropUrl); } catch (e) {} }
-  renderVerdict(r);
+  if (!gender) { showMsg(T('g_err')); return; }
+  if (!file || !file.type.startsWith('image/')) { showMsg(T('tv_err_not_image')); return; }
+  let img; try { img = await loadImage(URL.createObjectURL(file)); } catch (e) { showMsg(T('tv_err_read')); return; }
+  const m = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+  c.width = Math.round(img.naturalWidth * m); c.height = Math.round(img.naturalHeight * m);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  photo = c; s2 = null; showMsg('');
+  $('previewImg').src = c.toDataURL('image/jpeg', .9); $('fileName').textContent = file.name;
+  $('uploader').style.display = 'none'; $('previewBox').style.display = 'block'; $('continueNav').style.display = 'flex';
 }
 $('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
-$('changeBtn').addEventListener('click', () => {
-  currentImage = null; resetVerdict(); s2 = null;
-  $('fileInput').value = '';
-  $('uploader').style.display = 'flex';
-  $('previewBox').style.display = 'none';
-  $('fileInput').click();
-});
-$('continueBtn').addEventListener('click', () => {
-  if (!validation?.ok) return;
-  $('previewBox').style.display = 'none';
-  $('continueNav').style.display = 'none';
-  $('verdict').style.display = 'none';
-  $('genderBox').style.display = 'none';
-  openStep2();
-  scrollTo({ top: 0, behavior: 'smooth' });
-});
+$('changeBtn').addEventListener('click', () => { photo = null; s2 = null; $('fileInput').value = ''; $('uploader').style.display = 'flex'; $('previewBox').style.display = 'none'; $('continueNav').style.display = 'none'; $('fileInput').click(); });
 const up = $('uploader');
 ['dragenter', 'dragover'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.add('drag'); }));
 ['dragleave', 'drop'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.remove('drag'); }));
 up.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
+const show = id => { document.querySelectorAll('.tool-step').forEach(s => s.classList.toggle('active', s.id === id)); scrollTo({ top: 0, behavior: 'smooth' }); };
+$('continueBtn').addEventListener('click', () => { if (!photo) return; if (!s2) initS2('right'); show('step2'); layoutStage(); renderStep2(); });
 
-/* ══════════════════════════════════════════════════════════
-   STEP 2 · LANDMARK REVIEW
-   22 points: height (Tr, Br, N, Sn, Ls, St, Li, Me), eyes (pupils + eye corners) and width (cheekbone, jaw, mouth, nose).
-   Points are auto-placed from the face mesh and can ONLY be moved
-   with the arrow pad (or keyboard arrows) — never dragged or clicked.
-══════════════════════════════════════════════════════════ */
-const LM = [
-  { id: 'Tr', pt: 'tool_pt_tr', desc: 'tool_guide_desc_tr' },
-  { id: 'Br', pt: 'tool_pt_br', desc: 'tool_guide_desc_br' },
-  { id: 'N',  pt: 'tool_pt_n',  desc: 'tool_guide_desc_n' },
-  { id: 'Sn', pt: 'tool_pt_sn', desc: 'tool_guide_desc_sn' },
-  { id: 'Ls', pt: 'tool_pt_ls', desc: 'tool_guide_desc_ls' },
-  { id: 'St', pt: 'tool_pt_st', desc: 'tool_guide_desc_st' },
-  { id: 'Li', pt: 'tool_pt_li', desc: 'tool_guide_desc_li' },
-  { id: 'Me', pt: 'tool_pt_me', desc: 'tool_guide_desc_me' },
-  ...['Pl', 'Pr', 'Enl', 'Enr', 'Exl', 'Exr'].map(id => ({ id, pt: 'tool_pt_' + id.toLowerCase(), desc: 'tool_guide_desc_' + id.toLowerCase(), e: true })),
-  ...['Zl', 'Zr', 'Gl', 'Gr', 'Cl', 'Cr', 'Al', 'Ar'].map(id => ({ id, pt: 'tool_pt_' + id.toLowerCase(), desc: 'tool_guide_desc_' + id.toLowerCase(), w: true }))
-];
-LM.forEach(m => m.ax = m.w ? 'x' : m.e ? 'xy' : 'y');   // vertical-proportion points move ↕ only, width points move ↔ only
-const STEP_PX = { fine: 0.5, normal: 2, coarse: 8 };   // image px per 1000 px of image height
-const DOT_R = 1.5;                                      // css px — deliberately tiny
-let s2 = null;   // { src, img, W, H, k, dpr, pts:{id:{x,y,ax,ay,seen}}, sel, stepKey, detected, hairEst }
-const nf = n => lang === 'ar' ? String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n);
-const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-
-/* Hairline: scan up the forehead midline until skin turns to (dark) hair. */
-function findHairline(img, p10, p9, fw, fh) {
-  try {
-    const W = img.naturalWidth, H = img.naturalHeight;
-    const c = document.createElement('canvas'); c.width = W; c.height = H;
-    const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
-    const band = Math.max(2, Math.round(0.035 * fw));
-    const x0 = clamp(Math.round(p10.x - band), 0, W - 1), bw = Math.max(1, Math.min(W - x0, band * 2));
-    const yEnd = clamp(Math.round(p9.y), 1, H - 1);
-    const d = g.getImageData(x0, 0, bw, yEnd).data;
-    const col = new Float32Array(yEnd);
-    for (let y = 0; y < yEnd; y++) {
-      let sum = 0;
-      for (let x = 0; x < bw; x++) { const k = (y * bw + x) * 4; sum += 0.299 * d[k] + 0.587 * d[k + 1] + 0.114 * d[k + 2]; }
-      col[y] = sum / bw;
-    }
-    const sm = new Float32Array(yEnd);                        // 5-row smoothing
-    for (let y = 0; y < yEnd; y++) { let s = 0, n = 0; for (let k = -2; k <= 2; k++) { const i = y + k; if (i >= 0 && i < yEnd) { s += col[i]; n++; } } sm[y] = s / n; }
-    const y10 = Math.round(p10.y), yTo = yEnd - Math.round(0.05 * fh);
-    if (yTo - y10 < 3) return null;
-    const skinArr = Array.from(sm.slice(y10, yTo)).sort((a, b) => a - b);
-    const skin = skinArr[skinArr.length >> 1];
-    if (skin < 25) return null;                               // too dark to trust
-    const thr = skin * 0.62, run = Math.max(3, Math.round(0.012 * fh));
-    const top = Math.max(run, Math.round(p10.y - 0.6 * fh));
-    for (let y = y10; y > top; y--) {
-      let all = true;
-      for (let k = 1; k <= run; k++) if (sm[y - k] >= thr) { all = false; break; }
-      if (all) return y;
-    }
-  } catch (e) { console.warn('hairline scan failed', e); }
-  return null;
+/* ── STEP 2 · landmarks (5 points: Po, Or, Ra, Go, Me) ── */
+const STEP_PX = { fine: .5, normal: 2, coarse: 8 };
+const DEF = { Po: [.40, .45], Or: [.64, .45], Ra: [.38, .58], Go: [.40, .72], Me: [.62, .82] };   // average profile, facing right
+function initS2(face) {
+  const W = photo.width, H = photo.height, pts = {};
+  PT.forEach(m => { const [x, y] = DEF[m.id]; pts[m.id] = { x: (face === 'left' ? 1 - x : x) * W, y: y * H, seen: false }; });
+  s2 = { W, H, pts, sel: 0, stepKey: 'normal', face }; pts.Po.seen = true;
 }
-
-
-/* Upper-lip border (Ls): the mesh runs low on the upper lip, so look for the thin bright
-   vermilion ridge just above the dark mouth line, on the midline. Returns null if not clear. */
-function findUpperLip(img, p0, p13, p14, fw, fh) {
-  try {
-    const W = img.naturalWidth, H = img.naturalHeight;
-    const band = Math.max(2, Math.round(0.02 * fw));
-    const x0 = clamp(Math.round(p0.x - band), 0, W - 1), bw = Math.max(1, Math.min(W - x0, band * 2));
-    const yA = clamp(Math.round(p0.y - 0.10 * fh), 0, H - 2), yB = clamp(Math.round(p14.y + 0.04 * fh), yA + 2, H - 1);
-    const c = document.createElement('canvas'); c.width = bw; c.height = yB - yA;
-    const g = c.getContext('2d', { willReadFrequently: true });
-    g.drawImage(img, x0, yA, bw, yB - yA, 0, 0, bw, yB - yA);
-    const d = g.getImageData(0, 0, bw, yB - yA).data, n = yB - yA, L = new Float32Array(n);
-    for (let y = 0; y < n; y++) { let sum = 0; for (let x = 0; x < bw; x++) { const k = (y * bw + x) * 4; sum += 0.299 * d[k] + 0.587 * d[k + 1] + 0.114 * d[k + 2]; } L[y] = sum / bw; }
-    const sm = new Float32Array(n);
-    for (let y = 0; y < n; y++) { let s = 0, m = 0; for (let k = -1; k <= 1; k++) { const i = y + k; if (i >= 0 && i < n) { s += L[i]; m++; } } sm[y] = s / m; }
-    // mouth line = darkest row near the inner-lip landmarks
-    const mid = (p13.y + p14.y) / 2 - yA, r = Math.round(0.04 * fh);
-    let S = -1, best = Infinity;
-    for (let y = Math.max(1, Math.round(mid - r)); y < Math.min(n - 1, Math.round(mid + r)); y++) if (sm[y] < best) { best = sm[y]; S = y; }
-    if (S < 0) return null;
-    // brightest local ridge between 1.2% and 7.5% of the face height above the mouth line
-    const lo = Math.max(1, S - Math.round(0.075 * fh)), hi = S - Math.round(0.012 * fh);
-    let peak = -1, pv = -Infinity, mn = Infinity;
-    for (let y = lo; y <= hi; y++) {
-      mn = Math.min(mn, sm[y]);
-      if (sm[y] > pv && sm[y] >= sm[y - 1] && sm[y] >= sm[y + 1]) { pv = sm[y]; peak = y; }
-    }
-    if (peak < 0 || pv - mn < 18) return null;                // not a clear ridge → keep the fallback
-    return yA + peak;
-  } catch (e) { console.warn('upper-lip scan failed', e); }
-  return null;
-}
-
-async function detectLandmarks(img) {
-  const W = img.naturalWidth, H = img.naturalHeight;
-  const lmk = await getLandmarker();
-  if (lmk) {
-    try {
-      const lm = lmk.detect(img)?.faceLandmarks?.[0];
-      if (lm && lm.length >= 468) {
-        const P = i => ({ x: lm[i].x * W, y: lm[i].y * H });
-        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
-        for (let i = 0; i < 468; i++) { const p = P(i); x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); }
-        const fw = x1 - x0, fh = y1 - y0;
-        const p10 = P(10), p9 = P(9), p168 = P(168), p2 = P(2), p164 = P(164);
-        const hl = findHairline(img, p10, p9, fw, fh);
-        const lsY = findUpperLip(img, P(0), P(13), P(14), fw, fh);
-        const mix = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
-        const mx = [10, 168, 2, 0, 17, 152].reduce((t, i) => t + P(i).x, 0) / 6;   // one shared facial midline
-        const pr = (i, j) => { const A = P(i), B = P(j), y = (A.y + B.y) / 2, [l, r] = A.x <= B.x ? [A, B] : [B, A]; return [{ x: l.x, y }, { x: r.x, y }]; };
-        const [zl, zr] = pr(234, 454), [gl, gr] = pr(172, 397), [cl, cr] = pr(61, 291), [al, ar] = pr(129, 358);
-        const V = (y) => ({ x: mx, y });
-        // Face-edge snap: in dark/hooded photos the mesh contour can sit outside the face (usually on the shadowed side).
-        // Scan the pixel row from the mesh point toward the midline and stop where skin brightness resumes.
-        const snapEdge = (pt, side) => {
-          try {
-            const c = document.createElement('canvas'); c.width = W; c.height = H;
-            const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
-            const band = Math.max(2, Math.round(0.008 * fh)), y = clamp(Math.round(pt.y), band, H - band - 1);
-            const d = g.getImageData(0, y - band, W, band * 2 + 1).data, n = band * 2 + 1, row = new Float32Array(W);
-            for (let x = 0; x < W; x++) { let t = 0; for (let r = 0; r < n; r++) { const k = (r * W + x) * 4; t += 0.299 * d[k] + 0.587 * d[k + 1] + 0.114 * d[k + 2]; } row[x] = t / n; }
-            const sm = new Float32Array(W);
-            for (let x = 0; x < W; x++) { let t = 0, c2 = 0; for (let k = -3; k <= 3; k++) { const i = x + k; if (i >= 0 && i < W) { t += row[i]; c2++; } } sm[x] = t / c2; }
-            const xa = Math.round(side === 'r' ? mx : pt.x), xb = Math.round(side === 'r' ? pt.x : mx), seg = Array.from(sm.slice(xa, xb)).sort((u, v) => u - v);
-            if (seg.length < 20) return pt;
-            const skin = seg[seg.length >> 1], thr = skin * 0.55, run = Math.max(4, Math.round(0.012 * fw));
-            if (skin < 25) return pt;
-            const dir = side === 'r' ? -1 : 1;
-            for (let x = Math.round(pt.x); x !== Math.round(mx); x += dir) {
-              let ok = true;
-              for (let k = 0; k < run; k++) { const i = x + k * dir; if (i < 0 || i >= W || sm[i] < thr) { ok = false; break; } }
-              if (ok) { const nx = x + dir * Math.round(run / 2); return Math.abs(nx - pt.x) <= 0.12 * fw ? { x: nx, y: pt.y } : pt; }
-            }
-          } catch (e) { console.warn('edge snap failed', e); }
-          return pt;
-        };
-        [zl, zr, gl, gr].forEach((q, i) => { const sn = snapEdge(q, i % 2 ? 'r' : 'l'); q.x = sn.x; });
-        // eyes: pupils (iris centers), inner + outer corners; brow top and mouth line on the midline
-        const lrp = (a, b) => (a.x <= b.x ? [a, b] : [b, a]).map(q => ({ x: q.x, y: q.y }));
-        const hasIris = lm.length > 473;
-        const [pupL, pupR] = lrp(hasIris ? P(468) : mix(P(33), P(133), .5), hasIris ? P(473) : mix(P(362), P(263), .5));
-        const [exl, exr] = lrp(P(33), P(263)), [enl, enr] = lrp(P(133), P(362));
-        const brY = (P(105).y + P(334).y) / 2, stY = (P(13).y + P(14).y) / 2;
-        return {
-          detected: true, hairEst: hl === null,
-          pts: {
-            Tr: V(hl ?? p10.y - 0.14 * fh),                 // true hairline (scan) — mesh top sits mid-forehead
-            N:  V(mix(p9, p168, 0.5).y),                    // brow dip, between glabella and bridge
-            Sn: V(p2.y),                                    // base of the nose where the columella meets the lip
-            Ls: V(lsY ?? P(0).y - 0.012 * fh),              // upper-lip vermilion border (snapped to the bright ridge)
-            Li: V(P(17).y),                                 // lower-lip vermilion border
-            Me: V(P(152).y),                                // chin bottom
-            Br: V(brY), St: V(stY),                         // brow top + mouth line (stomion)
-            Pl: pupL, Pr: pupR, Enl: enl, Enr: enr, Exl: exl, Exr: exr,   // eyes
-            Zl: zl, Zr: zr, Gl: gl, Gr: gr, Cl: cl, Cr: cr, Al: al, Ar: ar   // width pairs share one level height
-          }
-        };
-      }
-    } catch (e) { console.error(e); }
-  }
-  const f = (y) => ({ x: W / 2, y: H * y });                // average positions for a cropped portrait
-  return { detected: false, hairEst: false, pts: { Tr: f(.20), Br: f(.38), N: f(.45), Sn: f(.70), Ls: f(.76), St: f(.79), Li: f(.82), Me: f(.91),
-    Pl: { x: W * .36, y: H * .47 }, Pr: { x: W * .64, y: H * .47 }, Enl: { x: W * .45, y: H * .475 }, Enr: { x: W * .55, y: H * .475 }, Exl: { x: W * .28, y: H * .465 }, Exr: { x: W * .72, y: H * .465 },
-    Zl: { x: W * .22, y: H * .45 }, Zr: { x: W * .78, y: H * .45 }, Gl: { x: W * .28, y: H * .78 }, Gr: { x: W * .72, y: H * .78 },
-    Cl: { x: W * .40, y: H * .78 }, Cr: { x: W * .60, y: H * .78 }, Al: { x: W * .43, y: H * .68 }, Ar: { x: W * .57, y: H * .68 } } };
-}
-
-async function openStep2() {
-  const step = $('step2');
-  step.classList.add('active');
-  $('s2Msg').className = 'msg-bar';
-  if (s2 && s2.src === validation) { layoutStage(); renderStep2(); return; }
-  const src = validation;
-  s2 = null;
-  $('lmBusy').style.display = 'flex';
-  $('lmBusyTxt').textContent = T('s2_detecting');
-  $('s2Confirm').disabled = true;
-  let img = src.cropped;
-  if (!img) { try { img = await loadImage(src.cropUrl); } catch (e) { return; } }
-  const r = await detectLandmarks(img);
-  if (validation !== src) return;                           // photo was swapped meanwhile
-  const pts = {};
-  LM.forEach((m, i) => { const p = r.pts[m.id]; pts[m.id] = { x: p.x, y: p.y, ax: p.x, ay: p.y, seen: i === 0 }; });   // first point is on screen from the start
-  s2 = { src, img, W: img.naturalWidth, H: img.naturalHeight, pts, sel: 0, stepKey: 'normal', detected: r.detected, hairEst: r.hairEst };
-  $('lmBusy').style.display = 'none';
-  const bar = $('s2Msg');
-  if (!r.detected) { bar.className = 'msg-bar info'; bar.textContent = T('s2_fallback'); }
-  else if (r.hairEst) { bar.className = 'msg-bar info'; bar.textContent = T('s2_hairline_est'); }
-  layoutStage(); renderStep2();
-}
-
 function layoutStage() {
   if (!s2) return;
-  const wrap = $('lmStage'), cv = $('lmCanvas');
-  const maxW = wrap.clientWidth || 600, maxH = Math.min(innerHeight * 0.72, 780);
-  const k = Math.min(maxW / s2.W, maxH / s2.H), dpr = window.devicePixelRatio || 1;
-  const cw = Math.round(s2.W * k), ch = Math.round(s2.H * k);
-  cv.style.width = cw + 'px'; cv.style.height = ch + 'px';
-  cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
-  s2.k = k; s2.dpr = dpr;
-  draw();
+  const wrap = $('lmCanvas').parentElement, cv = $('lmCanvas'), maxW = wrap.clientWidth || 600, maxH = Math.min(innerHeight * .72, 780);
+  const k = Math.min(maxW / s2.W, maxH / s2.H), dpr = devicePixelRatio || 1, cw = Math.round(s2.W * k), ch = Math.round(s2.H * k);
+  cv.style.width = cw + 'px'; cv.style.height = ch + 'px'; cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
+  s2.k = k; s2.dpr = dpr; draw();
 }
-
+function label(g, txt, x, y, col, d) {
+  g.font = `700 ${11 * d}px sans-serif`; g.textBaseline = 'middle'; g.lineWidth = 3 * d; g.strokeStyle = 'rgba(0,0,0,.85)'; g.fillStyle = col;
+  g.strokeText(txt, x, y); g.fillText(txt, x, y);
+}
 function draw() {
   if (!s2 || !s2.k) return;
-  const cv = $('lmCanvas'), g = cv.getContext('2d'), sc = s2.k * s2.dpr, d = s2.dpr;
-  g.clearRect(0, 0, cv.width, cv.height);
-  g.drawImage(s2.img, 0, 0, s2.W * sc, s2.H * sc);
-  const cur = LM[s2.sel].id, cp = s2.pts[cur];
-  // faint level guide through the selected point
-  g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = d; g.beginPath();
-  const axs = LM[s2.sel].ax;
-  if (axs !== 'y') { g.moveTo(cp.x * sc, 0); g.lineTo(cp.x * sc, cv.height); }   // width + eye points: vertical guide
-  if (axs !== 'x') { g.moveTo(0, cp.y * sc); g.lineTo(cv.width, cp.y * sc); }   // proportion + eye points: level guide
-  g.stroke();
-  g.strokeStyle = 'rgba(94,203,255,.35)';
-  [['Zl', 'Zr'], ['Gl', 'Gr'], ['Cl', 'Cr'], ['Al', 'Ar'], ['Pl', 'Pr'], ['Exl', 'Enl'], ['Enr', 'Exr']].forEach(([a, b]) => { g.beginPath(); g.moveTo(s2.pts[a].x * sc, s2.pts[a].y * sc); g.lineTo(s2.pts[b].x * sc, s2.pts[b].y * sc); g.stroke(); });
-  LM.forEach(m => {
-    const p = s2.pts[m.id], x = p.x * sc, y = p.y * sc, on = m.id === cur;
-    if (on) {                                               // thin ring + ticks so the tiny dot is findable
-      const R = 9 * d, gap = 3 * d;
-      g.strokeStyle = 'rgba(255,60,90,.9)'; g.lineWidth = d;
-      g.beginPath(); g.arc(x, y, R, 0, 7); g.stroke();
-      g.beginPath();
-      g.moveTo(x - R - 4 * d, y); g.lineTo(x - gap, y); g.moveTo(x + gap, y); g.lineTo(x + R + 4 * d, y);
-      g.moveTo(x, y - R - 4 * d); g.lineTo(x, y - gap); g.moveTo(x, y + gap); g.lineTo(x, y + R + 4 * d);
-      g.stroke();
-    }
-    g.fillStyle = on ? '#ff3c5a' : (m.e ? '#6ee7b7' : m.w ? '#5ecbff' : '#ffffff');
-    g.strokeStyle = 'rgba(0,0,0,.75)'; g.lineWidth = .8 * d;
-    g.beginPath(); g.arc(x, y, (on ? DOT_R + .3 : DOT_R) * d, 0, 7); g.fill(); g.stroke();
+  const cv = $('lmCanvas'), g = cv.getContext('2d'), sc = s2.k * s2.dpr, d = s2.dpr, P = s2.pts, cur = PT[s2.sel].id;
+  g.clearRect(0, 0, cv.width, cv.height); g.drawImage(photo, 0, 0, s2.W * sc, s2.H * sc);
+  const ln = (a, b, col) => { g.strokeStyle = col; g.lineWidth = d; g.beginPath(); g.moveTo(P[a].x * sc, P[a].y * sc); g.lineTo(P[b].x * sc, P[b].y * sc); g.stroke(); };
+  ln('Po', 'Or', 'rgba(255,255,255,.6)'); ln('Go', 'Me', 'rgba(255,60,90,.8)'); ln('Ra', 'Go', 'rgba(94,203,255,.8)');
+  PT.forEach(m => {
+    const p = P[m.id], x = p.x * sc, y = p.y * sc, on = m.id === cur;
+    if (on) { g.strokeStyle = 'rgba(255,60,90,.9)'; g.lineWidth = d; g.beginPath(); g.arc(x, y, 9 * d, 0, 7); g.stroke(); }
+    g.fillStyle = on ? '#ff3c5a' : '#fff'; g.strokeStyle = 'rgba(0,0,0,.75)'; g.lineWidth = .8 * d;
+    g.beginPath(); g.arc(x, y, (on ? 2 : 1.6) * d, 0, 7); g.fill(); g.stroke();
+    g.textAlign = 'left'; label(g, m.id, x + 8 * d, y - 8 * d, on ? '#ff8095' : '#fff', d);
   });
 }
-
-/* reference diagram: the supplied labeled face image (landmark-reference-labeled.png, same folder as this file).
-   Coordinates are in image pixels (1650 x 1458). Points are only ringed when selected;
-   all 22 points are printed on the image itself. */
-const REF_IMG = 'landmark-reference-labeled.png', REF_W = 1650, REF_H = 1458;
-const REFPT = { Tr: [825, 198], Br: [813, 553], N: [813, 591], Sn: [813, 1014], Ls: [810, 1104], St: [810, 1146], Li: [810, 1202], Me: [804, 1410],
-  Pl: [560, 630], Pr: [1046, 630], Enl: [683, 640], Enr: [925, 643], Exl: [450, 627], Exr: [1155, 625],
-  Zl: [333, 786], Zr: [1284, 786], Gl: [405, 1152], Gr: [1203, 1152], Cl: [627, 1146], Cr: [981, 1146], Al: [684, 966], Ar: [918, 966] };
-function renderRef() {
-  const box = $('lmRefSvg'); if (!box || !s2) return;
-  const cur = LM[s2.sel].id;
-  const [cx, cy] = REFPT[cur];
-  const on = `<circle cx="${cx}" cy="${cy}" r="34" fill="rgba(255,214,0,.28)" stroke="#111" stroke-width="5"/><circle cx="${cx}" cy="${cy}" r="34" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 6"/>`;
-  box.innerHTML = `<svg viewBox="0 0 ${REF_W} ${REF_H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Landmark reference"><image href="${REF_IMG}" x="0" y="0" width="${REF_W}" height="${REF_H}"/>${on}</svg>`;
-}
-
 function renderStep2() {
-  const box = $('lmChips');
-  if (!box) return;
+  if (!s2) return;
   $('lmStepLbl').textContent = T('s2_step_label');
-  const keys = { up: 's2_up', down: 's2_down', left: 's2_left', right: 's2_right' };
-  $('lmPad').querySelectorAll('button').forEach(b => { b.setAttribute('aria-label', T(keys[b.dataset.k])); b.title = T(keys[b.dataset.k]); });
-  if (!s2) { box.innerHTML = ''; return; }
-  const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  box.innerHTML = LM.map((m, i) =>
-    `<button type="button" class="lm-chip${i === s2.sel ? ' sel' : ''}${s2.pts[m.id].seen ? ' seen' : ''}" data-i="${i}" title="${esc(T(m.pt))}">${m.id}</button>`).join('');
-  $('lmName').textContent = T(LM[s2.sel].pt);
-  $('lmDesc').textContent = T(LM[s2.sel].desc);
-  const n = LM.filter(m => s2.pts[m.id].seen).length;
-  $('lmProgress').textContent = T('s2_progress', { n: nf(n), total: nf(LM.length) });
-  $('s2Confirm').disabled = n < LM.length;
+  const keys = ['s2_up', 's2_down', 's2_left', 's2_right'];
+  $('lmChips').innerHTML = PT.map((m, i) => `<button type="button" class="lm-chip${i === s2.sel ? ' sel' : ''}${s2.pts[m.id].seen ? ' seen' : ''}" data-i="${i}">${m.id}</button>`).join('');
+  $('lmName').textContent = L(...PT[s2.sel].n); $('lmDesc').textContent = L(...PT[s2.sel].d);
+  const n = PT.filter(m => s2.pts[m.id].seen).length;
+  $('lmProgress').textContent = T('s2_progress').replace('{n}', nf(n)).replace('{total}', nf(PT.length));
+  $('s2Confirm').disabled = n < PT.length;
   $('lmSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.step === s2.stepKey));
-  const ax = LM[s2.sel].ax;
-  $('lmName').textContent = T(LM[s2.sel].pt) + '   ' + (ax === 'y' ? '↕ ' + T('s2_axis_y') : ax === 'x' ? '↔ ' + T('s2_axis_x') : '✥ ' + T('s2_axis_xy'));
-  renderRef();
-
-}
-
-function select(i) {
-  if (!s2) return;
-  s2.sel = (i + LM.length) % LM.length;
-  s2.pts[LM[s2.sel].id].seen = true;                        // selecting a point counts as reviewing it
-  renderStep2(); draw();
-}
-function nudge(dx, dy, coarse) {
-  if (!s2) return;
-  const mm = LM[s2.sel], p = s2.pts[mm.id], u = s2.H / 1000;
-  const step = STEP_PX[coarse ? 'coarse' : s2.stepKey] * u;
-  p.x = clamp(p.x + dx * step, 0, s2.W); p.y = clamp(p.y + dy * step, 0, s2.H);
-  if (!p.seen) { p.seen = true; renderStep2(); }
+  $('faceSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.face === s2.face));
   draw();
 }
-
-/* arrow pad — press, or press-and-hold to repeat. No pointer interaction with the photo itself. */
+function select(i) { s2.sel = (i + PT.length) % PT.length; s2.pts[PT[s2.sel].id].seen = true; renderStep2(); }
+function nudge(dx, dy, coarse) {
+  if (!s2) return;
+  const p = s2.pts[PT[s2.sel].id], step = STEP_PX[coarse ? 'coarse' : s2.stepKey] * s2.H / 1000;
+  p.x = clamp(p.x + dx * step, 0, s2.W); p.y = clamp(p.y + dy * step, 0, s2.H);
+  if (!p.seen) { p.seen = true; renderStep2(); } else draw();
+}
 (() => {
   let to = null, iv = null, btn = null;
   const stop = () => { clearTimeout(to); clearInterval(iv); if (btn) btn.classList.remove('hold'); btn = null; };
   $('lmPad').addEventListener('pointerdown', e => {
     const b = e.target.closest('button'); if (!b) return;
     e.preventDefault(); stop(); btn = b; b.classList.add('hold');
-    const go = () => nudge(+b.dataset.dx, +b.dataset.dy, false);
-    go(); to = setTimeout(() => { iv = setInterval(go, 60); }, 380);
+    const go = () => nudge(+b.dataset.dx, +b.dataset.dy, false); go(); to = setTimeout(() => { iv = setInterval(go, 60); }, 380);
   });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('lmPad').addEventListener(ev, stop));
-  window.addEventListener('blur', stop);
   $('lmPad').addEventListener('contextmenu', e => e.preventDefault());
-  ['touchstart', 'touchend', 'touchmove'].forEach(ev => $('lmPad').addEventListener(ev, e => e.preventDefault(), { passive: false }));
-  ['dblclick', 'gesturestart', 'gesturechange'].forEach(ev => document.addEventListener(ev, e => { if ($('step2').classList.contains('active')) e.preventDefault(); }, { passive: false }));
 })();
-
 document.addEventListener('keydown', e => {
   if (!s2 || !$('step2').classList.contains('active')) return;
   const m = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
-  if (!m) return;
-  e.preventDefault(); nudge(m[0], m[1], e.shiftKey);
+  if (m) { e.preventDefault(); nudge(m[0], m[1], e.shiftKey); }
 });
-
+$('lmCanvas').addEventListener('click', e => {            // tap = drop the selected point here (then fine-tune with the arrows)
+  if (!s2) return;
+  const r = e.currentTarget.getBoundingClientRect(), p = s2.pts[PT[s2.sel].id];
+  p.x = clamp((e.clientX - r.left) / r.width * s2.W, 0, s2.W); p.y = clamp((e.clientY - r.top) / r.height * s2.H, 0, s2.H);
+  p.seen = true; renderStep2();
+});
 $('lmChips').addEventListener('click', e => { const c = e.target.closest('.lm-chip'); if (c) select(+c.dataset.i); });
 $('lmSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && s2) { s2.stepKey = b.dataset.step; renderStep2(); } });
-$('s2Back').addEventListener('click', () => {
-  $('step2').classList.remove('active');
-  $('previewBox').style.display = 'block';
-  $('continueNav').style.display = 'flex';
-  $('verdict').style.display = 'block';
-  $('genderBox').style.display = 'block';
-  scrollTo({ top: 0, behavior: 'smooth' });
-});
+$('faceSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && s2 && b.dataset.face !== s2.face) { initS2(b.dataset.face); renderStep2(); } });
+$('s2Back').addEventListener('click', () => show('step1'));
 $('s2Confirm').addEventListener('click', () => {
-  if (!s2 || LM.some(m => !s2.pts[m.id].seen)) return;
-  const out = {};
-  LM.forEach(m => { const p = s2.pts[m.id]; out[m.id] = { x: +p.x.toFixed(2), y: +p.y.toFixed(2) }; });
-  window.lowerThirdLandmarks = { front: { width: s2.W, height: s2.H, points: out, image: s2.img } };
-  document.dispatchEvent(new CustomEvent('landmarks:confirmed', { detail: window.lowerThirdLandmarks }));
-  $('step2').classList.remove('active');
-  $('step3').classList.add('active');
-  try { renderS3(); } catch (e) { console.error('renderS3 failed', e); }
-  skSpeak(s3 && !s3.bad && s3.say ? s3.say : '');
-  scrollTo({ top: 0, behavior: 'smooth' });
+  if (!s2 || PT.some(m => !s2.pts[m.id].seen)) return;
+  const pts = {}; PT.forEach(m => pts[m.id] = { x: s2.pts[m.id].x, y: s2.pts[m.id].y });
+  window.sideLandmarks = { W: s2.W, H: s2.H, img: photo, pts };
+  show('step3'); renderS3(); skSpeak(s3 && !s3.bad ? s3.say : '');
 });
 let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { layoutStage(); if ($('step3').classList.contains('active')) drawS3(); }, 120); });
 
-
-/* ══════════════════════════════════════════════════════════
-   STEP 3 · FULL FACE ANALYSIS
-   Measures the confirmed landmarks, draws dimension lines
-   (extension lines + rulers with labels) and builds the report.
-   Gender picks the tier names and the fix recommendations.
-══════════════════════════════════════════════════════════ */
-const IDEAL = 100 / 3;
-const S3C = { up: '#8ab4ff', mid: '#c3a6ff', low: '#ffffff', phil: '#ffc933', lips: '#ff7a8c', chin: '#5ecb96' };
-const TIERS = {
-  male:   { sub5: 'Sub-5', lt: 'LTN', mt: 'MTN', ht: 'HTN', htplus: 'HTN+ · Chadlite',   elite: 'Chad'  },
-  female: { sub5: 'Sub-5', lt: 'LTB', mt: 'MTB', ht: 'HTB', htplus: 'HTB+ · Stacylite', elite: 'Stacy' }
-};
-let s3 = null, s3cal = null;   // s3 = latest measurement, s3cal = optional real Tr–Me height in mm
-
-/* ── FULL-FACE SCORING ──
-   Reference ranges follow common looksmaxxing conventions (looksmax.org and similar) and classical
-   proportion rules. Male and female use different ideal ranges AND different weights. They are
-   conventions, not hard rules, and one flat photo can only approximate them. */
-function s3Measure() {
-  const d = window.lowerThirdLandmarks?.front;
-  if (!d) return null;
-  const P = d.points, X = id => P[id].x, y = id => P[id].y;
-  const male = (gender || 'male') === 'male', G = (m, f) => male ? m : f;
-  const v = {
-    up: y('N') - y('Tr'), mid: y('Sn') - y('N'), low: y('Me') - y('Sn'),
-    phil: y('Ls') - y('Sn'), lips: y('Li') - y('Ls'), chin: y('Me') - y('Li'),
-    snStm: y('St') - y('Sn'), stmMe: y('Me') - y('St')
-  };
-  const tot = y('Me') - y('Tr');
-  if (tot <= 0 || Object.values(v).some(n => n <= 0) || y('Br') <= y('Tr') || y('Ls') <= y('Br') || y('St') <= y('Ls') || y('Li') <= y('St')) return { bad: true };
-  const pct = {}; Object.keys(v).forEach(k => pct[k] = v[k] / tot * 100);
-  const hx = (a, b) => Math.abs(X(a) - X(b));
-  const wd = { zyg: hx('Zl', 'Zr'), gon: hx('Gl', 'Gr'), mou: hx('Cl', 'Cr'), nos: hx('Al', 'Ar'), ipd: hx('Pl', 'Pr'), icd: hx('Enl', 'Enr'), eyeL: hx('Enl', 'Exl'), eyeR: hx('Enr', 'Exr') };
-  wd.eye = (wd.eyeL + wd.eyeR) / 2;
-  const midH = y('St') - (y('Pl') + y('Pr')) / 2;                    // pupil line → mouth line
-  if (Object.values(wd).some(n => !(n > 0)) || midH <= 0) return { bad: true };
-
-  const tiltOf = (en, ex) => Math.atan2(y(en) - y(ex), Math.abs(X(ex) - X(en))) * 180 / Math.PI;   // + when the outer corner sits higher
-  const tiltL = tiltOf('Enl', 'Exl'), tiltR = tiltOf('Enr', 'Exr'), tilt = (tiltL + tiltR) / 2;
-
-  const x0 = ['Tr', 'Br', 'N', 'Sn', 'Ls', 'St', 'Li', 'Me'].reduce((t, i) => t + X(i), 0) / 8;     // facial midline
-  const lat = p => { const a = x0 - X(p + 'l'), b = X(p + 'r') - x0; return (a + b) > 0 ? Math.abs(a - b) / (a + b) * 100 : 0; };
-  const vert = (['En', 'Ex', 'C'].reduce((t, p) => t + Math.abs(y(p + 'l') - y(p + 'r')), 0) / 3) / wd.zyg * 100;
-  const asym = (['Z', 'G', 'C', 'A', 'En', 'Ex', 'P'].reduce((t, p) => t + lat(p), 0) + vert) / 8;
-
-  const r = v.snStm / v.low, x = v.stmMe / v.snStm;
-  const jaw = wd.gon / wd.zyg, mn = wd.mou / wd.nos;
-  const M = [
-    { k: 'up',    name: 's3_m_up',    val: pct.up,  r: [31, 35.7],                    w: G(.6, .8),  f: 'pct' },
-    { k: 'mid',   name: 's3_m_mid',   val: pct.mid, r: [31, 35.7],                    w: G(.8, 1),   f: 'pct' },
-    { k: 'low',   name: 's3_m_low',   val: pct.low, r: G([32, 36], [30.5, 34.5]),     w: G(1.2, .9), f: 'pct' },
-    { k: 'split', name: 's3_m_split', val: r,       r: [0.30, 0.37],                  w: 1,          f: 'split' },
-    { k: 'jaw',   name: 's3_m_jaw',   val: jaw,     r: G([.78, .92], [.72, .86]),     w: G(1.6, 1),  f: 'n2' },
-    { k: 'mn',    name: 's3_m_mn',    val: mn,      r: G([1.35, 1.65], [1.4, 1.7]),   w: G(.6, .8),  f: 'n2' },
-    { k: 'fwhr',  name: 's3_m_fwhr',  val: wd.zyg / (y('Ls') - y('Br')), r: G([1.85, 2.2], [1.7, 2.0]), w: G(1.5, .6), f: 'n2' },
-    { k: 'fidx',  name: 's3_m_fidx',  val: tot / wd.zyg, r: G([1.3, 1.5], [1.3, 1.52]), w: G(.8, .9), f: 'n2' },
-    { k: 'ipdz',  name: 's3_m_ipdz',  val: wd.ipd / wd.zyg, r: [.43, .5],             w: G(.5, .7),  f: 'n2' },
-    { k: 'esp',   name: 's3_m_esp',   val: wd.icd / wd.eye, r: G([.95, 1.2], [.95, 1.15]), w: G(.8, 1.2), f: 'n2' },
-    { k: 'tilt',  name: 's3_m_tilt',  val: tilt,    r: G([2, 8], [4, 10]),            w: G(1.2, 1.3), f: 'deg', scale: 6 },
-    { k: 'midR',  name: 's3_m_midR',  val: wd.ipd / midH, r: G([.92, 1.1], [.95, 1.15]), w: G(1.2, 1.4), f: 'n2' },
-    { k: 'nic',   name: 's3_m_nic',   val: wd.nos / wd.icd, r: G([1, 1.25], [.92, 1.15]), w: G(.5, .8), f: 'n2' },
-    { k: 'sym',   name: 's3_m_sym',   val: asym,    r: G([0, 4], [0, 3.5]),           w: G(1.3, 1.5), f: 'asym' }
-  ];
-  M.forEach(it => {
-    const [a, b] = it.r, out = it.val < a ? a - it.val : it.val > b ? it.val - b : 0;
-    it.dev = out / (it.scale || (it.val < a ? a : b));
-  });
-  const dev = {}; M.forEach(it => dev[it.k] = it.dev);
-  const penalty = M.reduce((t, it) => t + it.w * it.dev, 0) / M.reduce((t, it) => t + it.w, 0);
-  const psl = clamp(7.8 - 26 * penalty, 2, 7.8);
-  const tier = psl < 4 ? 'sub5' : psl < 4.5 ? 'lt' : psl < 5.5 ? 'mt' : psl < 6.5 ? 'ht' : psl < 7.5 ? 'htplus' : 'elite';
-  return { v, tot, pct, r, x, M, dev, psl, tier, stm: y('St'), wd, jaw, mn, tilt, tiltL, tiltR, asym };
+/* ══ STEP 3 · rotation maths ══
+   Frankfort plane = Po→Or (the reference "level" of the head, so photo tilt does not matter).
+   MPA = angle from the Frankfort plane to the jaw plane Go→Me; positive = chin points downward (CW).
+   Gonial angle = Ra–Go–Me. Low FMA / sharp gonial = CCW (forward); high FMA / obtuse gonial = CW (downward). */
+/* PSL anchors from the reference table (angle -> PSL), linearly interpolated between tiers */
+const MPA_PSL = {
+  m: [[15, 10], [22.5, 7.75], [27.5, 6.25], [32.5, 4.25], [38.5, 2.5], [48, 1]],
+  f: [[17, 10], [24.5, 7.75], [28.5, 6.25], [33.5, 4.25], [39.5, 2.5], [49, 1]] };
+const GON_PSL = {
+  m: [[115, 10], [122.5, 7.75], [125.5, 6.25], [130.5, 4.25], [135.5, 2.5], [145, 1]],
+  f: [[120, 10], [128.5, 7.75], [131.5, 6.25], [135.5, 4.25], [140.5, 2.5], [150, 1]] };
+const IDEAL = { m: { mpa: [15, 27], gon: [115, 125], gonR: [122.5, 130.5] }, f: { mpa: [17, 28], gon: [120, 131], gonR: [128.5, 135.5] } };
+const interp = (x, A) => { if (x <= A[0][0]) return A[0][1]; for (let i = 1; i < A.length; i++) if (x <= A[i][0]) { const [x0, y0] = A[i - 1], [x1, y1] = A[i]; return y0 + (y1 - y0) * (x - x0) / (x1 - x0); } return A[A.length - 1][1]; };
+function measure() {
+  const d = window.sideLandmarks; if (!d) return null;
+  const P = d.pts, v = (a, b) => ({ x: P[b].x - P[a].x, y: P[b].y - P[a].y }), len = o => Math.hypot(o.x, o.y), dot = (a, b) => a.x * b.x + a.y * b.y;
+  const u0 = v('Po', 'Or'), w0 = v('Go', 'Me'), a0 = v('Go', 'Ra');
+  if (len(u0) < 8 || len(w0) < 8 || len(a0) < 8) return { bad: true };
+  const s = u0.x >= 0 ? 1 : -1;
+  if (Math.abs(u0.x) < Math.abs(u0.y) || Math.sign(w0.x) !== s || P.Ra.y >= P.Go.y) return { bad: true };
+  const u = { x: u0.x / len(u0), y: u0.y / len(u0) }, w = { x: w0.x / len(w0), y: w0.y / len(w0) }, n = { x: -u.y * s, y: u.x * s };
+  const fma = Math.atan2(dot(w, n), dot(w, u)) * 180 / Math.PI;
+  const gon = Math.acos(clamp(dot(a0, w0) / (len(a0) * len(w0)), -1, 1)) * 180 / Math.PI;
+  const gk = gender === 'female' ? 'f' : 'm', pm = interp(fma, MPA_PSL[gk]), pg = interp(gon, GON_PSL[gk]), psl = .6 * pm + .4 * pg;   // MPA weighted higher: the ramus point is the less reliable one on a photo
+  const cls = psl >= 8 ? 0 : psl >= 6.5 ? 1 : psl >= 4.5 ? 2 : psl >= 3 ? 3 : 4;
+  return { u, w, a: { x: a0.x / len(a0), y: a0.y / len(a0) }, fma, gon, psl, pm, pg, cls, ideal: IDEAL[gk] };
 }
-
-const fmtPct = n => nf(n.toFixed(1)) + '%';
-const mmOf = (len, tot) => s3cal ? nf((len / tot * s3cal).toFixed(1)) + ' ' + T('s3_mm') : '';
-const chipOf = d => d <= 0.04 ? 'ok' : d <= 0.12 ? 'warn' : 'bad';
-const fmtVal = (it, q) => it.f === 'pct' ? nf(q.toFixed(1)) + '%'
-  : it.f === 'deg' ? (q > 0 ? '+' : q < 0 ? '−' : '') + nf(Math.abs(q).toFixed(1)) + '°'
-  : it.f === 'asym' ? nf(q.toFixed(1)) + '%'
-  : it.f === 'split' ? '1 : ' + nf(((1 - q) / q).toFixed(2))
-  : nf(q.toFixed(2));
-const fmtRange = it => {
-  const [a, b] = it.r;
-  return it.f === 'pct' ? nf(a.toFixed(1)) + ' – ' + nf(b.toFixed(1)) + '%'
-    : it.f === 'deg' ? nf(a) + '° – ' + nf(b) + '°'
-    : it.f === 'asym' ? '< ' + nf(b.toFixed(1)) + '%'
-    : it.f === 'split' ? '1 : ' + nf(((1 - b) / b).toFixed(1)) + ' – ' + nf(((1 - a) / a).toFixed(1))
-    : nf(a.toFixed(2)) + ' – ' + nf(b.toFixed(2));
-};
-
-/* ── BRUTAL TEXT (looksmax-style). No numbers: only weak points, rating and blunt words. ── */
-const L = (en, ar) => lang === 'ar' ? ar : en;
-const FLAW = {
-  up:   { low:  { en: 'Your upper third is cramped. A short forehead squashes the top of your face and throws the thirds off.', ar: 'ثلثك العلوي مضغوط. جبهة قصيرة تكبس أعلى الوجه وتخرّب توازن الأثلاث.' },
-          high: { en: 'Your forehead is too tall. That fivehead drags the face upward and out of proportion.', ar: 'جبهتك طويلة أكثر من اللازم. هذا الـ fivehead يسحب الوجه للأعلى ويكسر التناسب.' } },
-  mid:  { low:  { en: 'Your midface is too short. Everything is crammed together with no room to breathe.', ar: 'منتصف وجهك قصير جداً. الملامح متزاحمة وبلا أي مساحة.' },
-          high: { en: 'Long midface. It stretches the centre of your face and makes it look elongated and off.', ar: 'منتصف وجهك طويل. يمدّ الوجه ويعطيه مظهراً مستطيلاً وغير متناسق.' } },
-  low:  { low:  { en: 'Short lower third. The bottom of your face is stubby and under-supported.', ar: 'الثلث السفلي قصير. أسفل وجهك متقزّم وبلا دعم.' },
-          high: { en: 'Your lower third is too long. The face drags downward and looks stretched.', ar: 'الثلث السفلي طويل جداً. الوجه ينسحب للأسفل ويبدو ممطوطاً.' } },
-  split:{ low:  { en: 'Your mouth sits too high over a long chin segment. The chin dominates the lower face.', ar: 'فمك مرتفع فوق قطعة ذقن طويلة. الذقن تسيطر على أسفل الوجه.' },
-          high: { en: 'Long philtrum. Too much space between nose and lip, which reads aged and weak.', ar: 'فيلترم طويل. مسافة زائدة بين الأنف والشفة تعطي مظهراً أضعف وأكبر سناً.' } },
-  jaw:  { low:  { m: { en: 'Weak, narrow jaw. There is no frame under those cheekbones and the face tapers into nothing.', ar: 'فك ضعيف وضيق. لا يوجد إطار تحت عظام الخد والوجه يتناقص إلى لا شيء.' },
-                  f: { en: 'Your jaw is too narrow. It leaves the lower face looking pinched and undersized.', ar: 'فكك ضيق أكثر من اللازم، ويجعل أسفل الوجه يبدو منكمشاً.' } },
-          high: { m: { en: 'Your jaw is oversized against your cheekbones. Boxy and heavy, like the bottom half belongs to another face.', ar: 'فك أعرض من عظام الخد. صندوقي وثقيل وكأن النصف السفلي لوجه آخر.' },
-                  f: { en: 'Wide, heavy jaw. It reads masculine and overpowers the softness of the upper face.', ar: 'فك عريض وثقيل. يعطي طابعاً ذكورياً ويطغى على نعومة أعلى الوجه.' } } },
-  mn:   { low:  { en: 'Your mouth is small under a wide nose. The balance is off and the lower face looks cramped.', ar: 'فم صغير تحت أنف عريض. التوازن مختل وأسفل الوجه يبدو مزدحماً.' },
-          high: { en: 'Your mouth is too wide for your nose. It stretches the lower face sideways.', ar: 'فمك عريض بالنسبة لأنفك ويمدّ أسفل الوجه جانبياً.' } },
-  fwhr: { low:  { m: { en: 'Low width-to-height ratio. Your face is narrow and long, with no width and no dominance.', ar: 'نسبة عرض الوجه إلى ارتفاعه منخفضة. وجهك ضيق وطويل بلا عرض ولا هيبة.' },
-                  f: { en: 'The midface is too narrow. It lacks the cheek width that makes a face striking.', ar: 'منتصف وجهك ضيق وينقصه عرض الخدود الذي يمنح الوجه جاذبيته.' } },
-          high: { m: { en: 'Very wide, short midface. It looks squashed and heavy.', ar: 'منتصف وجه عريض وقصير جداً. يبدو مسحوقاً وثقيلاً.' },
-                  f: { en: 'The midface is too wide and short. It reads heavy and coarse.', ar: 'منتصف الوجه عريض وقصير أكثر من اللازم. يبدو ثقيلاً وخشناً.' } } },
-  fidx: { low:  { en: 'Your face is too short and wide. Squat and blocky overall.', ar: 'وجهك قصير وعريض أكثر من اللازم. مربّع وثقيل بشكل عام.' },
-          high: { en: 'Your face is too long and narrow. Horse-face territory.', ar: 'وجهك طويل وضيق جداً. أقرب إلى وجه الحصان.' } },
-  ipdz: { low:  { en: 'Eyes set too close together. It gives a pinched, cramped look.', ar: 'عيناك متقاربتان جداً وتعطيان مظهراً ضيقاً ومكتظاً.' },
-          high: { en: 'Eyes set too far apart. The whole face looks off and alien.', ar: 'عيناك متباعدتان جداً وتجعلان الوجه يبدو غريباً.' } },
-  esp:  { low:  { en: 'Inner eye spacing is tight for the size of your eyes. Cramped, close-set eyes.', ar: 'المسافة بين العينين ضيقة بالنسبة لحجمهما. عيون متقاربة ومزدحمة.' },
-          high: { en: 'Inner eye spacing is too wide for your eyes. Wide-set and a bit vacant.', ar: 'المسافة بين العينين واسعة أكثر من اللازم، وتعطي نظرة شاردة.' } },
-  tilt: { low:  { m: { en: 'Negative or flat canthal tilt. Droopy, tired, prey-like eyes.', ar: 'ميل العين سلبي أو مسطّح. عيون ذابلة ومتعبة ومظهر فريسة.' },
-                  f: { en: 'Flat or downturned eyes. They look tired and sad instead of alluring.', ar: 'عيون مسطحة أو منزلة للأسفل، تبدو متعبة وحزينة بدل أن تكون جذابة.' } },
-          high: { en: 'The canthal tilt is exaggerated. The eyes pull up too hard and look unnatural.', ar: 'ميل العين مبالغ فيه. العينان ترتفعان بشكل غير طبيعي.' } },
-  midR: { low:  { en: 'Pupils to mouth is too long. A long midface stretching the centre of your face.', ar: 'المسافة من البؤبؤ إلى الفم طويلة. منتصف وجهك ممطوط.' },
-          high: { en: 'Pupils to mouth is too short, so the centre of your face looks squeezed.', ar: 'المسافة من البؤبؤ إلى الفم قصيرة، فيبدو منتصف الوجه مضغوطاً.' } },
-  nic:  { low:  { en: 'Your nose is narrow against your eye spacing. Pinched and underdeveloped.', ar: 'أنفك ضيق بالنسبة للمسافة بين العينين. مضغوط وغير مكتمل.' },
-          high: { en: 'Your nose is wide against your eye spacing. Broad and bulbous, it dominates the centre of your face.', ar: 'أنفك عريض بالنسبة للمسافة بين العينين. ضخم ويطغى على وسط الوجه.' } },
-  sym:  { low:  { en: 'Your face is visibly asymmetric. The two sides do not match and the eye and mouth lines tilt off.', ar: 'وجهك غير متناسق بوضوح. الجانبان لا يتطابقان وخطوط العينين والفم مائلة.' },
-          high: { en: 'Your face is visibly asymmetric. The two sides do not match and the eye and mouth lines tilt off.', ar: 'وجهك غير متناسق بوضوح. الجانبان لا يتطابقان وخطوط العينين والفم مائلة.' } }
-};
-const flawText = (k, dir, male) => { const e = FLAW[k][dir], o = e.m ? (male ? e.m : e.f) : e; return L(o.en, o.ar); };
-
-const TIER_LINE = {
-  male: {
-    sub5:   { en: 'Sub-5. Be honest with yourself: this face has serious problems and almost nothing is on target. You have a lot of work ahead.', ar: 'Sub-5. صراحة بلا مجاملة: وجه فيه مشاكل جدية وشبه كل شيء خارج المعدل. أمامك عمل كثير.' },
-    lt:     { en: 'Low-tier normie. Your flaws are loud, and people notice them before they notice anything good.', ar: 'مستوى منخفض. عيوبك صارخة، والناس تلاحظها قبل أي شيء جيد.' },
-    mt:     { en: 'Mid-tier. Forgettable. Nobody is hating on you and nobody is looking twice either.', ar: 'متوسط. عادي ومنسي. لا أحد يكرهك ولا أحد يلتفت إليك.' },
-    ht:     { en: 'High-tier normie. Good, but not special. The flaws below are all that stands between you and the top tier.', ar: 'فوق المتوسط. جيد لكنه ليس مميزاً. العيوب أدناه هي الفاصل الوحيد بينك وبين الفئة العليا.' },
-    htplus: { en: 'Chadlite. You are close, which makes the leftover flaws more annoying. Fix them or stay stuck here.', ar: 'Chadlite. قريب جداً من القمة، وهذا يجعل العيوب المتبقية أكثر إزعاجاً. عالجها وإلا ستبقى مكانك.' },
-    elite:  { en: 'Chad. The proportions hold up. Do not get cocky, this is one flat photo.', ar: 'Chad. التناسب ممتاز. المهم ألا يصيبك الغرور، فهذه صورة واحدة مسطحة.' }
-  },
-  female: {
-    sub5:   { en: 'Sub-5. Brutally honest: this face is far from the ideal in too many places, and changing that takes real effort.', ar: 'Sub-5. صراحة قاسية: هذا الوجه بعيد عن المثالي في نقاط كثيرة، وتغييره يحتاج جهداً حقيقياً.' },
-    lt:     { en: 'Low-tier Becky. The flaws shout, and they are the first thing people see.', ar: 'مستوى منخفض. العيوب صارخة وهي أول ما يراه الناس.' },
-    mt:     { en: 'Mid-tier. Plain and forgettable. Not ugly, but not turning any heads either.', ar: 'متوسط. عادي ومنسي، لا قبح ولا لفت للأنظار.' },
-    ht:     { en: 'High-tier. Pretty, but not stunning. The flaws below are what is holding you back.', ar: 'مستوى عالٍ. جميل لكنه ليس مبهراً. العيوب أدناه هي ما يوقفك.' },
-    htplus: { en: 'Stacylite. Very close to the top. The leftover flaws are the only gap to Stacy.', ar: 'Stacylite. قريب جداً من القمة، والعيوب المتبقية هي الفجوة الوحيدة نحو Stacy.' },
-    elite:  { en: 'Stacy. The proportions hold up. Stay humble, this is one flat photo.', ar: 'Stacy. التناسب ممتاز. لكن تذكّر أنها صورة واحدة مسطحة.' }
-  }
-};
-
+const f1 = n => nf(n.toFixed(1));
 function renderS3() {
-  s3 = s3Measure();
-  const box = $('s3Report'), msg = $('s3Msg');
-  msg.className = 'msg-bar'; msg.textContent = '';
+  s3 = measure();
+  const msg = $('s3Msg'); msg.className = 'msg-bar'; msg.textContent = '';
   if (!s3 || s3.bad) {
-    box.innerHTML = ''; $('s3Rating').innerHTML = '';
-    if (s3) { msg.className = 'msg-bar error'; msg.textContent = T('s3_err_order'); }
+    $('s3Rating').innerHTML = '';
+    if (s3) { msg.className = 'msg-bar error'; msg.textContent = L('The points are not in a believable order: Porion must sit behind Orbitale, Ramus above Gonion, and Menton in front of Gonion. Go back and correct them.', 'ترتيب النقاط غير منطقي: يجب أن يكون Po خلف Or، وRa فوق Go، وMe أمام Go. ارجع وصحّحها.'); }
     drawS3(); return;
   }
-  const m = s3, g = gender || 'male', male = g === 'male';
-
-  // weak points: every metric that is outside its range, worst first
-  const flaws = m.M.filter(it => it.dev > 0.04).sort((a, b) => b.w * b.dev - a.w * a.dev).map(it => {
-    const major = it.dev > 0.12, dir = it.val < it.r[0] ? 'low' : 'high';
-    return { major, text: (major ? L('Major flaw: ', 'عيب كبير: ') : L('Noticeable: ', 'ملحوظ: ')) + flawText(it.k, dir, male) };
-  });
-
-  const tierName = TIERS[g][m.tier], TC = { sub5: '#ff5555', lt: '#ff8a4c', mt: '#ffc933', ht: '#9be564', htplus: '#5ecb96', elite: '#5ecbff' }[m.tier];
-  const tl = TIER_LINE[g][m.tier], tierLine = L(tl.en, tl.ar), psl = nf(m.psl.toFixed(1));
-  const intro = L(`Rating: ${tierName.replace('+', ' plus ').replace('·', ',')}, ${psl} out of 8.`, `التقييم: ${tierName.replace('·', '،')}، درجة ${psl} من 8.`);
-  const outro = m.psl < 5.5
-    ? L('That is the truth. Fix the flaws above in order, starting with the worst.', 'هذه هي الحقيقة. عالج العيوب أعلاه بالترتيب، بدءاً بالأسوأ.')
-    : L('Not much left to attack. Polish the small flaws above and keep your grooming sharp.', 'لم يبقَ الكثير لانتقاده. صقل العيوب الصغيرة وإبقاء العناية في أعلى مستوى هو كل ما تبقى.');
-  const none = L('I found no real weak points. Annoying, but fair.', 'لم أجد نقاط ضعف حقيقية. مزعج، لكنه عادل.');
-  m.say = [intro, tierLine, ...(flaws.length ? flaws.slice(0, 3).map(f => f.text) : [none]), outro].join(' ');
-
-  // rating card (rating + tier + one blunt line, no stats)
-  const C = 2 * Math.PI * 54, frac = clamp(m.psl / 8, 0, 1);
-  $('s3Rating').innerHTML = `
-  <div class="s3-card s3-rate">
-    <div class="s3-h">${T('s3_rating')}</div>
-    <div class="ring"><svg viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9"/>
-      <circle cx="65" cy="65" r="54" fill="none" stroke="${TC}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 65 65)" style="filter:drop-shadow(0 0 6px ${TC})"/></svg>
-      <div class="num" style="color:${TC}">${psl}<small>/ 8</small></div></div>
-    <div class="s3-tier"><div class="name" style="color:${TC};text-shadow:0 0 18px ${TC}66">${tierName}</div><div class="desc">${tierLine}</div></div>
+  const m = s3, C0 = CL[m.cls], fem = gender === 'female', C = { ...C0, t: C0.t.map(x => fem ? x.replace('Chad', 'Stacy') : x) }, pos = clamp((10 - m.psl) / 9, 0, 1) * 100;
+  const gonTxt = m.gon < m.ideal.gonR[0]
+    ? L(`Your gonial angle is tight, ${f1(m.gon)}°: a sharp, angular jaw corner, the forward-growth look.`, `زاوية فكك ضيقة، ${f1(m.gon)}°: زاوية فك حادة وبارزة، وهي سمة النمو الأمامي.`)
+    : m.gon > m.ideal.gonR[1]
+      ? L(`Your gonial angle is wide, ${f1(m.gon)}°: past ${nf(Math.round(m.ideal.gonR[1]))}° counts against you. A rounded, obtuse jaw corner reads soft and goes with downward growth.`, `زاوية فكك واسعة، ${f1(m.gon)}°: تجاوز ${nf(Math.round(m.ideal.gonR[1]))}° يُحتسب ضدك. زاوية مستديرة تبدو ناعمة وترافق النمو نحو الأسفل.`)
+      : L(`Your gonial angle, ${f1(m.gon)}°, sits between the elite and average bands.`, `زاوية فكك، ${f1(m.gon)}°، بين فئة النخبة والمتوسط.`);
+  m.say = [
+    L(`I measured your jaw. Your rotation is ${C.n[0]}: ${C.s[0].toLowerCase()}. Growth rating ${f1(m.psl)} out of 10, ${C.t[0]}. The mandibular plane angle is ${f1(m.fma)} degrees.`, `قست فكك. دورانك ${C.n[1]}: ${C.s[1]}. تقييم النمو ${f1(m.psl)} من ١٠، ${C.t[1]}. زاوية المستوى الفكي ${f1(m.fma)} درجة.`),
+    L(...C.d), gonTxt,
+    L('That is my verdict. Remember, this is one flat photo, not an X-ray.', 'هذا حكمي. تذكّر أنها صورة واحدة مسطحة وليست أشعة.')
+  ].join(' ');
+  $('s3Rating').innerHTML = `<div class="s3-card s3-rate">
+    <div class="s3-h">${L('Rotation', 'الدوران')}</div>
+    <div class="rot-name" style="color:${C.c};text-shadow:0 0 18px ${C.c}66">${L(...C.n)}</div>
+    <div class="rot-sub">${L(...C.s)}</div><div class="rot-sub" style="color:${C.c}">${f1(m.psl)} / 10 · ${L(...C.t)}</div>
+    <div class="gauge"><i style="left:${pos.toFixed(1)}%"></i></div>
+    <div class="gauge-lbl"><span>${L('CCW · Forward', 'CCW · أمام')}</span><span>${L('Neutral', 'محايد')}</span><span>${L('CW · Downward', 'CW · أسفل')}</span></div>
+    <div class="stats">
+      <div><b>${m.fma > 0 ? '+' : m.fma < 0 ? '−' : ''}${f1(Math.abs(m.fma))}°</b><span>${L('MPA · ideal', 'MPA · المثالي')} ${nf(m.ideal.mpa[0])}–${nf(m.ideal.mpa[1])}°</span></div>
+      <div><b>${f1(m.gon)}°</b><span>${L('Gonial · ideal', 'الجونيال · المثالي')} ${nf(m.ideal.gon[0])}–${nf(m.ideal.gon[1])}°</span></div>
+    </div>
+    <p class="desc">${L(...C.d)}</p><p class="desc" style="margin-top:8px">${gonTxt}</p>
+    <p class="s3-disc">${L('This reads one flat photo. A real measurement comes from a lateral cephalometric X-ray read by an orthodontist. Lens distance, head position and soft tissue can shift these angles by a few degrees.', 'هذه قراءة لصورة واحدة مسطحة. القياس الحقيقي يأتي من أشعة سيفالومترية جانبية يقرأها طبيب تقويم. بعد العدسة ووضع الرأس والأنسجة الرخوة قد تغيّر الزوايا بضع درجات.')}</p>
   </div>`;
-
-  // weak points (text only)
-  const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  box.innerHTML = `<div class="s3-card"><div class="s3-h">${L('Weak Points', 'نقاط الضعف')}</div>` +
-    (flaws.length ? `<ul class="s3-weak">${flaws.map(f => `<li class="${f.major ? 'major' : ''}">${esc(f.text)}</li>`).join('')}</ul>` : `<p class="s3-p">${none}</p>`) +
-    `</div>`;
   drawS3();
 }
-
-/* photo with the confirmed points and guide lines, no numbers */
 function drawS3() {
-  const cv = $('s3Canvas'), d = window.lowerThirdLandmarks?.front;
+  const cv = $('s3Canvas'), d = window.sideLandmarks;
   if (!d || !s3 || s3.bad) { cv.style.display = 'none'; return; }
   cv.style.display = 'block';
-  const cw = Math.min($('s3Stage').clientWidth || 640, 720), k = cw / d.width, ch = Math.round(d.height * k);
-  const dpr = window.devicePixelRatio || 1;
-  cv.style.width = cw + 'px'; cv.style.height = ch + 'px';
-  cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
+  const cw = Math.min($('s3Stage').clientWidth || 640, 720), k = cw / d.W, ch = Math.round(d.H * k), dpr = devicePixelRatio || 1;
+  cv.style.width = cw + 'px'; cv.style.height = ch + 'px'; cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
   const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
-  c.drawImage(d.image, 0, 0, cw, ch);
-  c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(0, 0, cw, ch);
-  const P = d.points, X = id => P[id].x * k, Y = id => P[id].y * k;
-  const ln = (a, b, col, w) => { c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(X(a), Y(a)); c.lineTo(X(b), Y(b)); c.stroke(); };
-  ['Tr', 'N', 'Sn', 'Me'].forEach((id, i, arr) => { if (i) ln(arr[i - 1], id, 'rgba(255,255,255,.7)', 1.4); });
-  ln('Zl', 'Zr', '#5ecbff', 1.2); ln('Gl', 'Gr', '#5ecbff', 1.2); ln('Cl', 'Cr', '#5ecbff', 1.2); ln('Al', 'Ar', '#5ecbff', 1.2);
-  ln('Pl', 'Pr', '#6ee7b7', 1.2); ln('Exl', 'Enl', '#6ee7b7', 1.2); ln('Enr', 'Exr', '#6ee7b7', 1.2);
-  Object.keys(P).forEach(id => {
-    const col = /^(Tr|Br|N|Sn|Ls|St|Li|Me)$/.test(id) ? '#fff' : /^(Pl|Pr|En|Ex)/.test(id) ? '#6ee7b7' : '#5ecbff';
-    c.fillStyle = col; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1;
-    c.beginPath(); c.arc(X(id), Y(id), 2.5, 0, 7); c.fill(); c.stroke();
+  c.drawImage(d.img, 0, 0, cw, ch); c.fillStyle = 'rgba(0,0,0,.3)'; c.fillRect(0, 0, cw, ch);
+  const p = id => ({ x: d.pts[id].x * k, y: d.pts[id].y * k }), big = cw + ch, Po = p('Po'), Or = p('Or'), Ra = p('Ra'), Go = p('Go'), Me = p('Me');
+  const ext = (a, v, col, w, dash) => { c.strokeStyle = col; c.lineWidth = w; c.setLineDash(dash || []); c.beginPath(); c.moveTo(a.x - v.x * big, a.y - v.y * big); c.lineTo(a.x + v.x * big, a.y + v.y * big); c.stroke(); c.setLineDash([]); };
+  ext(Po, s3.u, 'rgba(255,255,255,.6)', 1.2, [6, 5]);          // Frankfort plane
+  ext(Go, s3.u, 'rgba(255,255,255,.35)', 1, [2, 4]);          // parallel to it, through gonion
+  ext(Go, s3.w, '#ff3c5a', 1.6);                              // jaw plane
+  c.strokeStyle = '#5ecbff'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(Ra.x, Ra.y); c.lineTo(Go.x, Go.y); c.stroke();   // ramus
+  const ang = o => Math.atan2(o.y, o.x);
+  const arc = (a1, a2, r, col, txt) => {
+    let df = a2 - a1; while (df > Math.PI) df -= 2 * Math.PI; while (df < -Math.PI) df += 2 * Math.PI;
+    c.strokeStyle = col; c.lineWidth = 1.8; c.beginPath(); c.arc(Go.x, Go.y, r, a1, a1 + df, df < 0); c.stroke();
+    const mA = a1 + df / 2; c.textAlign = 'center'; label(c, txt, Go.x + Math.cos(mA) * (r + 22), Go.y + Math.sin(mA) * (r + 22), col, 1);
+  };
+  arc(ang(s3.u), ang(s3.w), cw * .17, '#ffc933', 'MPA ' + f1(s3.fma) + '°');
+  arc(ang(s3.a), ang(s3.w), cw * .08, '#5ecbff', f1(s3.gon) + '°');
+  [['Po', Po], ['Or', Or], ['Ra', Ra], ['Go', Go], ['Me', Me]].forEach(([id, q]) => {
+    c.fillStyle = '#fff'; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1; c.beginPath(); c.arc(q.x, q.y, 2.5, 0, 7); c.fill(); c.stroke();
+    c.textAlign = 'left'; label(c, id, q.x + 7, q.y - 8, '#fff', 1);
   });
 }
-
-$('s3Back').addEventListener('click', () => {
-  skStop();
-  $('step3').classList.remove('active');
-  $('step2').classList.add('active');
-  layoutStage(); renderStep2();
-  scrollTo({ top: 0, behavior: 'smooth' });
-});
+$('s3Back').addEventListener('click', () => { skStop(); show('step2'); layoutStage(); renderStep2(); });
 $('s3Restart').addEventListener('click', () => location.reload());
 
-/* ══ TALKING SKULL — no audio: the jaw (a separate layer of Skull.png) moves with every typed letter ══ */
+/* ══ TALKING SKULL — jaw layer of Skull.png moves with each typed letter ══ */
 const sk = { on: false, raf: 0, tm: 0, open: 0, target: 0, full: '', id: 0 };
 function skFrame() {
-  sk.open += (sk.target - sk.open) * 0.4;
-  $('skJaw').style.transform = `translateY(${(sk.open * 10).toFixed(2)}%)`;
-  $('skullWrap').classList.toggle('speaking', sk.on);
-  if (sk.on || sk.open > 0.01) sk.raf = requestAnimationFrame(skFrame); else { sk.open = 0; $('skJaw').style.transform = ''; }
+  sk.open += (sk.target - sk.open) * .4;
+  $('skJaw').style.transform = `translateY(${(sk.open * 10).toFixed(2)}%)`; $('skullWrap').classList.toggle('speaking', sk.on);
+  if (sk.on || sk.open > .01) sk.raf = requestAnimationFrame(skFrame); else { sk.open = 0; $('skJaw').style.transform = ''; }
 }
-function skStop() {
-  sk.on = false; sk.id++; clearTimeout(sk.tm); sk.target = 0;
-  if (sk.full) $('skText').textContent = sk.full;
-  $('skPlay').textContent = T('s3_say_play');
-}
+function skStop() { sk.on = false; sk.id++; clearTimeout(sk.tm); sk.target = 0; if (sk.full) $('skText').textContent = sk.full; $('skPlay').textContent = L('▶ Replay', '▶ إعادة'); }
 function skSpeak(text) {
-  skStop();
-  if (!text) { $('skText').textContent = ''; return; }
-  const id = sk.id;
-  sk.full = text; sk.on = true; $('skText').textContent = ''; $('skPlay').textContent = T('s3_say_stop');
+  skStop(); if (!text) { $('skText').textContent = ''; return; }
+  const id = sk.id; sk.full = text; sk.on = true; $('skText').textContent = ''; $('skPlay').textContent = L('■ Stop', '■ إيقاف');
   cancelAnimationFrame(sk.raf); sk.raf = requestAnimationFrame(skFrame);
   let i = 0;
   const step = () => {
     if (sk.id !== id) return;
-    const ch = text[i++];
-    $('skText').textContent = text.slice(0, i);
-    const end = /[.!?؟]/.test(ch), comma = /[,،]/.test(ch), sp = /\s/.test(ch);
-    sk.target = (end || comma || sp) ? 0.04 : 0.45 + Math.random() * 0.55;      // mouth shuts on pauses, opens on letters
+    const ch = text[i++], end = /[.!?؟]/.test(ch), comma = /[,،]/.test(ch), sp = /\s/.test(ch);
+    $('skText').textContent = text.slice(0, i); sk.target = (end || comma || sp) ? .04 : .45 + Math.random() * .55;
     if (i >= text.length) { sk.target = 0; sk.tm = setTimeout(() => { if (sk.id === id) skStop(); }, 250); return; }
     sk.tm = setTimeout(step, end ? 320 : comma ? 160 : sp ? 45 : 34);
   };
   step();
 }
-/* language toggled while the report is open: swap the skull's text (and restart the typing if it was talking) */
-function skRelang() {
-  const was = sk.on, say = s3 && !s3.bad && s3.say ? s3.say : '';
-  skStop();                                   // cancel the old typing loop
-  sk.full = say;
-  $('skText').textContent = say;
-  $('skPlay').textContent = T('s3_say_play');
-  if (was && say) skSpeak(say);               // it was mid-speech: continue in the new language
-}
+function skRelang() { const was = sk.on, say = s3 && !s3.bad ? s3.say : ''; skStop(); sk.full = say; $('skText').textContent = say; if (was && say) skSpeak(say); }
 const skToggle = () => { if (sk.on) skStop(); else skSpeak(s3 && !s3.bad ? s3.say : ''); };
-$('skPlay').addEventListener('click', skToggle);
-$('skullWrap').addEventListener('click', skToggle);
-addEventListener('pagehide', skStop);
-
-getLandmarker();   // warm the model up while the user picks a photo
+$('skPlay').addEventListener('click', skToggle); $('skullWrap').addEventListener('click', skToggle); addEventListener('pagehide', skStop);
+applyStatic();
 </script>
 </body>
 </html>

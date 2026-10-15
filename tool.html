@@ -55,7 +55,7 @@ body.lang-ar .tool-title,body.lang-ar .tool-eyebrow{font-family:'Tajawal',sans-s
 .mini-spinner{width:20px;height:20px;border:2px solid var(--smoke);border-top-color:var(--blood);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0}@keyframes spin{to{transform:rotate(360deg)}}
 #lmLoupe{width:140px;height:140px;border:1px solid var(--smoke);background:#000}
 .lm-stage{position:relative;background:#000;border:1px solid var(--border);display:flex;justify-content:center;overflow:hidden}
-.lm-stage canvas{display:block;max-width:100%;cursor:crosshair;touch-action:none}
+.lm-stage canvas{display:block;max-width:100%;cursor:crosshair}
 .lm-chips{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:12px 0;direction:ltr}
 .lm-chip{position:relative;padding:11px 2px;font-size:13px;font-weight:700;text-align:center;color:var(--text);background:var(--panel);border:1px solid var(--border);cursor:pointer;font-family:inherit}
 .lm-chip.sel{border-color:var(--crimson);background:rgba(139,0,0,.16);color:var(--white);box-shadow:0 0 14px rgba(220,20,60,.25)}
@@ -89,8 +89,6 @@ body.lang-ar .rot-name{font-family:'Tajawal',sans-serif;font-weight:900;letter-s
 .stats b{font-size:15px;color:var(--white);direction:ltr}.stats span{font-size:8px;letter-spacing:1px;color:var(--ash);text-transform:uppercase}
 .desc{font-size:11px;line-height:1.9;color:var(--bone);max-width:470px;margin:14px auto 0}
 .s3-disc{text-align:center;font-size:9px;line-height:1.8;color:var(--ash);max-width:480px;margin:16px auto 0}
-.s3-circle{display:flex;justify-content:center;margin-top:22px}.s3-circle img{width:180px;height:180px;border-radius:50%;object-fit:cover;border:3px solid}
-.rt{width:100%;border-collapse:collapse}.rt td{padding:12px 14px;border:1px solid var(--border);font-size:13px;color:var(--white);font-weight:700}.rt td:first-child{color:var(--ash);font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:400}.rt td:last-child{text-align:end}
 .skull-card{display:flex;gap:16px;align-items:center;padding:16px;border:1px solid var(--border);background:var(--panel)}
 .skull-wrap{cursor:pointer;position:relative;flex:none;width:130px;height:130px;border-radius:50%;overflow:hidden;background:#000;border:2px solid var(--blood);box-shadow:0 0 22px rgba(139,0,0,.35)}
 .skull-wrap.speaking{box-shadow:0 0 34px rgba(220,20,60,.75)}
@@ -184,8 +182,8 @@ body.lang-ar .rot-name{font-family:'Tajawal',sans-serif;font-weight:900;letter-s
     <div class="msg-bar" id="s3Msg"></div>
     <div class="skull-card"><div class="skull-wrap" id="skullWrap"><div class="sk-up"></div><div class="sk-jaw" id="skJaw"></div></div>
       <div class="skull-bubble"><div class="s3-h" style="margin:0" id="skH"></div><div id="skText"></div><button class="btn-ghost" type="button" id="skPlay"></button></div></div>
-    <div id="s3Rating"></div>
     <div class="lm-stage" id="s3Stage" style="margin-top:16px"><canvas id="s3Canvas"></canvas></div>
+    <div id="s3Rating"></div>
     <div class="tool-nav"><button class="btn-ghost" type="button" id="s3Back" data-i18n="tool_back">← Back</button><button class="btn-solid" type="button" id="s3Restart" data-i18n="s3_restart">Start Over</button></div>
   </section>
 </div></div>
@@ -254,7 +252,8 @@ function applyStatic() {
 }
 function onLangChange(next) {
   lang = next; applyDocumentDirection(next); applyTranslations(next); applyStatic();
-    if (s2) renderStep2();
+  if (prof && photo) renderVerdict();
+  if (s2) renderStep2();
   if ($('step3').classList.contains('active')) { renderS3(); skRelang(); }
 }
 applyDocumentDirection(lang); applyTranslations(lang);
@@ -280,18 +279,11 @@ async function handleFile(file) {
   $('previewImg').src = c.toDataURL('image/jpeg', .9); $('fileName').textContent = file.name;
   $('uploader').style.display = 'none'; $('previewBox').style.display = 'block'; $('continueNav').style.display = 'flex'; $('continueBtn').disabled = true;
   const box = $('verdict'); box.className = 'verdict'; box.style.display = 'block';
-  box.innerHTML = `<div class="verdict-loading"><span class="mini-spinner"></span>${L('Finding your head…', 'جارٍ تحديد الرأس…')}</div>`;
+  box.innerHTML = `<div class="verdict-loading"><span class="mini-spinner"></span>${L('Checking the head angle…', 'جارٍ فحص زاوية الرأس…')}</div>`;
   const NONE = { yaw: null, facing: null, defs: null };
   const r = await Promise.race([checkProfile(c).catch(() => NONE), new Promise(res => setTimeout(() => res(NONE), 12000))]);   // models offline/slow = skip the check, never block
-  if (photo !== c) return;
-  let out = c, df = r.defs;
-  if (r.crop) {
-    const W = c.width, H = c.height, sz = Math.min(r.crop.s, W, H), x = clamp(r.crop.cx - sz / 2, 0, W - sz), y = clamp(r.crop.cy - sz / 2, 0, H - sz), f = Math.max(1, 900 / sz), o = document.createElement('canvas');
-    o.width = o.height = Math.round(sz * f); const g = o.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(c, x, y, sz, sz, 0, 0, o.width, o.height); out = o;
-    if (df) { df = {}; for (const k in r.defs) df[k] = { x: (r.defs[k].x - x) * f, y: (r.defs[k].y - y) * f }; }
-  }
-  photo = out; prof = { ...r, defs: df };
-  $('previewImg').src = out.toDataURL('image/jpeg', .92); $('verdict').style.display = 'none'; $('continueBtn').disabled = false;
+  if (photo !== c) return;                     // photo swapped mid-check
+  prof = r; renderVerdict();
 }
 $('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
 $('changeBtn').addEventListener('click', () => { photo = null; s2 = null; prof = null; $('verdict').style.display = 'none'; $('fileInput').value = ''; $('uploader').style.display = 'flex'; $('previewBox').style.display = 'none'; $('continueNav').style.display = 'none'; $('fileInput').click(); });
@@ -318,8 +310,8 @@ const getFace = async () => faceLm || (faceLm = await makeLm('FaceLandmarker', '
 const getPose = async () => poseLm || (poseLm = await makeLm('PoseLandmarker', 'pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task', { numPoses: 1 }));
 const yawFromRatio = r => { let best = 0, bd = 9; for (let y = 0; y <= 90; y++) { const c = Math.cos(y * Math.PI / 180), sn = Math.sin(y * Math.PI / 180), rr = 6.3 * c / Math.hypot(10.5 * sn, 7.5 * c), dd = Math.abs(rr - r); if (dd < bd) { bd = dd; best = y; } } return best; };
 async function checkProfile(c) {
-  const W = c.width, H = c.height; let faceYaw = null, poseYaw = null, facing = null, defs = null, crop = null;
-  const fl = null;
+  const W = c.width, H = c.height; let faceYaw = null, poseYaw = null, facing = null, defs = null;
+  const fl = await getFace();
   if (fl) { try { const r = fl.detect(c), mm = r.faceLandmarks?.length ? r.facialTransformationMatrixes?.[0]?.data : null; if (mm) faceYaw = Math.abs(Math.asin(clamp(-mm[2], -1, 1)) * 180 / Math.PI); } catch (e) { console.warn(e); } }
   const pl = await getPose(); let P = null;
   if (pl) { try { P = pl.detect(c).landmarks?.[0]; } catch (e) { console.warn(e); } }
@@ -332,13 +324,12 @@ async function checkProfile(c) {
       if (Math.min(eL.v, eR.v) > .6) yw = Math.min(yw, 50);              // both ears clearly visible = not a profile
       poseYaw = yw; facing = n.x > ear.x ? 'right' : 'left';
       const sg = facing === 'right' ? 1 : -1, mouthY = (g(9).y + g(10).y) / 2, eye = { x: avg(eyes, 'x'), y: avg(eyes, 'y') };
-      const Me = { x: n.x - sg * .22 * d, y: mouthY + .34 * d }, Go = { x: ear.x + sg * .10 * d }; Go.y = Me.y - Math.tan(25 * Math.PI / 180) * Math.abs(Me.x - Go.x);
-      defs = { Po: { x: ear.x + sg * .04 * d, y: (ear.y - .03 * d + eye.y + .07 * d) / 2 }, Or: { x: eye.x + sg * .02 * d, y: eye.y + .07 * d }, Ra: { x: Go.x - sg * .045 * d, y: Go.y - .4 * d }, Go, Me, Sn: { x: n.x - sg * .02 * d, y: n.y + .12 * d }, Pg: { x: Me.x + sg * .02 * d, y: Me.y - .06 * d } };
-      crop = { cx: (n.x + ear.x) / 2, cy: eye.y + .05 * d, s: 2.9 * d };
+      const Me = { x: n.x - sg * .22 * d, y: mouthY + .28 * d }, Go = { x: ear.x + sg * .10 * d }; Go.y = Me.y - Math.tan(25 * Math.PI / 180) * Math.abs(Me.x - Go.x);
+      defs = { Po: { x: ear.x + sg * .05 * d, y: ear.y - .03 * d }, Or: { x: eye.x, y: eye.y + .07 * d }, Ra: { x: Go.x - sg * .03 * d, y: Go.y - .4 * d }, Go, Me, Sn: { x: n.x - sg * .02 * d, y: n.y + .12 * d }, Pg: { x: Me.x + sg * .02 * d, y: Me.y - .06 * d } };
     }
   }
   const yaw = faceYaw !== null && faceYaw < 65 ? faceYaw : poseYaw !== null ? poseYaw : faceYaw;
-  return { crop, yaw, facing, defs, src: poseYaw !== null ? 'pose' : faceYaw !== null ? 'face' : null };
+  return { yaw, facing, defs, src: poseYaw !== null ? 'pose' : faceYaw !== null ? 'face' : null };
 }
 function renderVerdict() {
   const box = $('verdict'), r = prof; box.style.display = 'block';
@@ -432,19 +423,12 @@ document.addEventListener('keydown', e => {
   const m = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
   if (m) { e.preventDefault(); nudge(m[0], m[1], e.shiftKey); }
 });
-(() => {
-  const cv = $('lmCanvas'); let drag = false;
-  const pos = e => { const r = cv.getBoundingClientRect(); return { x: clamp((e.clientX - r.left) / r.width * s2.W, 0, s2.W), y: clamp((e.clientY - r.top) / r.height * s2.H, 0, s2.H), k: r.width / s2.W }; };
-  const put = q => { const p = s2.pts[PT[s2.sel].id]; p.x = q.x; p.y = q.y; p.seen = true; draw(); };
-  cv.addEventListener('pointerdown', e => {            // grab the nearest point to drag it, or tap empty space to drop the selected one there
-    if (!s2) return; e.preventDefault(); const q = pos(e); let best = -1, bd = 30 / q.k;
-    PT.forEach((m, i) => { const p = s2.pts[m.id], dd = Math.hypot(p.x - q.x, p.y - q.y); if (dd < bd) { bd = dd; best = i; } });
-    if (best >= 0) s2.sel = best; else put(q);
-    drag = true; cv.setPointerCapture(e.pointerId); renderStep2();
-  });
-  cv.addEventListener('pointermove', e => { if (drag && s2) put(pos(e)); });
-  ['pointerup', 'pointercancel'].forEach(ev => cv.addEventListener(ev, () => { if (drag) { drag = false; renderStep2(); } }));
-})();
+$('lmCanvas').addEventListener('click', e => {            // tap = drop the selected point here (then fine-tune with the arrows)
+  if (!s2) return;
+  const r = e.currentTarget.getBoundingClientRect(), p = s2.pts[PT[s2.sel].id];
+  p.x = clamp((e.clientX - r.left) / r.width * s2.W, 0, s2.W); p.y = clamp((e.clientY - r.top) / r.height * s2.H, 0, s2.H);
+  p.seen = true; renderStep2();
+});
 $('lmChips').addEventListener('click', e => { const c = e.target.closest('.lm-chip'); if (c) select(+c.dataset.i); });
 $('lmSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && s2) { s2.stepKey = b.dataset.step; renderStep2(); } });
 $('faceSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && s2 && b.dataset.face !== s2.face) { initS2(b.dataset.face); renderStep2(); } });
@@ -487,29 +471,6 @@ function measure() {
   return { chin, u, w, a: { x: a0.x / len(a0), y: a0.y / len(a0) }, fma, gon, psl, pm, pg, cls, ideal: IDEAL[gk] };
 }
 const f1 = n => nf(n.toFixed(1));
-const TIERS = [['Sub-3', 'Sub-3', '#ff4d4d'], ['Sub-5', 'Sub-5', '#ff7a4c'], ['LTN', 'LTN', '#ffa94c'], ['MTN', 'MTN', '#e6e6e6'], ['HTN', 'HTN', '#9be7c4'], ['Chadlite', 'Stacylite', '#6ee7b7'], ['Chad', 'Stacy', '#5ecbff']];
-const tierOf = p => p >= 8 ? 6 : p >= 7 ? 5 : p >= 6 ? 4 : p >= 5 ? 3 : p >= 4 ? 2 : p >= 3 ? 1 : 0;
-const ROT = [['Strong CCW', 'CCW قوي'], ['CCW', 'CCW'], ['Neutral', 'محايد'], ['CW', 'CW'], ['Strong CW', 'CW قوي']];
-const rotOf = (f, fem) => { const o = fem ? 2 : 0; return f < 15 + o ? 0 : f < 24 + o ? 1 : f < 32 + o ? 2 : f < 39 + o ? 3 : 4; };
-function verdictText(ti, m, fem, tn) {
-  const p = f1(m.psl), a = f1(m.fma), g = f1(m.gon), gy = fem ? 'girl' : 'guy', k = fem ? 'queen' : 'king';
-  return [
-    [`${tn}. ${p} out of 10. Your jaw is fucked, no nice way to say it. Rotated ${a}° down and back, ${g}° gonial, chin hiding in your neck like it owes someone money. Full CW disaster. You're cooked.`,
-     `${tn}. ${p} من ١٠. فكك باظ يا نجم. ${a}° ناحية تحت وورا، والدقن مستخبية في رقبتك. نمو CW مصيبة، انت خلصت.`],
-    [`${tn}. ${p}. Weak jaw, tilted down, chin went missing. ${a}° is not it. Your side profile is snitching on you. Cooked.`,
-     `${tn}. ${p}. فك ضعيف ومايل لتحت والدقن مش موجودة. زاوية ${a}° مش كويسة، البروفايل فاضحك.`],
-    [`${tn}. ${p}. Soft jaw, nothing special, nobody's looking at your profile twice. ${a}° says low tier and it shows. Mid at best.`,
-     `${tn}. ${p}. فك طري ومفيش حاجة تلفت. بروفايلك مش هيخلي حد يبص مرتين.`],
-    [`${tn}. ${p}. Dead average. ${a}° mandibular angle, ${g}° gonial, zero drama, zero hype. Boring, but at least you're not cooked.`,
-     `${tn}. ${p}. عادي جداً. زاوية ${a}° وجونيال ${g}°، لا بتفرق ولا بتضر.`],
-    [`${tn}. ${p}. Okay, not bad at all. Jaw rotates forward, ${a}° angle, ${g}° gonial. You're mogging the average ${gy}, keep stacking.`,
-     `${tn}. ${p}. مش وحش خالص، الفك داخل لقدام. أحسن من متوسط الناس، كمّل.`],
-    [`${tn}. ${p}. Damn! Clean forward rotation, ${a}° angle, ${g}° gonial, jaw sharp as hell. You're mogging most of the room.`,
-     `${tn}. ${p}. يا نهار أبيض! دوران لقدام نضيف وفك حاد. انت بتغلب نص الأوضة.`],
-    [`${tn}!!! ${p} out of 10. HOLY SHIT. ${a}° mandibular angle and ${g}° gonial, that CCW rotation is straight from heaven. I'm bowing, ${k}. The whole room is getting mogged. Teach me your ways.`,
-     `${tn}!!! ${p} من ١٠. يا وحش! زاوية ${a}° وجونيال ${g}°، دوران CCW خرافي. انحني احتراماً يا ${fem ? 'ملكة' : 'ملك'}، الأوضة كلها بتتغلب جنبك.`]
-  ][ti];
-}
 function renderS3() {
   s3 = measure();
   const msg = $('s3Msg'); msg.className = 'msg-bar'; msg.textContent = '';
@@ -518,15 +479,31 @@ function renderS3() {
     if (s3) { msg.className = 'msg-bar error'; msg.textContent = L('The points are not in a believable order: Porion must sit behind Orbitale, Ramus above Gonion, and Menton in front of Gonion. Go back and correct them.', 'ترتيب النقاط غير منطقي: يجب أن يكون Po خلف Or، وRa فوق Go، وMe أمام Go. ارجع وصحّحها.'); }
     drawS3(); return;
   }
-  const m = s3, fem = gender === 'female', ti = tierOf(m.psl), TR = TIERS[ti], tn = fem ? TR[1] : TR[0], col = TR[2], rt = ROT[rotOf(m.fma, fem)];
-  m.say = L(...verdictText(ti, m, fem, tn));
-  const img = window.sideLandmarks.img.toDataURL('image/jpeg', .9);
-  $('s3Rating').innerHTML = `<div class="s3-circle"><img src="${img}" alt="" style="border-color:${col};box-shadow:0 0 28px ${col}88"></div>
-  <div class="s3-card" style="margin-top:18px"><table class="rt">
-    <tr><td>${L('Rating', 'التصنيف')}</td><td style="color:${col}">${tn}</td></tr>
-    <tr><td>${L('PSL score', 'PSL')}</td><td style="color:${col}">${f1(m.psl)} / 10</td></tr>
-    <tr><td>${L('Rotation', 'الدوران')}</td><td>${L(...rt)}</td></tr>
-  </table></div>`;
+  const m = s3, C0 = CL[m.cls], fem = gender === 'female', C = { ...C0, t: C0.t.map(x => fem ? x.replace('Chad', 'Stacy') : x) }, pos = clamp((10 - m.psl) / 9, 0, 1) * 100;
+  const gonTxt = m.gon < m.ideal.gonR[0]
+    ? L(`Your gonial angle is tight, ${f1(m.gon)}°: a sharp, angular jaw corner, the forward-growth look.`, `زاوية فكك ضيقة، ${f1(m.gon)}°: زاوية فك حادة وبارزة، وهي سمة النمو الأمامي.`)
+    : m.gon > m.ideal.gonR[1]
+      ? L(`Your gonial angle is wide, ${f1(m.gon)}°: past ${nf(Math.round(m.ideal.gonR[1]))}° counts against you. A rounded, obtuse jaw corner reads soft and goes with downward growth.`, `زاوية فكك واسعة، ${f1(m.gon)}°: تجاوز ${nf(Math.round(m.ideal.gonR[1]))}° يُحتسب ضدك. زاوية مستديرة تبدو ناعمة وترافق النمو نحو الأسفل.`)
+      : L(`Your gonial angle, ${f1(m.gon)}°, sits between the elite and average bands.`, `زاوية فكك، ${f1(m.gon)}°، بين فئة النخبة والمتوسط.`);
+  m.say = [
+    L(`I measured your jaw. Your rotation is ${C.n[0]}: ${C.s[0].toLowerCase()}. Growth rating ${f1(m.psl)} out of 10, ${C.t[0]}. The mandibular plane angle is ${f1(m.fma)} degrees.`, `قست فكك. دورانك ${C.n[1]}: ${C.s[1]}. تقييم النمو ${f1(m.psl)} من ١٠، ${C.t[1]}. زاوية المستوى الفكي ${f1(m.fma)} درجة.`),
+    L(...C.d), gonTxt,
+    L('That is my verdict. Remember, this is one flat photo, not an X-ray.', 'هذا حكمي. تذكّر أنها صورة واحدة مسطحة وليست أشعة.')
+  ].join(' ');
+  $('s3Rating').innerHTML = `<div class="s3-card s3-rate">
+    <div class="s3-h">${L('Rotation', 'الدوران')}</div>
+    <div class="rot-name" style="color:${C.c};text-shadow:0 0 18px ${C.c}66">${L(...C.n)}</div>
+    <div class="rot-sub">${L(...C.s)}</div><div class="rot-sub" style="color:${C.c}">${f1(m.psl)} / 10 · ${L(...C.t)}</div>
+    <div class="gauge"><i style="left:${pos.toFixed(1)}%"></i></div>
+    <div class="gauge-lbl"><span>${L('CCW · Forward', 'CCW · أمام')}</span><span>${L('Neutral', 'محايد')}</span><span>${L('CW · Downward', 'CW · أسفل')}</span></div>
+    <div class="stats">
+      <div><b>${m.fma > 0 ? '+' : m.fma < 0 ? '−' : ''}${f1(Math.abs(m.fma))}°</b><span>${L('MPA · ideal', 'MPA · المثالي')} ${nf(m.ideal.mpa[0])}–${nf(m.ideal.mpa[1])}°</span></div>
+      <div><b>${f1(m.gon)}°</b><span>${L('Gonial · ideal', 'الجونيال · المثالي')} ${nf(m.ideal.gon[0])}–${nf(m.ideal.gon[1])}°</span></div>
+      ${m.chin === null ? '' : `<div><b>${m.chin > 0 ? '+' : m.chin < 0 ? '−' : ''}${f1(Math.abs(m.chin))}%</b><span>${L('Chin vs Sn (of lower face)', 'الذقن مقابل Sn (من الوجه السفلي)')}</span></div>`}
+    </div>
+    <p class="desc">${L(...C.d)}</p><p class="desc" style="margin-top:8px">${gonTxt}</p>
+    <p class="s3-disc">${L('This reads one flat photo. A real measurement comes from a lateral cephalometric X-ray read by an orthodontist. Lens distance, head position and soft tissue can shift these angles by a few degrees.', 'هذه قراءة لصورة واحدة مسطحة. القياس الحقيقي يأتي من أشعة سيفالومترية جانبية يقرأها طبيب تقويم. بعد العدسة ووضع الرأس والأنسجة الرخوة قد تغيّر الزوايا بضع درجات.')}</p>
+  </div>`;
   drawS3();
 }
 function drawS3() {
@@ -585,7 +562,7 @@ function skSpeak(text) {
 function skRelang() { const was = sk.on, say = s3 && !s3.bad ? s3.say : ''; skStop(); sk.full = say; $('skText').textContent = say; if (was && say) skSpeak(say); }
 const skToggle = () => { if (sk.on) skStop(); else skSpeak(s3 && !s3.bad ? s3.say : ''); };
 $('skPlay').addEventListener('click', skToggle); $('skullWrap').addEventListener('click', skToggle); addEventListener('pagehide', skStop);
-applyStatic(); getPose();   // warm the models up while the user picks a photo
+applyStatic(); getFace(); getPose();   // warm the models up while the user picks a photo
 </script>
 </body>
 </html>

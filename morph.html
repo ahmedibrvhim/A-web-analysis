@@ -35,7 +35,7 @@ body.lang-ar .nav-logo .logo-mark{font-family:'Tajawal',sans-serif;font-weight:7
 .m-eyebrow{font-size:9px;letter-spacing:5px;color:var(--blood);text-transform:uppercase;margin-bottom:10px}
 .m-title{font-family:'Cinzel Decorative',cursive;font-size:clamp(20px,3.6vw,28px);color:var(--white);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px}
 body.lang-ar .m-title{font-family:'Tajawal',sans-serif;font-weight:900;letter-spacing:0;text-transform:none}
-.m-text{font-size:12px;color:var(--text);line-height:1.9;max-width:520px;margin:0 auto 26px}
+.m-text{font-size:12px;color:var(--text);line-height:1.9;max-width:540px;margin:0 auto 26px}
 .msg-bar{padding:11px 16px;font-size:10px;letter-spacing:1px;text-align:center;margin-bottom:18px;border:1px solid transparent;display:none}
 .msg-bar.error{display:block;background:rgba(220,20,60,.08);border-color:var(--blood);color:#ff8080}
 .msg-bar.info{display:block;background:rgba(139,0,0,.06);border-color:var(--smoke);color:var(--bone)}
@@ -75,7 +75,7 @@ body.lang-ar .m-title{font-family:'Tajawal',sans-serif;font-weight:900;letter-sp
 .card{margin-top:16px;padding:18px;border:1px solid var(--border);background:var(--panel)}
 .card h3{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--white);margin-bottom:14px}
 body.lang-ar .card h3{font-family:'Tajawal',sans-serif;letter-spacing:0}
-.sl{display:grid;grid-template-columns:130px 1fr 44px;gap:12px;align-items:center;margin-bottom:12px;direction:ltr}
+.sl{display:grid;grid-template-columns:150px 1fr 44px;gap:12px;align-items:center;margin-bottom:12px;direction:ltr}
 .sl label{font-size:10px;letter-spacing:1px;color:var(--text);text-transform:uppercase}
 html[dir=rtl] .sl label{text-align:right;direction:rtl}
 .sl output{font-size:11px;color:var(--white);font-weight:700;text-align:right}
@@ -89,7 +89,7 @@ html[dir=rtl] .sl label{text-align:right;direction:rtl}
 .note{font-size:10px;line-height:1.8;color:var(--ash);margin-top:12px}
 .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px}
 .disc{text-align:center;font-size:9px;line-height:1.8;letter-spacing:.4px;color:var(--ash);max-width:520px;margin:18px auto 0}
-@media (max-width:520px){.sl{grid-template-columns:96px 1fr 38px;gap:8px}}
+@media (max-width:520px){.sl{grid-template-columns:104px 1fr 38px;gap:8px}}
 
 .auth-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#150000 0%,#000 70%);display:flex;align-items:center;justify-content:center;transition:opacity .3s,visibility .3s}
 .auth-gate.auth-gate-hidden{opacity:0;visibility:hidden;pointer-events:none}
@@ -135,7 +135,7 @@ html[dir=rtl] .sl label{text-align:right;direction:rtl}
   <div class="m-head">
     <div class="m-eyebrow" data-i18n="mp_eyebrow">☠ Potential Morph ☠</div>
     <h1 class="m-title" data-i18n="mp_title">See Your High Potential</h1>
-    <p class="m-text" data-i18n="mp_text">Upload one front photo and the engine measures your face, then nudges each feature toward its ideal range inside safe limits, so you still look like you. Tune every part with the sliders.</p>
+    <p class="m-text" data-i18n="mp_text">Upload one front photo. The engine widens the cheekbones and jaw, lifts the eye tilt and sets the eyes deeper, without exposing the eyes or adding bags. Tune each part with the sliders.</p>
   </div>
 
   <div class="msg-bar" id="mMsg"></div>
@@ -166,12 +166,14 @@ html[dir=rtl] .sl label{text-align:right;direction:rtl}
 
     <div class="card">
       <h3 data-i18n="mp_controls">Morph Controls</h3>
-      <div class="sl master"><label for="sAll" data-i18n="mp_s_all">Overall strength</label><input type="range" id="sAll" min="0" max="100" value="60"><output id="oAll">60</output></div>
-      <div class="sl"><label for="sJaw" data-i18n="mp_s_jaw">Jaw & chin</label><input type="range" id="sJaw" min="0" max="100" value="100"><output id="oJaw">100</output></div>
-      <div class="sl"><label for="sEyes" data-i18n="mp_s_eyes">Eyes</label><input type="range" id="sEyes" min="0" max="100" value="100"><output id="oEyes">100</output></div>
-      <div class="sl"><label for="sSym" data-i18n="mp_s_sym">Symmetry</label><input type="range" id="sSym" min="0" max="100" value="100"><output id="oSym">100</output></div>
-      <div class="sl"><label for="sCheek" data-i18n="mp_s_cheek">Cheekbones</label><input type="range" id="sCheek" min="0" max="100" value="100"><output id="oCheek">100</output></div>
-      <div class="sl"><label for="sSkin" data-i18n="mp_s_skin">Skin & light</label><input type="range" id="sSkin" min="0" max="100" value="60"><output id="oSkin">60</output></div>
+      <div class="sl master"><label for="sAll" data-i18n="mp_s_all">Overall strength</label><input type="range" id="sAll" min="0" max="100" value="85"><output id="oAll">85</output></div>
+      <div class="sl"><label for="sZyg" data-i18n="mp_s_zyg">Cheekbones (zygos)</label><input type="range" id="sZyg" min="0" max="100" value="100"><output id="oZyg">100</output></div>
+      <div class="sl"><label for="sJaw" data-i18n="mp_s_jaw">Jaw width</label><input type="range" id="sJaw" min="0" max="100" value="100"><output id="oJaw">100</output></div>
+      <div class="sl"><label for="sTilt" data-i18n="mp_s_tilt">Eye tilt</label><input type="range" id="sTilt" min="0" max="100" value="100"><output id="oTilt">100</output></div>
+      <div class="sl"><label for="sDeep" data-i18n="mp_s_deep">Deep-set eyes</label><input type="range" id="sDeep" min="0" max="100" value="100"><output id="oDeep">100</output></div>
+      <div class="sl"><label for="sBags" data-i18n="mp_s_bags">Under-eye cleanup</label><input type="range" id="sBags" min="0" max="100" value="100"><output id="oBags">100</output></div>
+      <div class="sl"><label for="sSym" data-i18n="mp_s_sym">Symmetry</label><input type="range" id="sSym" min="0" max="100" value="50"><output id="oSym">50</output></div>
+      <div class="sl"><label for="sSkin" data-i18n="mp_s_skin">Skin & light</label><input type="range" id="sSkin" min="0" max="100" value="25"><output id="oSkin">25</output></div>
     </div>
 
     <div class="card">
@@ -200,34 +202,36 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 Object.assign(dict.en, {
   nav_tool: 'Analysis', nav_morph: 'Morph',
   mp_eyebrow: '☠ Potential Morph ☠', mp_title: 'See Your High Potential',
-  mp_text: 'Upload one front photo and the engine measures your face, then nudges each feature toward its ideal range inside safe limits, so you still look like you. Tune every part with the sliders.',
+  mp_text: 'Upload one front photo. The engine widens the cheekbones and jaw, lifts the eye tilt and sets the eyes deeper, without exposing the eyes or adding bags. Tune each part with the sliders.',
   mp_before: 'Before', mp_after: 'Potential', mp_controls: 'Morph Controls',
-  mp_s_all: 'Overall strength', mp_s_jaw: 'Jaw & chin', mp_s_eyes: 'Eyes', mp_s_sym: 'Symmetry', mp_s_cheek: 'Cheekbones', mp_s_skin: 'Skin & light',
+  mp_s_all: 'Overall strength', mp_s_zyg: 'Cheekbones (zygos)', mp_s_jaw: 'Jaw width', mp_s_tilt: 'Eye tilt', mp_s_deep: 'Deep-set eyes',
+  mp_s_bags: 'Under-eye cleanup', mp_s_sym: 'Symmetry', mp_s_skin: 'Skin & light',
   mp_changes: 'What Was Adjusted', mp_new: 'New Photo', mp_download: 'Download Result',
   mp_disc: 'A visual preview built from face-landmark geometry, not a prediction. Real results depend on bone structure, health and lifestyle. Photos are processed in your browser and never uploaded.',
   mp_detecting: 'Reading your face…', mp_err_gender: 'Please select your gender first.',
   mp_err_model: 'The face model could not be loaded. Check your connection and try again.',
   mp_err_none: 'No face was detected. Use a clear, front-facing photo.', mp_err_multi: 'More than one face was detected. Use a photo of one person.',
   mp_err_turn: 'The head is turned too far. Use a straight, front-facing photo.', mp_err_img: 'Could not read this image. Try a JPG or PNG.',
-  mp_c_jaw_in: 'Jaw narrowed', mp_c_jaw_out: 'Jaw widened', mp_c_chin_up: 'Chin shortened', mp_c_chin_dn: 'Chin lengthened',
-  mp_c_tilt: 'Eye tilt lifted', mp_c_sym: 'Symmetry balanced', mp_c_cheek: 'Cheekbones widened', mp_c_skin: 'Skin & light refined', mp_c_none: 'Already close to ideal',
-  mp_note: 'Every change is capped at a few percent of face size. Move a slider to 0 to switch that part off.'
+  mp_c_zyg: 'Cheekbones widened', mp_c_jaw: 'Jaw widened', mp_c_tilt: 'Eye tilt lifted', mp_c_deep: 'Eyes set deeper',
+  mp_c_bags: 'Under-eye smoothed', mp_c_sym: 'Symmetry balanced', mp_c_skin: 'Skin & light refined',
+  mp_note: 'Strength is capped so the result stays believable. Move a slider to 0 to switch that part off.'
 });
 Object.assign(dict.ar, {
   nav_tool: 'التحليل', nav_morph: 'التحويل',
   mp_eyebrow: '☠ تحويل الإمكانات ☠', mp_title: 'شاهد إمكاناتك العالية',
-  mp_text: 'ارفع صورة أمامية واحدة وسيقيس المحرك وجهك ثم يقرّب كل ملمح من نطاقه المثالي ضمن حدود آمنة، فتبقى تشبه نفسك. اضبط كل جزء بالمنزلقات.',
+  mp_text: 'ارفع صورة أمامية واحدة. يوسّع المحرك الوجنتين والفك، ويرفع ميل زاوية العين، ويجعل العينين أعمق، دون إظهار العين أكثر ودون هالات. اضبط كل جزء بالمنزلقات.',
   mp_before: 'قبل', mp_after: 'الإمكانات', mp_controls: 'أدوات التحكم',
-  mp_s_all: 'القوة الكلية', mp_s_jaw: 'الفك والذقن', mp_s_eyes: 'العينان', mp_s_sym: 'التناظر', mp_s_cheek: 'الوجنتان', mp_s_skin: 'البشرة والإضاءة',
+  mp_s_all: 'القوة الكلية', mp_s_zyg: 'الوجنتان (الزيجوماتك)', mp_s_jaw: 'عرض الفك', mp_s_tilt: 'ميل زاوية العين', mp_s_deep: 'عيون غائرة',
+  mp_s_bags: 'تنظيف تحت العين', mp_s_sym: 'التناظر', mp_s_skin: 'البشرة والإضاءة',
   mp_changes: 'ما الذي تم تعديله', mp_new: 'صورة جديدة', mp_download: 'تحميل النتيجة',
   mp_disc: 'معاينة بصرية مبنية على هندسة نقاط الوجه وليست تنبؤاً. النتائج الحقيقية تعتمد على بنية العظام والصحة ونمط الحياة. تتم معالجة الصور في متصفحك ولا يتم رفعها أبداً.',
   mp_detecting: 'جارٍ قراءة وجهك…', mp_err_gender: 'الرجاء اختيار الجنس أولاً.',
   mp_err_model: 'تعذّر تحميل نموذج الوجه. تحقق من اتصالك وحاول مجدداً.',
   mp_err_none: 'لم يتم اكتشاف وجه. استخدم صورة أمامية واضحة.', mp_err_multi: 'تم اكتشاف أكثر من وجه. استخدم صورة لشخص واحد.',
   mp_err_turn: 'الرأس مُدار أكثر من اللازم. استخدم صورة أمامية مستقيمة.', mp_err_img: 'تعذّرت قراءة هذه الصورة. جرّب JPG أو PNG.',
-  mp_c_jaw_in: 'تضييق الفك', mp_c_jaw_out: 'توسيع الفك', mp_c_chin_up: 'تقصير الذقن', mp_c_chin_dn: 'إطالة الذقن',
-  mp_c_tilt: 'رفع ميل العين', mp_c_sym: 'موازنة التناظر', mp_c_cheek: 'توسيع الوجنتين', mp_c_skin: 'تحسين البشرة والإضاءة', mp_c_none: 'قريب أصلاً من المثالي',
-  mp_note: 'كل تعديل محدود بنسبة صغيرة من حجم الوجه. اجعل المنزلق 0 لإيقاف ذلك الجزء.'
+  mp_c_zyg: 'توسيع الوجنتين', mp_c_jaw: 'توسيع الفك', mp_c_tilt: 'رفع ميل زاوية العين', mp_c_deep: 'جعل العينين أعمق',
+  mp_c_bags: 'تنعيم تحت العين', mp_c_sym: 'موازنة التناظر', mp_c_skin: 'تحسين البشرة والإضاءة',
+  mp_note: 'القوة محدودة ليبقى الناتج مقنعاً. اجعل المنزلق 0 لإيقاف ذلك الجزء.'
 });
 
 /* ── AUTH + I18N (same pattern as tool.html) ── */
@@ -322,7 +326,7 @@ async function handleFile(file) {
   if (Math.abs(yaw) > 20) return fail('mp_err_turn');
   const W = src.width, H = src.height;
   const pts = res.faceLandmarks[0].map(p => ({ x: p.x * W, y: p.y * H }));
-  state = { src, W, H, pts, gender, ctl: [], info: [] };
+  state = { src, W, H, pts, gender, ctl: [], hold: [], anchors: [], info: [], dp: pts };
   setBusy(false); $('studio').style.display = 'block';
   setupCanvases(); plan(); render();
   scrollTo({ top: 0, behavior: 'smooth' });
@@ -331,94 +335,88 @@ function fail(key) { setBusy(false); showMsg(key); $('uploader').style.display =
 
 /* ══════════════════════════════════════════════════════════
    MORPH PLANNER
-   Measures the mesh, compares with the same ideal ranges used on
-   the analysis page, and turns the gap into small control-point
-   displacements (px). Every move is capped as a share of face size.
-   Control points sit on the 478-point MediaPipe mesh.
+   Builds the full-strength displacement of the 478-point mesh for each part.
+   (index lists are MediaPipe Face Mesh; "left" = left side of the picture.)
 ══════════════════════════════════════════════════════════ */
 const IDX = {
-  jawL: [172, 136, 150, 149, 176], jawR: [397, 365, 379, 378, 400], chin: 152, chinSide: [148, 377],
-  gonL: 172, gonR: 397, zygL: 234, zygR: 454, cheekL: [116, 123, 50], cheekR: [345, 352, 280],
-  exL: 33, exR: 263, enL: 133, enR: 362, mid: [10, 168, 2, 0, 17, 152]
+  mid: [10, 168, 2, 0, 17, 152],
+  // [left, right, weight] — cheekbone arch, then the jaw from ramus to chin
+  zyg: [[234, 454, 1], [127, 356, .8], [93, 323, .7], [116, 345, .6], [123, 352, .5], [50, 280, .3]],
+  jaw: [[132, 361, .55], [58, 288, 1], [172, 397, 1], [136, 365, .85], [150, 379, .6], [149, 378, .35], [176, 400, .15]],
+  // outer eye corner + its lateral lid points (they rise together so the lids do not open up)
+  tilt: [[33, 1], [246, .8], [161, .5], [160, .25], [7, .75], [163, .5], [144, .3], [145, .1],
+         [263, 1], [466, .8], [388, .5], [387, .25], [249, .75], [390, .5], [373, .3], [374, .1]],
+  // brows, outer → inner. Lowering them toward the lids is what makes the eyes read as deep-set.
+  brows: [[70, .5], [63, .8], [105, 1], [66, 1], [107, .9], [46, .5], [53, .8], [52, 1], [65, 1], [55, .9],
+          [300, .5], [293, .8], [334, 1], [296, 1], [336, .9], [276, .5], [283, .8], [282, 1], [295, 1], [285, .9]],
+  // lid points that must NOT move (keeps the eye opening exactly as it is: no extra white, no squint)
+  hold: [159, 158, 157, 173, 153, 154, 155, 133, 468, 386, 385, 384, 398, 380, 381, 382, 362, 473],
+  feat: [1, 129, 358, 61, 291, 0, 17, 152, 199]
 };
-// symmetric pairs (left idx, right idx) used for the symmetry pass
 const PAIRS = [[234, 454], [93, 323], [132, 361], [58, 288], [172, 397], [136, 365], [150, 379], [149, 378], [176, 400], [148, 377], [33, 263], [133, 362], [159, 386], [145, 374], [61, 291], [129, 358], [70, 300], [105, 334]];
 
 function plan() {
-  const s = state, P = s.pts, male = s.gender === 'male', G = (a, b) => male ? a : b;
+  const s = state, P = s.pts, male = s.gender === 'male';
   const X = i => P[i].x, Y = i => P[i].y;
   let x0 = 0; IDX.mid.forEach(i => x0 += X(i)); x0 /= IDX.mid.length;
-  const faceW = Math.abs(X(IDX.zygR) - X(IDX.zygL)) || 1;
-  const faceH = Math.abs(Y(IDX.chin) - Y(10)) || 1;
-  const jawRatio = Math.abs(X(IDX.gonR) - X(IDX.gonL)) / faceW;
-  const jawIdeal = G([.80, .90], [.74, .84]);
+  const faceW = Math.abs(X(454) - X(234)) || 1, faceH = Math.abs(Y(152) - Y(10)) || 1;
+  const D = [], info = [], push = (i, dx, dy, g) => D.push([i, dx, dy, g]);
+
+  // CHEEKBONES — outward + a touch up, strongest at the arch beside the ear
+  const zOut = (male ? .048 : .038) * faceW;
+  IDX.zyg.forEach(([l, r, w]) => { push(l, -zOut * w, -.004 * faceH * w, 'zyg'); push(r, zOut * w, -.004 * faceH * w, 'zyg'); });
+  info.push({ k: 'mp_c_zyg', v: 2 * zOut / faceW * 100, u: '%' });
+
+  // JAW — flare the gonial angle outward (and slightly down), fading toward the chin so the chin keeps its width
+  const jawW = Math.abs(X(397) - X(172)) || 1, jawRatio = jawW / faceW;
+  const jf = clamp((1.04 - jawRatio) / .2, .25, 1);                      // already-wide jaws get less
+  const jOut = (male ? .07 : .055) * faceW * jf;
+  IDX.jaw.forEach(([l, r, w]) => { const dy = w >= .85 ? .006 * faceH : 0; push(l, -jOut * w, dy, 'jaw'); push(r, jOut * w, dy, 'jaw'); });
+  info.push({ k: 'mp_c_jaw', v: 2 * jOut / jawW * 100, u: '%' });
+
+  // EYE TILT — lift the outer corners toward a positive canthal tilt, never push it down
   const tiltOf = (en, ex) => Math.atan2(Y(en) - Y(ex), Math.abs(X(ex) - X(en))) * 180 / Math.PI;
-  const tilt = (tiltOf(IDX.enL, IDX.exL) + tiltOf(IDX.enR, IDX.exR)) / 2;
-  const tiltIdeal = G([3, 7], [5, 9]);
-  const lower = (Y(IDX.chin) - Y(2)) / (Y(IDX.chin) - Y(10));         // nose base → chin vs forehead → chin (mesh-based)
-  // Sn–Me as a share of the mesh height (mid-forehead → chin). The analysis page's 32–36% (male) / 30.5–34.5% (female)
-  // of Tr–Me becomes ≈ .365–.41 / .35–.395 here, because the mesh top sits below the true hairline.
-  const lowerIdeal = G([.365, .41], [.35, .395]);
+  const tilt = (tiltOf(133, 33) + tiltOf(362, 263)) / 2;
+  const delta = clamp((male ? 6.5 : 8) - tilt, 1.5, 5.5);
+  const eyeW = (Math.abs(X(33) - X(133)) + Math.abs(X(263) - X(362))) / 2;
+  const dyT = -Math.tan(delta * Math.PI / 180) * eyeW;
+  IDX.tilt.forEach(([i, w]) => push(i, 0, dyT * w, 'tilt'));
+  info.push({ k: 'mp_c_tilt', v: delta, u: '°' });
 
-  const dirOf = (v, [a, b]) => v < a ? (a - v) : v > b ? -(v - b) : 0;     // + = need more, − = need less
-  const dJaw = dirOf(jawRatio, jawIdeal);                                    // in ratio units
-  const dTilt = dirOf(tilt, tiltIdeal);                                      // in degrees
-  const dLow = dirOf(lower, lowerIdeal);
+  // DEEP-SET — brows come down toward the (held) lids; the socket shading is added in retouch()
+  IDX.brows.forEach(([i, w]) => push(i, 0, .014 * faceH * w, 'deep'));
+  info.push({ k: 'mp_c_deep', v: null });
+  info.push({ k: 'mp_c_bags', v: null });
 
-  const D = [];                                                              // [idx, dx, dy, group]
-  const push = (i, dx, dy, grp) => D.push([i, dx, dy, grp]);
-  const info = [];
-
-  // JAW — move the gonial points + jaw chain horizontally toward the ideal width (≤ 5% of face width)
-  const jawMove = clamp(dJaw * faceW * 0.5, -0.05 * faceW, 0.05 * faceW);
-  if (Math.abs(jawMove) > 0.002 * faceW) {
-    IDX.jawL.forEach((i, k) => push(i, -jawMove * [1, .9, .65, .4, .2][k], 0, 'jaw'));
-    IDX.jawR.forEach((i, k) => push(i, +jawMove * [1, .9, .65, .4, .2][k], 0, 'jaw'));
-    info.push({ k: jawMove > 0 ? 'mp_c_jaw_out' : 'mp_c_jaw_in', v: Math.abs(jawMove) / faceW * 100 });
-  }
-  // CHIN — lengthen / shorten the lower third (≤ 3% of face height)
-  const chinMove = clamp(dLow * faceH * 0.5, -0.03 * faceH, 0.03 * faceH);
-  if (Math.abs(chinMove) > 0.002 * faceH) {
-    push(IDX.chin, 0, chinMove, 'jaw'); IDX.chinSide.forEach(i => push(i, 0, chinMove * .8, 'jaw'));
-    info.push({ k: chinMove > 0 ? 'mp_c_chin_dn' : 'mp_c_chin_up', v: Math.abs(chinMove) / faceH * 100 });
-  }
-  // EYES — raise the outer corners to approach the ideal canthal tilt (≤ 3.5° equivalent)
-  const tiltMove = clamp(dTilt, -3.5, 3.5);
-  if (Math.abs(tiltMove) > 0.15) {
-    const eyeW = (Math.abs(X(IDX.exL) - X(IDX.enL)) + Math.abs(X(IDX.exR) - X(IDX.enR))) / 2;
-    const dy = -Math.tan(tiltMove * Math.PI / 180) * eyeW;                   // negative y = up
-    [[IDX.exL, [246, 161, 160]], [IDX.exR, [466, 388, 387]]].forEach(([ex, lid]) => { push(ex, 0, dy, 'eyes'); lid.forEach(i => push(i, 0, dy * .55, 'eyes')); });
-    info.push({ k: 'mp_c_tilt', v: Math.abs(tiltMove) });
-  }
-  // CHEEKBONES — a gentle width + lift on the zygomatic arch (≤ 1.5% of face width)
-  const ch = 0.015 * faceW;
-  push(IDX.zygL, -ch, -ch * .5, 'cheek'); push(IDX.zygR, ch, -ch * .5, 'cheek');
-  IDX.cheekL.forEach(i => push(i, -ch * .5, -ch * .35, 'cheek')); IDX.cheekR.forEach(i => push(i, ch * .5, -ch * .35, 'cheek'));
-  info.push({ k: 'mp_c_cheek', v: 1.5 });
-  // SYMMETRY — pull each pair toward its mirror image about the facial midline (60% of the gap, ≤ 3% of face width)
-  let symUsed = 0;
+  // SYMMETRY — pull each pair toward its mirror image about the facial midline
   PAIRS.forEach(([l, r]) => {
-    const a = x0 - X(l), b = X(r) - x0, avg = (a + b) / 2;                   // distances from the midline
-    const dl = clamp((avg - a) * .6, -.03 * faceW, .03 * faceW), dr = clamp((b - avg) * .6, -.03 * faceW, .03 * faceW);
-    const yl = Y(l), yr = Y(r), ym = (yl + yr) / 2;
-    const vl = clamp((ym - yl) * .6, -.02 * faceH, .02 * faceH), vr = clamp((ym - yr) * .6, -.02 * faceH, .02 * faceH);
-    push(l, -dl, vl, 'sym'); push(r, -dr, vr, 'sym'); symUsed = Math.max(symUsed, Math.abs(dl), Math.abs(dr));
+    const a = x0 - X(l), b = X(r) - x0, avg = (a + b) / 2;
+    const dl = clamp((avg - a) * .6, -.02 * faceW, .02 * faceW), dr = clamp((b - avg) * .6, -.02 * faceW, .02 * faceW);
+    const ym = (Y(l) + Y(r)) / 2;
+    const vl = clamp((ym - Y(l)) * .6, -.015 * faceH, .015 * faceH), vr = clamp((ym - Y(r)) * .6, -.015 * faceH, .015 * faceH);
+    push(l, -dl, vl, 'sym'); push(r, -dr, vr, 'sym');
   });
-  if (symUsed > 0.002 * faceW) info.push({ k: 'mp_c_sym', v: symUsed / faceW * 100 });
+  info.push({ k: 'mp_c_sym', v: null });
   info.push({ k: 'mp_c_skin', v: null });
-  s.ctl = D; s.info = info; s.faceW = faceW; s.faceH = faceH; s.x0 = x0;
+
+  // zero-displacement anchors: a ring around the head + the features that must stay put
+  const cx = x0, cy = (Y(10) + Y(152)) / 2, rx = faceW * .8, ry = faceH * .75, anchors = [];
+  for (let a = 0; a < 28; a++) { const t = a / 28 * Math.PI * 2; anchors.push({ x: cx + Math.cos(t) * rx, y: cy + Math.sin(t) * ry, w: 1.2 }); }
+  IDX.feat.forEach(i => anchors.push({ x: X(i), y: Y(i), w: 1.6 }));
+  Object.assign(s, { ctl: D, info, anchors, faceW, faceH, x0, cx, cy, rx, ry });
 }
 
 /* ── strengths ── */
-const SL = { all: $('sAll'), jaw: $('sJaw'), eyes: $('sEyes'), sym: $('sSym'), cheek: $('sCheek'), skin: $('sSkin') };
-const OUT = { all: $('oAll'), jaw: $('oJaw'), eyes: $('oEyes'), sym: $('oSym'), cheek: $('oCheek'), skin: $('oSkin') };
+const GROUPS = { all: 'sAll', zyg: 'sZyg', jaw: 'sJaw', tilt: 'sTilt', deep: 'sDeep', bags: 'sBags', sym: 'sSym', skin: 'sSkin' };
+const SL = {}, OUT = {};
+Object.entries(GROUPS).forEach(([k, id]) => { SL[k] = $(id); OUT[k] = $('o' + id.slice(1)); });
 const val = k => +SL[k].value / 100;
 Object.keys(SL).forEach(k => SL[k].addEventListener('input', () => { OUT[k].textContent = SL[k].value; schedule(); }));
 
 /* ══════════════════════════════════════════════════════════
-   RENDER — smooth displacement field → grid mesh → affine triangle warp
+   RENDER — smooth displacement field → backward-mapped grid → affine triangle warp
+   Backward mapping means every output pixel samples the source: no holes, no ghost edges.
 ══════════════════════════════════════════════════════════ */
-const GRID = 56;                                    // cells along the longer side
 function setupCanvases() {
   const s = state;
   [$('cBefore'), $('cAfter')].forEach(c => { c.width = s.W; c.height = s.H; });
@@ -428,17 +426,16 @@ function setupCanvases() {
   setSplit(.5);
 }
 
-// Gaussian-weighted displacement from the control points, with zero-displacement anchors on the face border + frame.
+// Normalised Gaussian blend of the control displacements, with zero-displacement anchors holding everything else still.
 function field(gx, gy, ctl, sigma, anchors) {
-  let sx = 0, sy = 0, sw = 0;
+  let sx = 0, sy = 0, sw = 0, aw = 0;
   const s2 = 2 * sigma * sigma;
   for (let i = 0; i < ctl.length; i++) {
     const c = ctl[i], dx = gx - c.x, dy = gy - c.y, w = Math.exp(-(dx * dx + dy * dy) / s2);
     sx += w * c.dx; sy += w * c.dy; sw += w;
   }
-  let aw = 0;
   for (let i = 0; i < anchors.length; i++) {
-    const a = anchors[i], dx = gx - a.x, dy = gy - a.y; aw += Math.exp(-(dx * dx + dy * dy) / s2) * 1.2;
+    const a = anchors[i], dx = gx - a.x, dy = gy - a.y; aw += Math.exp(-(dx * dx + dy * dy) / s2) * a.w;
   }
   const tot = sw + aw + 1e-6;
   return [sx / tot, sy / tot];
@@ -447,48 +444,56 @@ function field(gx, gy, ctl, sigma, anchors) {
 let raf = 0; const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); };
 function render() {
   const s = state; if (!s) return;
-  const S = { jaw: val('jaw'), eyes: val('eyes'), sym: val('sym'), cheek: val('cheek') }, all = val('all');
-  const P = s.pts;
-  // control points for the active groups
-  const ctl = [];
-  s.ctl.forEach(([i, dx, dy, grp]) => {
-    const k = S[grp] * all; if (k <= 0.001) return;
-    ctl.push({ x: P[i].x, y: P[i].y, dx: dx * k, dy: dy * k });
-  });
-  // anchors: ring around the face + image frame so the background and hairline don't move
-  const anchors = [];
-  const cx = s.x0, cy = (P[10].y + P[152].y) / 2, rx = s.faceW * .78, ry = s.faceH * .72;
-  for (let a = 0; a < 24; a++) { const t = a / 24 * Math.PI * 2; anchors.push({ x: cx + Math.cos(t) * rx, y: cy + Math.sin(t) * ry }); }
-  [P[10], P[152]].forEach(p => anchors.push({ x: p.x, y: p.y + (p === P[10] ? -1 : 1) * s.faceH * .12 }));
-  const gx = s.W / GRID, gy = gx, cols = Math.ceil(s.W / gx), rows = Math.ceil(s.H / gy);
-  const sigma = s.faceW * .13;
+  const all = val('all'), K = g => val(g) * all, P = s.pts;
 
-  const dst = $('cAfter'), g = dst.getContext('2d');
+  // aggregate the control displacement per landmark (one control point per index, so shared points do not dilute each other)
+  const agg = new Map();
+  s.ctl.forEach(([i, dx, dy, grp]) => {
+    const k = K(grp); if (k <= .001) return;
+    const a = agg.get(i) || { x: P[i].x, y: P[i].y, dx: 0, dy: 0 };
+    a.dx += dx * k; a.dy += dy * k; agg.set(i, a);
+  });
+  const moving = agg.size > 0;
+  if (moving) s.hold.concat(IDX.hold).forEach(i => { if (!agg.has(i)) agg.set(i, { x: P[i].x, y: P[i].y, dx: 0, dy: 0 }); });
+  const ctlSrc = [...agg.values()];
+  const ctlDst = ctlSrc.map(c => ({ x: c.x + c.dx, y: c.y + c.dy, dx: c.dx, dy: c.dy }));
+  const sigma = s.faceW * .11;
+
+  const g = $('cAfter').getContext('2d');
   g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, s.W, s.H);
-  g.drawImage(s.src, 0, 0);                                   // untouched pixels come straight from the original
-  const pos = new Float32Array((cols + 1) * (rows + 1) * 2), moved = new Uint8Array((cols + 1) * (rows + 1));
-  for (let r = 0; r <= rows; r++) for (let c = 0; c <= cols; c++) {
-    const x = Math.min(c * gx, s.W), y = Math.min(r * gy, s.H), v = r * (cols + 1) + c, k = v * 2;
-    if (!ctl.length || Math.hypot(x - cx, y - cy) > Math.max(rx, ry) * 1.35) { pos[k] = x; pos[k + 1] = y; continue; }
-    const [dx, dy] = field(x, y, ctl, sigma, anchors);
-    pos[k] = x + dx; pos[k + 1] = y + dy;
-    if (Math.abs(dx) + Math.abs(dy) > 0.02) moved[v] = 1;
-  }
-  const at = (c, r) => { const k = (r * (cols + 1) + c) * 2; return [pos[k], pos[k + 1]]; };
-  const srcOf = (c, r) => [Math.min(c * gx, s.W), Math.min(r * gy, s.H)];
-  const mv = (c, r) => moved[r * (cols + 1) + c];
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-    const tri = [[c, r, c + 1, r, c, r + 1], [c + 1, r, c + 1, r + 1, c, r + 1]];
-    tri.forEach(([c0, r0, c1, r1, c2, r2]) => {
-      if (!(mv(c0, r0) || mv(c1, r1) || mv(c2, r2))) return;   // nothing moved here, the original already shows
-      drawTri(g, s.src, srcOf(c0, r0), srcOf(c1, r1), srcOf(c2, r2), at(c0, r0), at(c1, r1), at(c2, r2));
-    });
-  }
-  retouch(g, val('skin') * all === 0 ? 0 : val('skin') * (0.4 + 0.6 * all));
+  g.drawImage(s.src, 0, 0);                                         // untouched pixels come straight from the original
+
+  if (moving) {
+    // where each landmark ends up (forward field) — retouch uses these so shading follows the warped face
+    s.dp = P.map(p => { const [dx, dy] = field(p.x, p.y, ctlSrc, sigma, s.anchors); return { x: p.x + dx, y: p.y + dy }; });
+
+    const gs = clamp(s.faceW / 24, 5, 24);
+    const bx0 = clamp(s.cx - s.rx * 1.25, 0, s.W), bx1 = clamp(s.cx + s.rx * 1.25, 0, s.W);
+    const by0 = clamp(s.cy - s.ry * 1.2, 0, s.H), by1 = clamp(s.cy + s.ry * 1.2, 0, s.H);
+    const cols = Math.max(1, Math.ceil((bx1 - bx0) / gs)), rows = Math.max(1, Math.ceil((by1 - by0) / gs));
+    const n = (cols + 1) * (rows + 1), dst = new Float32Array(n * 2), srcp = new Float32Array(n * 2), moved = new Uint8Array(n);
+    for (let r = 0; r <= rows; r++) for (let c = 0; c <= cols; c++) {
+      const x = Math.min(bx0 + c * gs, bx1), y = Math.min(by0 + r * gs, by1), v = r * (cols + 1) + c, k = v * 2;
+      const [dx, dy] = field(x, y, ctlDst, sigma, s.anchors);        // backward: source = destination − displacement
+      dst[k] = x; dst[k + 1] = y; srcp[k] = clamp(x - dx, 0, s.W); srcp[k + 1] = clamp(y - dy, 0, s.H);
+      if (Math.abs(dx) + Math.abs(dy) > .02) moved[v] = 1;
+    }
+    const D = (c, r) => { const k = (r * (cols + 1) + c) * 2; return [dst[k], dst[k + 1]]; };
+    const S = (c, r) => { const k = (r * (cols + 1) + c) * 2; return [srcp[k], srcp[k + 1]]; };
+    const M = (c, r) => moved[r * (cols + 1) + c];
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      [[c, r, c + 1, r, c, r + 1], [c + 1, r, c + 1, r + 1, c, r + 1]].forEach(([c0, r0, c1, r1, c2, r2]) => {
+        if (!(M(c0, r0) || M(c1, r1) || M(c2, r2))) return;
+        drawTri(g, s.src, S(c0, r0), S(c1, r1), S(c2, r2), D(c0, r0), D(c1, r1), D(c2, r2));
+      });
+    }
+  } else s.dp = P;
+
+  retouch(g, { skin: K('skin'), bags: K('bags'), deep: K('deep') });
   renderChips();
 }
 
-// Affine-map the source triangle onto the destination triangle (slightly expanded to hide seams).
+// Affine-map the source triangle onto the destination triangle (destination grown ~½px to hide seams).
 function drawTri(g, img, s0, s1, s2, d0, d1, d2) {
   const det = (s1[0] - s0[0]) * (s2[1] - s0[1]) - (s2[0] - s0[0]) * (s1[1] - s0[1]);
   if (Math.abs(det) < 1e-6) return;
@@ -500,61 +505,84 @@ function drawTri(g, img, s0, s1, s2, d0, d1, d2) {
   const cxm = (d0[0] + d1[0] + d2[0]) / 3, cym = (d0[1] + d1[1] + d2[1]) / 3, grow = .6;
   const ex = p => { const vx = p[0] - cxm, vy = p[1] - cym, l = Math.hypot(vx, vy) || 1; return [p[0] + vx / l * grow, p[1] + vy / l * grow]; };
   const e0 = ex(d0), e1 = ex(d1), e2 = ex(d2);
+  const bx = Math.max(0, Math.floor(Math.min(s0[0], s1[0], s2[0]) - 2)), by = Math.max(0, Math.floor(Math.min(s0[1], s1[1], s2[1]) - 2));
+  const bw = Math.min(img.width - bx, Math.ceil(Math.max(s0[0], s1[0], s2[0]) + 2) - bx), bh = Math.min(img.height - by, Math.ceil(Math.max(s0[1], s1[1], s2[1]) + 2) - by);
+  if (bw <= 0 || bh <= 0) return;
   g.save(); g.beginPath(); g.moveTo(e0[0], e0[1]); g.lineTo(e1[0], e1[1]); g.lineTo(e2[0], e2[1]); g.closePath(); g.clip();
-  g.transform(a, b, c, d, e, f); g.drawImage(img, 0, 0); g.restore();
+  g.transform(a, b, c, d, e, f); g.drawImage(img, bx, by, bw, bh, bx, by, bw, bh); g.restore();
 }
 
-/* Skin + light: feathered face-oval mask, frequency-style smoothing (keeps pores/edges), soft lift. */
-let ovalCache = null;
-function faceOval() {
-  const s = state; if (ovalCache && ovalCache.s === s) return ovalCache.pts;
-  const O = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
-  ovalCache = { s, pts: O.map(i => s.pts[i]) }; return ovalCache.pts;
-}
-function retouch(g, amt) {
-  if (amt <= 0.01) return;
-  const s = state, W = s.W, H = s.H;
+/* ══════════════════════════════════════════════════════════
+   RETOUCH (works on the warped result, using the warped landmark positions)
+   · bags: smooths + lifts the strip under each eye so no bags or dark circles appear
+   · deep: shades the eye socket between brow and lid, plus the inner corner, to make the eyes read deeper.
+           The eye opening itself is cut out of the shading, so the eyes never look more exposed.
+   · skin: gentle even-out inside the face oval (eyes and lips excluded)
+══════════════════════════════════════════════════════════ */
+const OVAL = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
+const EYE_L = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
+const EYE_R = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398];
+const LIPS = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 409, 270, 269, 267, 0, 37, 39, 40, 185];
+const SOCKET_L = [46, 53, 52, 65, 55, 173, 157, 158, 159, 160, 161, 246];     // lower brow edge → upper lid line
+const SOCKET_R = [276, 283, 282, 295, 285, 398, 384, 385, 386, 387, 388, 466];
+const LOWLID_L = [7, 163, 144, 145, 153, 154, 155], LOWLID_R = [249, 390, 373, 374, 380, 381, 382];
+
+function retouch(g, A) {
+  if (A.skin <= .01 && A.bags <= .01 && A.deep <= .01) return;
+  const s = state, W = s.W, H = s.H, dp = s.dp, fw = s.faceW, fh = s.faceH;
   const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
-  // 1. masks (built once per photo, they do not depend on the sliders): face oval minus eyes + mouth, and the eyes alone
-  if (!s.masks) {
+  const path = (c, idx, pts) => { c.beginPath(); idx.forEach((i, k) => { const p = (pts || dp)[i]; k ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y); }); c.closePath(); };
+  const eyeCut = (c, blur) => { c.globalCompositeOperation = 'destination-out'; c.filter = `blur(${blur}px)`; c.fillStyle = '#000'; path(c, EYE_L); c.fill(); path(c, EYE_R); c.fill(); c.filter = 'none'; c.globalCompositeOperation = 'source-over'; };
+
+  // 1. SKIN & LIGHT
+  if (A.skin > .01) {
     const m = mk(), mg = m.getContext('2d');
-    mg.filter = `blur(${Math.round(s.faceW * .025)}px)`; mg.fillStyle = '#fff'; mg.beginPath();
-    faceOval().forEach((p, i) => i ? mg.lineTo(p.x, p.y) : mg.moveTo(p.x, p.y)); mg.closePath(); mg.fill(); mg.filter = 'none';
-    mg.globalCompositeOperation = 'destination-out'; mg.filter = `blur(${Math.round(s.faceW * .008)}px)`;
-    [[33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246], [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398], [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 409, 270, 269, 267, 0, 37, 39, 40, 185]].forEach(ring => {
-      mg.beginPath(); ring.forEach((i, k) => { const p = s.pts[i]; k ? mg.lineTo(p.x, p.y) : mg.moveTo(p.x, p.y); }); mg.closePath(); mg.fill();
-    });
-    const e = mk(), eg = e.getContext('2d');
-    eg.filter = `blur(${Math.round(s.faceW * .004)}px)`; eg.fillStyle = '#fff';
-    [[33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246], [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]].forEach(ring => {
-      eg.beginPath(); ring.forEach((i, k) => { const p = s.pts[i]; k ? eg.lineTo(p.x, p.y) : eg.moveTo(p.x, p.y); }); eg.closePath(); eg.fill();
-    });
-    s.masks = { m, e };
+    mg.filter = `blur(${Math.round(fw * .025)}px)`; mg.fillStyle = '#fff'; path(mg, OVAL); mg.fill(); mg.filter = 'none';
+    mg.globalCompositeOperation = 'destination-out'; mg.filter = `blur(${Math.round(fw * .008)}px)`;
+    path(mg, EYE_L); mg.fill(); path(mg, EYE_R); mg.fill(); path(mg, LIPS); mg.fill();
+    const sm = mk(), sg = sm.getContext('2d');
+    sg.filter = `blur(${Math.max(1, Math.round(fw * .006))}px) saturate(${1 + .08 * A.skin}) brightness(${1 + .05 * A.skin}) contrast(${1 + .06 * A.skin})`;
+    sg.drawImage(g.canvas, 0, 0); sg.filter = 'none';
+    sg.globalCompositeOperation = 'destination-in'; sg.drawImage(m, 0, 0);
+    g.save(); g.globalAlpha = clamp(.6 * A.skin, 0, .6); g.drawImage(sm, 0, 0); g.restore();
   }
-  const m = s.masks.m, e = s.masks.e;
-  // 2. smoothed layer (low-pass) blended back through the mask at reduced strength
-  const sm = mk(), sg = sm.getContext('2d');
-  sg.filter = `blur(${Math.max(1, Math.round(s.faceW * .006))}px) saturate(${1 + .08 * amt}) brightness(${1 + .05 * amt}) contrast(${1 + .04 * amt})`;
-  sg.drawImage(g.canvas, 0, 0); sg.filter = 'none';
-  sg.globalCompositeOperation = 'destination-in'; sg.drawImage(m, 0, 0);
-  g.save(); g.globalAlpha = clamp(.55 * amt, 0, .55); g.drawImage(sm, 0, 0); g.restore();
-  // 3. eye brightening: tiny lift of the sclera/iris region
-  const eb = mk(), ebg = eb.getContext('2d'); ebg.filter = `brightness(${1 + .18 * amt}) contrast(${1 + .1 * amt})`; ebg.drawImage(g.canvas, 0, 0); ebg.filter = 'none';
-  ebg.globalCompositeOperation = 'destination-in'; ebg.drawImage(e, 0, 0);
-  g.save(); g.globalAlpha = .7; g.drawImage(eb, 0, 0); g.restore();
+
+  // 2. UNDER-EYE CLEANUP — a strip below each lower lid, softened and brightened (never darkened)
+  if (A.bags > .01) {
+    const strip = lid => { const top = lid.map(i => dp[i]); const bot = lid.map(i => ({ x: dp[i].x + (dp[i].x < s.cx ? -1 : 1) * .004 * fw, y: dp[i].y + .05 * fh })); return top.concat(bot.reverse()); };
+    const bm = mk(), bg = bm.getContext('2d');
+    bg.filter = `blur(${Math.round(fw * .012)}px)`; bg.fillStyle = '#fff';
+    [LOWLID_L, LOWLID_R].forEach(l => { const pp = strip(l); bg.beginPath(); pp.forEach((p, k) => k ? bg.lineTo(p.x, p.y) : bg.moveTo(p.x, p.y)); bg.closePath(); bg.fill(); });
+    bg.filter = 'none'; eyeCut(bg, Math.max(1, fw * .004));
+    const sm = mk(), sg = sm.getContext('2d');
+    sg.filter = `blur(${Math.max(2, Math.round(fw * .014))}px) brightness(${1 + .07 * A.bags}) saturate(${1 - .05 * A.bags})`;
+    sg.drawImage(g.canvas, 0, 0); sg.filter = 'none';
+    sg.globalCompositeOperation = 'destination-in'; sg.drawImage(bm, 0, 0);
+    g.save(); g.globalAlpha = clamp(.75 * A.bags, 0, .75); g.drawImage(sm, 0, 0); g.restore();
+  }
+
+  // 3. DEEP-SET SHADING — multiply-shadow in the socket (brow edge → lid line) and at the inner corners
+  if (A.deep > .01) {
+    const sh = mk(), c = sh.getContext('2d');
+    c.filter = `blur(${Math.round(fw * .02)}px)`; c.fillStyle = '#000'; path(c, SOCKET_L); c.fill(); path(c, SOCKET_R); c.fill(); c.filter = 'none';
+    [[133, 168], [362, 168]].forEach(([e, b]) => {                             // inner corner → nose bridge hollow
+      const ax = dp[e].x * .6 + dp[b].x * .4, ay = dp[e].y * .6 + dp[b].y * .4 - .006 * fh, r = .045 * fw;
+      const gr = c.createRadialGradient(ax, ay, 0, ax, ay, r); gr.addColorStop(0, 'rgba(0,0,0,.75)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = gr; c.fillRect(ax - r, ay - r, r * 2, r * 2);
+    });
+    eyeCut(c, Math.max(1, fw * .004));                                         // the eye opening stays untouched
+    c.globalCompositeOperation = 'source-in'; c.fillStyle = 'rgb(95,68,58)'; c.fillRect(0, 0, W, H); c.globalCompositeOperation = 'source-over';
+    g.save(); g.globalCompositeOperation = 'multiply'; g.globalAlpha = clamp(.6 * A.deep, 0, .6); g.drawImage(sh, 0, 0); g.restore();
+  }
 }
 
 function renderChips() {
   const s = state; if (!s) return;
-  const grpOf = { mp_c_jaw_in: 'jaw', mp_c_jaw_out: 'jaw', mp_c_chin_up: 'jaw', mp_c_chin_dn: 'jaw', mp_c_tilt: 'eyes', mp_c_sym: 'sym', mp_c_cheek: 'cheek', mp_c_skin: 'skin' };
-  const all = val('all');
-  const items = s.info.filter(i => val(grpOf[i.k]) * (grpOf[i.k] === 'skin' ? 1 : all) > 0.01);
+  const grpOf = { mp_c_zyg: 'zyg', mp_c_jaw: 'jaw', mp_c_tilt: 'tilt', mp_c_deep: 'deep', mp_c_bags: 'bags', mp_c_sym: 'sym', mp_c_skin: 'skin' };
+  const all = val('all'), kOf = k => val(grpOf[k]) * all;
+  const items = s.info.filter(i => kOf(i.k) > .01);
   const nf = n => lang === 'ar' ? String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n);
-  $('chips').innerHTML = (items.length ? items : [{ k: 'mp_c_none', v: null }]).map(i => {
-    const g = grpOf[i.k], k = g ? val(g) * (g === 'skin' ? 1 : all) : 1;
-    const unit = i.k === 'mp_c_tilt' ? '°' : '%';
-    return `<span class="chip">${T(i.k)}${i.v != null ? ` <b>${nf((i.v * k).toFixed(1))}${unit}</b>` : ''}</span>`;
-  }).join('');
+  $('chips').innerHTML = items.map(i => `<span class="chip">${T(i.k)}${i.v != null ? ` <b>+${nf((i.v * kOf(i.k)).toFixed(1))}${i.u}</b>` : ''}</span>`).join('');
   $('note').textContent = T('mp_note');
 }
 
@@ -574,7 +602,7 @@ function setSplit(p) {
 
 /* ── actions ── */
 $('btnNew').addEventListener('click', () => {
-  state = null; ovalCache = null; $('studio').style.display = 'none'; $('uploader').style.display = 'flex'; $('fileInput').value = ''; showMsg('');
+  state = null; $('studio').style.display = 'none'; $('uploader').style.display = 'flex'; $('fileInput').value = ''; showMsg('');
   scrollTo({ top: 0, behavior: 'smooth' });
 });
 $('btnSave').addEventListener('click', () => {

@@ -72,6 +72,10 @@ body.lang-ar .m-title{font-family:'Tajawal',sans-serif;font-weight:900;letter-sp
 .ba .tag{position:absolute;top:10px;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:4px 9px;background:rgba(0,0,0,.65);color:var(--white);border:1px solid var(--smoke)}
 .ba .tag.l{left:10px}.ba .tag.r{right:10px;border-color:var(--blood)}
 
+.cmp{display:flex;justify-content:center;margin-top:12px;direction:ltr}
+.cmp button{flex:1;max-width:140px;padding:10px 8px;font:inherit;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text);background:var(--panel);border:1px solid var(--smoke);margin-left:-1px;cursor:pointer;transition:all .2s}
+.cmp button.on{background:var(--blood);border-color:var(--crimson);color:#fff;position:relative;z-index:1}
+.ba .handle::before{content:'';position:absolute;top:0;bottom:0;left:-22px;right:-22px}
 .card{margin-top:16px;padding:18px;border:1px solid var(--border);background:var(--panel)}
 .card h3{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--white);margin-bottom:14px}
 body.lang-ar .card h3{font-family:'Tajawal',sans-serif;letter-spacing:0}
@@ -163,11 +167,19 @@ html[dir=rtl] .sl label{text-align:right;direction:rtl}
       <span class="tag r" data-i18n="mp_after">Potential</span>
       <div class="handle" id="handle"></div>
     </div>
+    <div class="cmp" id="cmp"><button type="button" data-p="1" data-i18n="mp_before">Before</button><button type="button" data-p=".5" class="on" data-i18n="mp_split">Split</button><button type="button" data-p="0" data-i18n="mp_after">Potential</button></div>
+
+    <div class="card">
+      <h3 data-i18n="mp_ai_h">AI Morph</h3>
+      <p class="note" data-i18n="mp_ai_t"></p>
+      <div class="actions"><button class="btn-solid" type="button" id="btnAI" data-i18n="mp_ai_btn">Generate AI Morph</button></div>
+    </div>
 
     <div class="card">
       <h3 data-i18n="mp_controls">Morph Controls</h3>
       <div class="sl master"><label for="sAll" data-i18n="mp_s_all">Overall strength</label><input type="range" id="sAll" min="0" max="100" value="85"><output id="oAll">85</output></div>
       <div class="sl"><label for="sZyg" data-i18n="mp_s_zyg">Cheekbones (zygos)</label><input type="range" id="sZyg" min="0" max="100" value="100"><output id="oZyg">100</output></div>
+      <div class="sl"><label for="sHol" data-i18n="mp_s_hol">Hollow cheeks</label><input type="range" id="sHol" min="0" max="100" value="80"><output id="oHol">80</output></div>
       <div class="sl"><label for="sJaw" data-i18n="mp_s_jaw">Jaw width</label><input type="range" id="sJaw" min="0" max="100" value="100"><output id="oJaw">100</output></div>
       <div class="sl"><label for="sTilt" data-i18n="mp_s_tilt">Eye tilt</label><input type="range" id="sTilt" min="0" max="100" value="100"><output id="oTilt">100</output></div>
       <div class="sl"><label for="sDeep" data-i18n="mp_s_deep">Deep-set eyes</label><input type="range" id="sDeep" min="0" max="100" value="100"><output id="oDeep">100</output></div>
@@ -234,6 +246,20 @@ Object.assign(dict.ar, {
   mp_note: 'القوة محدودة ليبقى الناتج مقنعاً. اجعل المنزلق 0 لإيقاف ذلك الجزء.'
 });
 
+const AI_ENDPOINT = ''; // ← your deployed morph function URL (see functions/morph-function.js)
+Object.assign(dict.en, {
+  mp_text: 'Upload one front photo. The head tilt is levelled automatically, then you can generate an AI morph (hollow cheeks, high zygos, defined jaw, deep-set hunter eyes) or fine-tune the quick geometric preview with the sliders.',
+  mp_s_hol: 'Hollow cheeks', mp_c_hol: 'Cheeks hollowed', mp_c_level: 'Head tilt fixed', mp_s_deep: 'Brow-to-lid closeness',
+  mp_ai_h: 'AI Morph', mp_ai_t: 'Generates the full structural change (cheek hollows, zygos, jaw, eye area) with an image model. Takes 20-60 seconds. Moving any slider returns to the quick preview.',
+  mp_split: 'Split', mp_ai_btn: 'Generate AI Morph', mp_ai_wait: 'Generating AI morph… this can take up to a minute', mp_err_ai: 'The AI morph failed. Try again.', mp_err_ai_cfg: 'AI endpoint is not configured yet (set AI_ENDPOINT).'
+});
+Object.assign(dict.ar, {
+  mp_text: 'ارفع صورة أمامية واحدة. يتم تعديل ميل الرأس تلقائياً، ثم يمكنك توليد تحويل بالذكاء الاصطناعي (خدود غائرة، وجنتان بارزتان، فك محدد، عيون غائرة) أو ضبط المعاينة السريعة بالمنزلقات.',
+  mp_s_hol: 'خدود غائرة', mp_c_hol: 'تجويف الخدين', mp_c_level: 'تعديل ميل الرأس', mp_s_deep: 'قرب الحاجب من الجفن',
+  mp_ai_h: 'تحويل بالذكاء الاصطناعي', mp_ai_t: 'يولّد التغيير البنيوي الكامل (تجويف الخدين، الوجنتين، الفك، منطقة العين) بنموذج صور. يستغرق 20-60 ثانية. تحريك أي منزلق يعيدك للمعاينة السريعة.',
+  mp_split: 'مقسوم', mp_ai_btn: 'توليد التحويل', mp_ai_wait: 'جارٍ التوليد… قد يستغرق دقيقة', mp_err_ai: 'فشل التحويل. حاول مجدداً.', mp_err_ai_cfg: 'لم يتم ضبط رابط الذكاء الاصطناعي بعد (AI_ENDPOINT).'
+});
+
 /* ── AUTH + I18N (same pattern as tool.html) ── */
 let lang = getLang();
 applyDocumentDirection(lang); applyTranslations(lang);
@@ -298,7 +324,7 @@ const loadImage = src => new Promise((res, rej) => { const i = new Image(); i.on
 function setBusy(on, key) { $('busy').style.display = on ? 'flex' : 'none'; if (key) $('busyTxt').textContent = T(key); }
 
 /* Downscale + bake EXIF orientation so everything works on a canvas of sane size. */
-async function toCanvas(file, maxSide = 1280) {
+async function toCanvas(file, maxSide = 1600) {
   let src;
   if (window.createImageBitmap) { try { src = await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) {} }
   if (!src) src = await loadImage(URL.createObjectURL(file));
@@ -324,12 +350,33 @@ async function handleFile(file) {
   const m = res.facialTransformationMatrixes?.[0]?.data;
   const yaw = m ? Math.asin(clamp(-m[2], -1, 1)) * 180 / Math.PI : 0;
   if (Math.abs(yaw) > 20) return fail('mp_err_turn');
-  const W = src.width, H = src.height;
-  const pts = res.faceLandmarks[0].map(p => ({ x: p.x * W, y: p.y * H }));
-  state = { src, W, H, pts, gender, ctl: [], hold: [], anchors: [], info: [], dp: pts };
+  let work = src, lm = res.faceLandmarks[0];
+  const lv = levelCrop(src, lm);
+  try { const r2 = lmk.detect(lv.canvas); if (r2.faceLandmarks?.length === 1) { work = lv.canvas; lm = r2.faceLandmarks[0]; } } catch (e) {}
+  const W = work.width, H = work.height, pts = lm.map(p => ({ x: p.x * W, y: p.y * H }));
+  state = { src: work, W, H, pts, gender, roll: work === src ? 0 : lv.roll, ai: null, ctl: [], hold: [], anchors: [], info: [], dp: pts };
   setBusy(false); $('studio').style.display = 'block';
   setupCanvases(); plan(); render();
   scrollTo({ top: 0, behavior: 'smooth' });
+}
+/* Level the head (pupil line → horizontal) and crop to head + hair, same method as tool.html.
+   2:3 crop so the AI result maps 1:1 back onto the same canvas. */
+const CROP = { pad: .42, side: .34, aspect: 2 / 3, maxSide: 1536 };
+function levelCrop(src, lm) {
+  const W = src.width, H = src.height, a = lm[468], b = lm[473], [l, r] = a.x <= b.x ? [a, b] : [b, a];
+  const lx = l.x * W, ly = l.y * H, rx = r.x * W, ry = r.y * H, roll = Math.atan2(ry - ly, rx - lx);
+  const px = (lx + rx) / 2, py = (ly + ry) / 2, cs = Math.cos(roll), sn = Math.sin(roll);
+  const rot = p => { const dx = p.x * W - px, dy = p.y * H - py; return [px + dx * cs + dy * sn, py - dx * sn + dy * cs]; };
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  lm.forEach(p => { const [x, y] = rot(p); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); });
+  const cx = [10, 168, 1, 152].reduce((t, i) => t + rot(lm[i])[0], 0) / 4, cy = (y0 + y1) / 2, fw = x1 - x0, fh = y1 - y0;
+  let h = fh * (1 + 2 * CROP.pad), w = Math.max(fw * (1 + 2 * CROP.side), h * CROP.aspect); h = Math.max(h, w / CROP.aspect);
+  const k = Math.min(1, CROP.maxSide / Math.max(w, h)), c = document.createElement('canvas');
+  c.width = Math.round(w * k); c.height = Math.round(h * k);
+  const g = c.getContext('2d'); g.scale(k, k); g.translate(-(cx - w / 2), -(cy - h / 2));
+  g.filter = 'blur(24px)'; g.drawImage(src, 0, 0); g.filter = 'none';          // soft fill for the corners the rotation exposes
+  g.translate(px, py); g.rotate(-roll); g.translate(-px, -py); g.drawImage(src, 0, 0);
+  return { canvas: c, roll: roll * 180 / Math.PI };
 }
 function fail(key) { setBusy(false); showMsg(key); $('uploader').style.display = 'flex'; $('fileInput').value = ''; }
 
@@ -340,16 +387,16 @@ function fail(key) { setBusy(false); showMsg(key); $('uploader').style.display =
 ══════════════════════════════════════════════════════════ */
 const IDX = {
   mid: [10, 168, 2, 0, 17, 152],
-  // [left, right, weight] — cheekbone arch, then the jaw from ramus to chin
-  zyg: [[234, 454, 1], [127, 356, .8], [93, 323, .7], [116, 345, .6], [123, 352, .5], [50, 280, .3]],
-  jaw: [[132, 361, .55], [58, 288, 1], [172, 397, 1], [136, 365, .85], [150, 379, .6], [149, 378, .35], [176, 400, .15]],
-  // outer eye corner + its lateral lid points (they rise together so the lids do not open up)
+  // [left, right, weight] — zygomatic arch: pushed out mainly at the cheekbone body, less at the ear-level contour
+  zyg: [[234, 454, .5], [127, 356, 1], [93, 323, .4], [116, 345, .9], [123, 352, 1], [50, 280, .25]],
+  // cheek hollow below the zygo, pulled toward the midline (buccal region)
+  hol: [[205, 425, 1], [207, 427, .9], [187, 411, .8], [213, 433, .7], [147, 376, .5], [192, 416, .5]],
+  // [left, right, out(+)/in(−), down] — ramus + gonial angle out/down, mid-jaw and chin tapered in = angular, not wide
+  jaw: [[132, 361, .6, 0], [58, 288, 1, .5], [172, 397, .45, .45], [136, 365, -.5, 0], [150, 379, -.8, 0], [149, 378, -.5, 0], [176, 400, -.2, 0]],
   tilt: [[33, 1], [246, .8], [161, .5], [160, .25], [7, .75], [163, .5], [144, .3], [145, .1],
          [263, 1], [466, .8], [388, .5], [387, .25], [249, .75], [390, .5], [373, .3], [374, .1]],
-  // brows, outer → inner. Lowering them toward the lids is what makes the eyes read as deep-set.
   brows: [[70, .5], [63, .8], [105, 1], [66, 1], [107, .9], [46, .5], [53, .8], [52, 1], [65, 1], [55, .9],
           [300, .5], [293, .8], [334, 1], [296, 1], [336, .9], [276, .5], [283, .8], [282, 1], [295, 1], [285, .9]],
-  // lid points that must NOT move (keeps the eye opening exactly as it is: no extra white, no squint)
   hold: [159, 158, 157, 173, 153, 154, 155, 133, 468, 386, 385, 384, 398, 380, 381, 382, 362, 473],
   feat: [1, 129, 358, 61, 291, 0, 17, 152, 199]
 };
@@ -362,19 +409,24 @@ function plan() {
   const faceW = Math.abs(X(454) - X(234)) || 1, faceH = Math.abs(Y(152) - Y(10)) || 1;
   const D = [], info = [], push = (i, dx, dy, g) => D.push([i, dx, dy, g]);
 
-  // CHEEKBONES — outward + a touch up, strongest at the arch beside the ear
-  const zOut = (male ? .048 : .038) * faceW;
-  IDX.zyg.forEach(([l, r, w]) => { push(l, -zOut * w, -.004 * faceH * w, 'zyg'); push(r, zOut * w, -.004 * faceH * w, 'zyg'); });
+  // CHEEKBONES — high and slightly forward-out (kept small: width comes from contrast with the hollow below, not from a wider face)
+  const zOut = (male ? .03 : .024) * faceW;
+  IDX.zyg.forEach(([l, r, w]) => { push(l, -zOut * w, -.008 * faceH * w, 'zyg'); push(r, zOut * w, -.008 * faceH * w, 'zyg'); });
   info.push({ k: 'mp_c_zyg', v: 2 * zOut / faceW * 100, u: '%' });
 
-  // JAW — flare the gonial angle outward (and slightly down), fading toward the chin so the chin keeps its width
-  const jawW = Math.abs(X(397) - X(172)) || 1, jawRatio = jawW / faceW;
-  const jf = clamp((1.04 - jawRatio) / .2, .25, 1);                      // already-wide jaws get less
-  const jOut = (male ? .07 : .055) * faceW * jf;
-  IDX.jaw.forEach(([l, r, w]) => { const dy = w >= .85 ? .006 * faceH : 0; push(l, -jOut * w, dy, 'jaw'); push(r, jOut * w, dy, 'jaw'); });
+  // HOLLOW CHEEKS — the lower cheek is pulled inward so the zygo reads as a ridge over a hollow
+  const hOut = (male ? .052 : .042) * faceW;
+  IDX.hol.forEach(([l, r, w]) => { push(l, hOut * w, 0, 'hol'); push(r, -hOut * w, 0, 'hol'); });
+  info.push({ k: 'mp_c_hol', v: null });
+
+  // JAW — angular: gonial angle out/down, mid-jaw and chin tapered, chin slightly longer
+  const jawW = Math.abs(X(397) - X(172)) || 1, jf = clamp((1.04 - jawW / faceW) / .2, .25, 1);
+  const jOut = (male ? .045 : .035) * faceW * jf;
+  IDX.jaw.forEach(([l, r, o, d]) => { push(l, -jOut * o, .012 * faceH * d, 'jaw'); push(r, jOut * o, .012 * faceH * d, 'jaw'); });
+  push(152, 0, .012 * faceH, 'jaw');
   info.push({ k: 'mp_c_jaw', v: 2 * jOut / jawW * 100, u: '%' });
 
-  // EYE TILT — lift the outer corners toward a positive canthal tilt, never push it down
+  // EYE TILT — lift the outer corners toward a positive canthal tilt
   const tiltOf = (en, ex) => Math.atan2(Y(en) - Y(ex), Math.abs(X(ex) - X(en))) * 180 / Math.PI;
   const tilt = (tiltOf(133, 33) + tiltOf(362, 263)) / 2;
   const delta = clamp((male ? 6.5 : 8) - tilt, 1.5, 5.5);
@@ -383,12 +435,11 @@ function plan() {
   IDX.tilt.forEach(([i, w]) => push(i, 0, dyT * w, 'tilt'));
   info.push({ k: 'mp_c_tilt', v: delta, u: '°' });
 
-  // DEEP-SET — brows come down toward the (held) lids; the socket shading is added in retouch()
-  IDX.brows.forEach(([i, w]) => push(i, 0, .014 * faceH * w, 'deep'));
+  // BROW → LID — brows move closer to the held lids (geometry only, no shadow is painted on the eye area)
+  IDX.brows.forEach(([i, w]) => push(i, 0, .01 * faceH * w, 'deep'));
   info.push({ k: 'mp_c_deep', v: null });
   info.push({ k: 'mp_c_bags', v: null });
 
-  // SYMMETRY — pull each pair toward its mirror image about the facial midline
   PAIRS.forEach(([l, r]) => {
     const a = x0 - X(l), b = X(r) - x0, avg = (a + b) / 2;
     const dl = clamp((avg - a) * .6, -.02 * faceW, .02 * faceW), dr = clamp((b - avg) * .6, -.02 * faceW, .02 * faceW);
@@ -399,7 +450,6 @@ function plan() {
   info.push({ k: 'mp_c_sym', v: null });
   info.push({ k: 'mp_c_skin', v: null });
 
-  // zero-displacement anchors: a ring around the head + the features that must stay put
   const cx = x0, cy = (Y(10) + Y(152)) / 2, rx = faceW * .8, ry = faceH * .75, anchors = [];
   for (let a = 0; a < 28; a++) { const t = a / 28 * Math.PI * 2; anchors.push({ x: cx + Math.cos(t) * rx, y: cy + Math.sin(t) * ry, w: 1.2 }); }
   IDX.feat.forEach(i => anchors.push({ x: X(i), y: Y(i), w: 1.6 }));
@@ -407,11 +457,11 @@ function plan() {
 }
 
 /* ── strengths ── */
-const GROUPS = { all: 'sAll', zyg: 'sZyg', jaw: 'sJaw', tilt: 'sTilt', deep: 'sDeep', bags: 'sBags', sym: 'sSym', skin: 'sSkin' };
+const GROUPS = { all: 'sAll', zyg: 'sZyg', hol: 'sHol', jaw: 'sJaw', tilt: 'sTilt', deep: 'sDeep', bags: 'sBags', sym: 'sSym', skin: 'sSkin' };
 const SL = {}, OUT = {};
 Object.entries(GROUPS).forEach(([k, id]) => { SL[k] = $(id); OUT[k] = $('o' + id.slice(1)); });
 const val = k => +SL[k].value / 100;
-Object.keys(SL).forEach(k => SL[k].addEventListener('input', () => { OUT[k].textContent = SL[k].value; schedule(); }));
+Object.keys(SL).forEach(k => SL[k].addEventListener('input', () => { if (state) state.ai = null; OUT[k].textContent = SL[k].value; schedule(); }));
 
 /* ══════════════════════════════════════════════════════════
    RENDER — smooth displacement field → backward-mapped grid → affine triangle warp
@@ -444,6 +494,7 @@ function field(gx, gy, ctl, sigma, anchors) {
 let raf = 0; const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); };
 function render() {
   const s = state; if (!s) return;
+  if (s.ai) { const g0 = $('cAfter').getContext('2d'); g0.clearRect(0, 0, s.W, s.H); g0.drawImage(s.ai, 0, 0, s.W, s.H); renderChips(); return; }
   const all = val('all'), K = g => val(g) * all, P = s.pts;
 
   // aggregate the control displacement per landmark (one control point per index, so shared points do not dilute each other)
@@ -489,7 +540,7 @@ function render() {
     }
   } else s.dp = P;
 
-  retouch(g, { skin: K('skin'), bags: K('bags'), deep: K('deep') });
+  retouch(g, { skin: K('skin'), bags: K('bags'), hol: K('hol') });
   renderChips();
 }
 
@@ -528,26 +579,27 @@ const SOCKET_R = [276, 283, 282, 295, 285, 398, 384, 385, 386, 387, 388, 466];
 const LOWLID_L = [7, 163, 144, 145, 153, 154, 155], LOWLID_R = [249, 390, 373, 374, 380, 381, 382];
 
 function retouch(g, A) {
-  if (A.skin <= .01 && A.bags <= .01 && A.deep <= .01) return;
+  if (A.skin <= .01 && A.bags <= .01 && A.hol <= .01) return;
   const s = state, W = s.W, H = s.H, dp = s.dp, fw = s.faceW, fh = s.faceH;
   const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
-  const path = (c, idx, pts) => { c.beginPath(); idx.forEach((i, k) => { const p = (pts || dp)[i]; k ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y); }); c.closePath(); };
+  const path = (c, idx) => { c.beginPath(); idx.forEach((i, k) => { const p = dp[i]; k ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y); }); c.closePath(); };
   const eyeCut = (c, blur) => { c.globalCompositeOperation = 'destination-out'; c.filter = `blur(${blur}px)`; c.fillStyle = '#000'; path(c, EYE_L); c.fill(); path(c, EYE_R); c.fill(); c.filter = 'none'; c.globalCompositeOperation = 'source-over'; };
-
-  // 1. SKIN & LIGHT
-  if (A.skin > .01) {
+  // face-oval mask with eyes + lips cut out (shared by skin and cheek shading)
+  const faceMask = () => {
     const m = mk(), mg = m.getContext('2d');
     mg.filter = `blur(${Math.round(fw * .025)}px)`; mg.fillStyle = '#fff'; path(mg, OVAL); mg.fill(); mg.filter = 'none';
     mg.globalCompositeOperation = 'destination-out'; mg.filter = `blur(${Math.round(fw * .008)}px)`;
-    path(mg, EYE_L); mg.fill(); path(mg, EYE_R); mg.fill(); path(mg, LIPS); mg.fill();
-    const sm = mk(), sg = sm.getContext('2d');
+    path(mg, EYE_L); mg.fill(); path(mg, EYE_R); mg.fill(); path(mg, LIPS); mg.fill(); return m;
+  };
+
+  if (A.skin > .01) {
+    const m = faceMask(), sm = mk(), sg = sm.getContext('2d');
     sg.filter = `blur(${Math.max(1, Math.round(fw * .006))}px) saturate(${1 + .08 * A.skin}) brightness(${1 + .05 * A.skin}) contrast(${1 + .06 * A.skin})`;
     sg.drawImage(g.canvas, 0, 0); sg.filter = 'none';
     sg.globalCompositeOperation = 'destination-in'; sg.drawImage(m, 0, 0);
     g.save(); g.globalAlpha = clamp(.6 * A.skin, 0, .6); g.drawImage(sm, 0, 0); g.restore();
   }
 
-  // 2. UNDER-EYE CLEANUP — a strip below each lower lid, softened and brightened (never darkened)
   if (A.bags > .01) {
     const strip = lid => { const top = lid.map(i => dp[i]); const bot = lid.map(i => ({ x: dp[i].x + (dp[i].x < s.cx ? -1 : 1) * .004 * fw, y: dp[i].y + .05 * fh })); return top.concat(bot.reverse()); };
     const bm = mk(), bg = bm.getContext('2d');
@@ -561,34 +613,59 @@ function retouch(g, A) {
     g.save(); g.globalAlpha = clamp(.75 * A.bags, 0, .75); g.drawImage(sm, 0, 0); g.restore();
   }
 
-  // 3. DEEP-SET SHADING — multiply-shadow in the socket (brow edge → lid line) and at the inner corners
-  if (A.deep > .01) {
-    const sh = mk(), c = sh.getContext('2d');
-    c.filter = `blur(${Math.round(fw * .02)}px)`; c.fillStyle = '#000'; path(c, SOCKET_L); c.fill(); path(c, SOCKET_R); c.fill(); c.filter = 'none';
-    [[133, 168], [362, 168]].forEach(([e, b]) => {                             // inner corner → nose bridge hollow
-      const ax = dp[e].x * .6 + dp[b].x * .4, ay = dp[e].y * .6 + dp[b].y * .4 - .006 * fh, r = .045 * fw;
-      const gr = c.createRadialGradient(ax, ay, 0, ax, ay, r); gr.addColorStop(0, 'rgba(0,0,0,.75)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
-      c.fillStyle = gr; c.fillRect(ax - r, ay - r, r * 2, r * 2);
+  // CHEEK HOLLOW — a soft contour shadow below each zygo (ear → mouth corner) and a light catch on the zygo itself.
+  // This is what turns "wider face" into "hollow cheeks + high cheekbones". Nothing is painted near the eyes.
+  if (A.hol > .01) {
+    const sh = mk(), c = sh.getContext('2d'), hi = mk(), h = hi.getContext('2d');
+    [[205, 187, 147, 93, 61, 123, 116], [425, 411, 376, 323, 291, 352, 345]].forEach(([a, b, d, ear, mouth, z1, z2]) => {
+      const cx = dp[a].x * .45 + dp[b].x * .3 + dp[d].x * .25, cy = dp[a].y * .45 + dp[b].y * .3 + dp[d].y * .25;
+      const ang = Math.atan2(dp[mouth].y - dp[ear].y, dp[mouth].x - dp[ear].x), R = .12 * fw;
+      c.save(); c.translate(cx, cy); c.rotate(ang); c.scale(1, .5);
+      const gr = c.createRadialGradient(0, 0, 0, 0, 0, R); gr.addColorStop(0, 'rgba(70,42,34,.95)'); gr.addColorStop(.6, 'rgba(70,42,34,.45)'); gr.addColorStop(1, 'rgba(70,42,34,0)');
+      c.fillStyle = gr; c.fillRect(-R, -R, R * 2, R * 2); c.restore();
+      const zx = (dp[z1].x + dp[z2].x) / 2, zy = (dp[z1].y + dp[z2].y) / 2 - .012 * fh, r2 = .07 * fw;
+      const g2 = h.createRadialGradient(zx, zy, 0, zx, zy, r2); g2.addColorStop(0, 'rgba(255,235,220,.8)'); g2.addColorStop(1, 'rgba(255,235,220,0)');
+      h.fillStyle = g2; h.fillRect(zx - r2, zy - r2, r2 * 2, r2 * 2);
     });
-    eyeCut(c, Math.max(1, fw * .004));                                         // the eye opening stays untouched
-    c.globalCompositeOperation = 'source-in'; c.fillStyle = 'rgb(95,68,58)'; c.fillRect(0, 0, W, H); c.globalCompositeOperation = 'source-over';
-    g.save(); g.globalCompositeOperation = 'multiply'; g.globalAlpha = clamp(.6 * A.deep, 0, .6); g.drawImage(sh, 0, 0); g.restore();
+    const m = faceMask();
+    [sh, hi].forEach(layer => { const lc = layer.getContext('2d'); lc.globalCompositeOperation = 'destination-in'; lc.drawImage(m, 0, 0); });
+    g.save(); g.globalCompositeOperation = 'multiply'; g.globalAlpha = clamp(.7 * A.hol, 0, .7); g.drawImage(sh, 0, 0); g.restore();
+    g.save(); g.globalCompositeOperation = 'screen'; g.globalAlpha = clamp(.22 * A.hol, 0, .22); g.drawImage(hi, 0, 0); g.restore();
   }
 }
 
 function renderChips() {
   const s = state; if (!s) return;
-  const grpOf = { mp_c_zyg: 'zyg', mp_c_jaw: 'jaw', mp_c_tilt: 'tilt', mp_c_deep: 'deep', mp_c_bags: 'bags', mp_c_sym: 'sym', mp_c_skin: 'skin' };
+  const grpOf = { mp_c_zyg: 'zyg', mp_c_hol: 'hol', mp_c_jaw: 'jaw', mp_c_tilt: 'tilt', mp_c_deep: 'deep', mp_c_bags: 'bags', mp_c_sym: 'sym', mp_c_skin: 'skin' };
   const all = val('all'), kOf = k => val(grpOf[k]) * all;
   const items = s.info.filter(i => kOf(i.k) > .01);
   const nf = n => lang === 'ar' ? String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n);
-  $('chips').innerHTML = items.map(i => `<span class="chip">${T(i.k)}${i.v != null ? ` <b>+${nf((i.v * kOf(i.k)).toFixed(1))}${i.u}</b>` : ''}</span>`).join('');
+  const lvl = s.roll && Math.abs(s.roll) > .3 ? `<span class="chip">${T('mp_c_level')} <b>${nf(Math.abs(s.roll).toFixed(1))}°</b></span>` : '';
+  if (s.ai) { $('chips').innerHTML = lvl + `<span class="chip">AI</span>`; $('note').textContent = ''; return; }
+  $('chips').innerHTML = lvl + items.map(i => `<span class="chip">${T(i.k)}${i.v != null ? ` <b>+${nf((i.v * kOf(i.k)).toFixed(1))}${i.u}</b>` : ''}</span>`).join('');
   $('note').textContent = T('mp_note');
 }
+
+/* ── AI morph (image model behind your Cloud Function; the API key never touches the browser) ── */
+$('btnAI').addEventListener('click', async () => {
+  const s = state; if (!s) return;
+  if (!AI_ENDPOINT) { showMsg('mp_err_ai_cfg'); return; }
+  showMsg(''); setBusy(true, 'mp_ai_wait'); $('btnAI').disabled = true;
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const r = await fetch(AI_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ image: s.src.toDataURL('image/jpeg', .92), gender: s.gender, strength: val('all') }) });
+    if (!r.ok) throw new Error(await r.text());
+    const { image } = await r.json();
+    s.ai = await loadImage('data:image/png;base64,' + image); render();
+  } catch (e) { console.error(e); showMsg('mp_err_ai'); }
+  setBusy(false); $('btnAI').disabled = false;
+});
 
 /* ── before / after slider ── */
 function setSplit(p) {
   p = clamp(p, 0, 1);
+  document.querySelectorAll('#cmp button').forEach(b => b.classList.toggle('on', Math.abs(+b.dataset.p - p) < .02));
   $('afterWrap').style.clipPath = `inset(0 0 0 ${(p * 100).toFixed(2)}%)`;
   $('handle').style.left = (p * 100).toFixed(2) + '%';
 }
@@ -599,6 +676,8 @@ function setSplit(p) {
   ba.addEventListener('pointermove', e => { if (drag) move(e); });
   ['pointerup', 'pointercancel'].forEach(ev => ba.addEventListener(ev, () => drag = false));
 })();
+
+document.querySelectorAll('#cmp button').forEach(b => b.addEventListener('click', () => setSplit(+b.dataset.p)));
 
 /* ── actions ── */
 $('btnNew').addEventListener('click', () => {

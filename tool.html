@@ -56,7 +56,7 @@ body.lang-ar .tool-title,body.lang-ar .tool-eyebrow{font-family:'Tajawal',sans-s
 #lmLoupe{width:140px;height:140px;border:1px solid var(--smoke);background:#000}
 .lm-stage{position:relative;background:#000;border:1px solid var(--border);display:flex;justify-content:center;overflow:hidden}
 .lm-stage canvas{display:block;max-width:100%;cursor:crosshair}
-.lm-chips{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0;direction:ltr}
+.lm-chips{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:12px 0;direction:ltr}
 .lm-chip{position:relative;padding:11px 2px;font-size:13px;font-weight:700;text-align:center;color:var(--text);background:var(--panel);border:1px solid var(--border);cursor:pointer;font-family:inherit}
 .lm-chip.sel{border-color:var(--crimson);background:rgba(139,0,0,.16);color:var(--white);box-shadow:0 0 14px rgba(220,20,60,.25)}
 .lm-chip.seen::after{content:'';position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:#5ecb96}
@@ -221,7 +221,9 @@ const PT = [
   { id: 'Or', n: ['Or — Orbitale (under the eye)', 'Or — الأوربيتال (تحت العين)'], d: ['The lowest point of the bony eye-socket rim, just under the eyeball.', 'أخفض نقطة في حافة محجر العين العظمية، تحت مقلة العين مباشرة.'] },
   { id: 'Ra', n: ['Ra — Ramus (rear jaw edge)', 'Ra — الراموس (حافة الفك الخلفية)'], d: ['A point on the rear edge of the jaw, on the upright bone rising toward the ear, about a third of the way up.', 'نقطة على الحافة الخلفية للفك، على العظم العمودي الصاعد نحو الأذن، على بعد ثلثه تقريباً.'] },
   { id: 'Go', n: ['Go — Gonion (jaw corner)', 'Go — الجونيون (زاوية الفك)'], d: ['The corner of the jaw where the rear edge meets the bottom edge.', 'زاوية الفك حيث تلتقي الحافة الخلفية بالحافة السفلية.'] },
-  { id: 'Me', n: ['Me — Menton (chin bottom)', 'Me — المنتون (أسفل الذقن)'], d: ['The lowest point of the chin.', 'أخفض نقطة في الذقن.'] }
+  { id: 'Me', n: ['Me — Menton (chin bottom)', 'Me — المنتون (أسفل الذقن)'], d: ['The lowest point of the chin.', 'أخفض نقطة في الذقن.'] },
+  { id: 'Sn', opt: 1, n: ['Sn — Subnasale (optional)', 'Sn — السبنازال (اختياري)'], d: ['Where the base of the nose meets the upper lip. Optional: with Pg it adds a chin-projection reading.', 'حيث تلتقي قاعدة الأنف بالشفة العليا. اختياري: مع Pg يضيف قياس بروز الذقن.'] },
+  { id: 'Pg', opt: 1, n: ['Pg — Pogonion (optional)', 'Pg — البوغونيون (اختياري)'], d: ['The most forward point of the chin. Optional.', 'أبرز نقطة في الذقن. اختياري.'] }
 ];
 const CL = [
   { t: ['Chad · Elite Tier', 'Chad · فئة النخبة'], c: '#5ecbff', n: ['Strong CCW', 'CCW قوي'], s: ['Strong forward growth', 'نمو أمامي قوي'],
@@ -239,10 +241,10 @@ function applyStatic() {
   const set = (id, a, b) => { $(id).textContent = L(a, b); };
   set('tEye', '☠ Side Profile ☠', '☠ الجانب ☠'); set('tTitle', 'CCW / CW Jaw Rotation', 'دوران الفك CCW / CW');
   set('tText', 'Upload one true side photo. Mr Skull measures whether your jaw grows forward (CCW) or downward (CW).', 'ارفع صورة جانبية حقيقية واحدة. يقيس Mr Skull ما إذا كان فكك ينمو للأمام (CCW) أم للأسفل (CW).');
-  set('tHint', 'Turn your head 90° so your ear and the whole jawline show. Look straight ahead, teeth together, hair away from the ear and jaw.', 'أدر رأسك ٩٠° ليظهر أذنك وخط الفك كاملاً. انظر للأمام، الأسنان متلامسة، وأبعد الشعر عن الأذن والفك.');
+  set('tHint', 'Turn your head 90° (one eye, one ear). A visible jawline helps, but you can place hidden points by estimate. Look straight ahead, teeth together, hair away from the ear and jaw.', 'أدر رأسك ٩٠° (عين واحدة وأذن واحدة). ظهور خط الفك يساعد، ويمكنك تقدير النقاط المخفية. انظر للأمام، الأسنان متلامسة، وأبعد الشعر عن الأذن والفك.');
   $('uploaderCta').innerHTML = `${T('tool_drop_prefix')} <span class="browse-word">${T('tool_drop_browse')}</span>`;
   set('s2Title', 'Place The Landmarks', 'ضع النقاط المرجعية');
-  set('s2Text', 'Tap the photo to drop the selected point there, then fine-tune it with the arrows. Check all 5 points.', 'اضغط على الصورة لوضع النقطة المختارة، ثم اضبطها بالأسهم. راجع النقاط الخمس كلها.');
+  set('s2Text', 'Tap the photo to drop the selected point there, then fine-tune it with the arrows. Place the 5 main points (Sn and Pg are optional).', 'اضغط على الصورة لوضع النقطة المختارة، ثم اضبطها بالأسهم. ضع النقاط الخمس الأساسية (Sn وPg اختياريتان).');
   set('faceLbl', 'Photo faces', 'اتجاه الوجه'); set('fL', '← Left', '← يسار'); set('fR', 'Right →', 'يمين →');
   set('s3Title', 'Jaw Rotation Result', 'نتيجة دوران الفك'); set('skH', "The Skull's Verdict", 'حكم الجمجمة');
   $('skPlay').textContent = sk.on ? L('■ Stop', '■ إيقاف') : L('▶ Replay', '▶ إعادة');
@@ -268,7 +270,7 @@ document.querySelectorAll('.gender-btn').forEach(b => b.addEventListener('click'
 const loadImage = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
 async function handleFile(file) {
   if (!gender) { showMsg(T('g_err')); return; }
-  if (!file || !file.type.startsWith('image/')) { showMsg(T('tv_err_not_image')); return; }
+  if (!file || !(file.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|bmp|avif|heic|heif)$/i.test(file.name))) { showMsg(T('tv_err_not_image')); return; }  // some phones send HEIC/empty MIME types
   let img; try { img = await loadImage(URL.createObjectURL(file)); } catch (e) { showMsg(T('tv_err_read')); return; }
   const m = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
   c.width = Math.round(img.naturalWidth * m); c.height = Math.round(img.naturalHeight * m);
@@ -278,7 +280,8 @@ async function handleFile(file) {
   $('uploader').style.display = 'none'; $('previewBox').style.display = 'block'; $('continueNav').style.display = 'flex'; $('continueBtn').disabled = true;
   const box = $('verdict'); box.className = 'verdict'; box.style.display = 'block';
   box.innerHTML = `<div class="verdict-loading"><span class="mini-spinner"></span>${L('Checking the head angle…', 'جارٍ فحص زاوية الرأس…')}</div>`;
-  const r = await checkProfile(c);
+  const NONE = { yaw: null, facing: null, defs: null };
+  const r = await Promise.race([checkProfile(c).catch(() => NONE), new Promise(res => setTimeout(() => res(NONE), 12000))]);   // models offline/slow = skip the check, never block
   if (photo !== c) return;                     // photo swapped mid-check
   prof = r; renderVerdict();
 }
@@ -322,7 +325,7 @@ async function checkProfile(c) {
       poseYaw = yw; facing = n.x > ear.x ? 'right' : 'left';
       const sg = facing === 'right' ? 1 : -1, mouthY = (g(9).y + g(10).y) / 2, eye = { x: avg(eyes, 'x'), y: avg(eyes, 'y') };
       const Me = { x: n.x - sg * .22 * d, y: mouthY + .28 * d }, Go = { x: ear.x + sg * .10 * d }; Go.y = Me.y - Math.tan(25 * Math.PI / 180) * Math.abs(Me.x - Go.x);
-      defs = { Po: { x: ear.x + sg * .05 * d, y: ear.y - .03 * d }, Or: { x: eye.x, y: eye.y + .07 * d }, Ra: { x: Go.x - sg * .03 * d, y: Go.y - .4 * d }, Go, Me };
+      defs = { Po: { x: ear.x + sg * .05 * d, y: ear.y - .03 * d }, Or: { x: eye.x, y: eye.y + .07 * d }, Ra: { x: Go.x - sg * .03 * d, y: Go.y - .4 * d }, Go, Me, Sn: { x: n.x - sg * .02 * d, y: n.y + .12 * d }, Pg: { x: Me.x + sg * .02 * d, y: Me.y - .06 * d } };
     }
   }
   const yaw = faceYaw !== null && faceYaw < 65 ? faceYaw : poseYaw !== null ? poseYaw : faceYaw;
@@ -335,13 +338,13 @@ function renderVerdict() {
   if (yaw === null) { cls = 'warn'; head = L('Not confirmed', 'غير مؤكدة'); txt = L('The 90° turn could not be confirmed automatically. Make sure only one eye and one ear are visible, then continue and set the facing direction in the next step.', 'تعذّر تأكيد دوران ٩٠° تلقائياً. تأكد أن عيناً واحدة وأذناً واحدة فقط ظاهرتان، ثم تابع وحدّد اتجاه الوجه في الخطوة التالية.'); }
   else if (yaw >= 78) { cls = 'ok'; head = L('Approved', 'مقبولة'); txt = L(`Side profile confirmed: the head is turned about ${yaw}°${side ? ', facing ' + side : ''}.`, `تم تأكيد الصورة الجانبية: الرأس مدار حوالي ${nf(yaw)}°${side ? '، والوجه نحو ' + side : ''}.`); }
   else if (yaw >= 68) { cls = 'warn'; head = L('Almost', 'تقريباً'); txt = L(`The head is turned about ${yaw}°, not a full 90°. Accuracy drops, so turn a little more for the best result.`, `الرأس مدار حوالي ${nf(yaw)}° وليس ٩٠° كاملة. تقل الدقة، فأدر رأسك قليلاً أكثر لأفضل نتيجة.`); }
-  else { cls = 'bad'; go = false; head = L('Rejected', 'مرفوضة'); txt = L(`This is not a side profile: the head is turned only about ${yaw}°. Retake it with your head turned 90°, ear and jawline visible.`, `هذه ليست صورة جانبية: الرأس مدار حوالي ${nf(yaw)}° فقط. أعد التصوير مع إدارة رأسك ٩٠° بحيث تظهر الأذن وخط الفك.`); }
+  else { cls = 'bad'; go = true; head = L('Warning', 'تحذير'); txt = L(`This is not a side profile: the head is turned only about ${yaw}°. You can continue, but the angles will be less reliable. A true 90° photo is better.`, `هذه ليست صورة جانبية: الرأس مدار حوالي ${nf(yaw)}° فقط. يمكنك المتابعة لكن الزوايا ستكون أقل دقة. الأفضل صورة جانبية ٩٠° حقيقية.`); }
   box.className = 'verdict ' + cls; box.innerHTML = `<div class="verdict-head">${head}</div><p>${txt}</p>`;
   $('continueBtn').disabled = !go;
 }
 /* ── STEP 2 · landmarks (5 points: Po, Or, Ra, Go, Me) ── */
 const STEP_PX = { fine: .5, normal: 2, coarse: 8 };
-const DEF = { Po: [.40, .45], Or: [.64, .45], Ra: [.38, .58], Go: [.40, .72], Me: [.62, .82] };   // average profile, facing right
+const DEF = { Po: [.40, .45], Or: [.64, .45], Ra: [.38, .58], Go: [.40, .72], Me: [.62, .82], Sn: [.68, .60], Pg: [.64, .79] };   // average profile, facing right
 function initS2(face, defs) {
   const W = photo.width, H = photo.height, pts = {};
   PT.forEach(m => {
@@ -390,9 +393,9 @@ function renderStep2() {
   const keys = ['s2_up', 's2_down', 's2_left', 's2_right'];
   $('lmChips').innerHTML = PT.map((m, i) => `<button type="button" class="lm-chip${i === s2.sel ? ' sel' : ''}${s2.pts[m.id].seen ? ' seen' : ''}" data-i="${i}">${m.id}</button>`).join('');
   $('lmName').textContent = L(...PT[s2.sel].n); $('lmDesc').textContent = L(...PT[s2.sel].d);
-  const n = PT.filter(m => s2.pts[m.id].seen).length;
-  $('lmProgress').textContent = T('s2_progress').replace('{n}', nf(n)).replace('{total}', nf(PT.length));
-  $('s2Confirm').disabled = n < PT.length;
+  const REQ = PT.filter(m => !m.opt), n = REQ.filter(m => s2.pts[m.id].seen).length;
+  $('lmProgress').textContent = T('s2_progress').replace('{n}', nf(n)).replace('{total}', nf(REQ.length));
+  $('s2Confirm').disabled = n < REQ.length;
   $('lmSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.step === s2.stepKey));
   $('faceSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.face === s2.face));
   draw();
@@ -431,8 +434,8 @@ $('lmSeg').addEventListener('click', e => { const b = e.target.closest('button')
 $('faceSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && s2 && b.dataset.face !== s2.face) { initS2(b.dataset.face); renderStep2(); } });
 $('s2Back').addEventListener('click', () => show('step1'));
 $('s2Confirm').addEventListener('click', () => {
-  if (!s2 || PT.some(m => !s2.pts[m.id].seen)) return;
-  const pts = {}; PT.forEach(m => pts[m.id] = { x: s2.pts[m.id].x, y: s2.pts[m.id].y });
+  if (!s2 || PT.some(m => !m.opt && !s2.pts[m.id].seen)) return;
+  const pts = {}; PT.forEach(m => pts[m.id] = { x: s2.pts[m.id].x, y: s2.pts[m.id].y, seen: s2.pts[m.id].seen });
   window.sideLandmarks = { W: s2.W, H: s2.H, img: photo, pts };
   show('step3'); renderS3(); skSpeak(s3 && !s3.bad ? s3.say : '');
 });
@@ -463,7 +466,9 @@ function measure() {
   const gon = Math.acos(clamp(dot(a0, w0) / (len(a0) * len(w0)), -1, 1)) * 180 / Math.PI;
   const gk = gender === 'female' ? 'f' : 'm', pm = interp(fma, MPA_PSL[gk]), pg = interp(gon, GON_PSL[gk]), psl = .6 * pm + .4 * pg;   // MPA weighted higher: the ramus point is the less reliable one on a photo
   const cls = psl >= 8 ? 0 : psl >= 6.5 ? 1 : psl >= 4.5 ? 2 : psl >= 3 ? 3 : 4;
-  return { u, w, a: { x: a0.x / len(a0), y: a0.y / len(a0) }, fma, gon, psl, pm, pg, cls, ideal: IDEAL[gk] };
+  let chin = null;
+  if (P.Sn && P.Pg && P.Sn.seen && P.Pg.seen) { const lf = len(v('Sn', 'Me')); if (lf > 8) chin = dot(v('Sn', 'Pg'), u) / lf * 100; }   // % of lower-face height; + = chin ahead of Sn
+  return { chin, u, w, a: { x: a0.x / len(a0), y: a0.y / len(a0) }, fma, gon, psl, pm, pg, cls, ideal: IDEAL[gk] };
 }
 const f1 = n => nf(n.toFixed(1));
 function renderS3() {
@@ -494,6 +499,7 @@ function renderS3() {
     <div class="stats">
       <div><b>${m.fma > 0 ? '+' : m.fma < 0 ? '−' : ''}${f1(Math.abs(m.fma))}°</b><span>${L('MPA · ideal', 'MPA · المثالي')} ${nf(m.ideal.mpa[0])}–${nf(m.ideal.mpa[1])}°</span></div>
       <div><b>${f1(m.gon)}°</b><span>${L('Gonial · ideal', 'الجونيال · المثالي')} ${nf(m.ideal.gon[0])}–${nf(m.ideal.gon[1])}°</span></div>
+      ${m.chin === null ? '' : `<div><b>${m.chin > 0 ? '+' : m.chin < 0 ? '−' : ''}${f1(Math.abs(m.chin))}%</b><span>${L('Chin vs Sn (of lower face)', 'الذقن مقابل Sn (من الوجه السفلي)')}</span></div>`}
     </div>
     <p class="desc">${L(...C.d)}</p><p class="desc" style="margin-top:8px">${gonTxt}</p>
     <p class="s3-disc">${L('This reads one flat photo. A real measurement comes from a lateral cephalometric X-ray read by an orthodontist. Lens distance, head position and soft tissue can shift these angles by a few degrees.', 'هذه قراءة لصورة واحدة مسطحة. القياس الحقيقي يأتي من أشعة سيفالومترية جانبية يقرأها طبيب تقويم. بعد العدسة ووضع الرأس والأنسجة الرخوة قد تغيّر الزوايا بضع درجات.')}</p>
@@ -522,7 +528,8 @@ function drawS3() {
   };
   arc(ang(s3.u), ang(s3.w), cw * .17, '#ffc933', 'MPA ' + f1(s3.fma) + '°');
   arc(ang(s3.a), ang(s3.w), cw * .08, '#5ecbff', f1(s3.gon) + '°');
-  [['Po', Po], ['Or', Or], ['Ra', Ra], ['Go', Go], ['Me', Me]].forEach(([id, q]) => {
+  if (s3.chin !== null) ext(p('Sn'), { x: -s3.u.y, y: s3.u.x }, 'rgba(255,60,90,.7)', 1.2, [3, 4]);   // line through Sn, perpendicular to Frankfort
+  [['Po', Po], ['Or', Or], ['Ra', Ra], ['Go', Go], ['Me', Me], ...(s3.chin !== null ? [['Sn', p('Sn')], ['Pg', p('Pg')]] : [])].forEach(([id, q]) => {
     c.fillStyle = '#fff'; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1; c.beginPath(); c.arc(q.x, q.y, 2.5, 0, 7); c.fill(); c.stroke();
     c.textAlign = 'left'; label(c, id, q.x + 7, q.y - 8, '#fff', 1);
   });

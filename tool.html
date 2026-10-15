@@ -47,6 +47,13 @@ body.lang-ar .tool-title,body.lang-ar .tool-eyebrow{font-family:'Tajawal',sans-s
 .upload-preview-name{font-size:9px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
 .tool-hint{text-align:center;font-size:10px;line-height:1.8;color:var(--ash);margin-top:14px}
 
+.verdict{margin-top:18px;border:1px solid var(--border);background:var(--panel);padding:18px;text-align:left}
+.verdict.ok{border-color:#0a5;background:rgba(0,160,90,.05)}.verdict.warn{border-color:#8a6d00;background:rgba(255,201,51,.05)}.verdict.bad{border-color:var(--blood);background:rgba(220,20,60,.06)}
+.verdict-head{font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}.verdict.ok .verdict-head{color:#5ecb96}.verdict.warn .verdict-head{color:#ffc933}.verdict.bad .verdict-head{color:#ff8080}
+.verdict p{font-size:11px;line-height:1.8;color:var(--text)}
+.verdict-loading{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.mini-spinner{width:20px;height:20px;border:2px solid var(--smoke);border-top-color:var(--blood);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0}@keyframes spin{to{transform:rotate(360deg)}}
+#lmLoupe{width:140px;height:140px;border:1px solid var(--smoke);background:#000}
 .lm-stage{position:relative;background:#000;border:1px solid var(--border);display:flex;justify-content:center;overflow:hidden}
 .lm-stage canvas{display:block;max-width:100%;cursor:crosshair}
 .lm-chips{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0;direction:ltr}
@@ -138,19 +145,22 @@ body.lang-ar .rot-name{font-family:'Tajawal',sans-serif;font-weight:900;letter-s
       <div class="upload-preview-img-wrap"><img id="previewImg" alt=""></div>
       <div class="upload-preview-bar"><span class="upload-preview-name" id="fileName"></span><button class="btn-ghost" id="changeBtn" type="button" data-i18n="tool_change_photo">Change Photo</button></div>
     </div>
+    <div class="verdict" id="verdict" style="display:none"></div>
     <p class="tool-hint" id="tHint"></p>
-    <div class="tool-nav" id="continueNav" style="display:none"><button class="btn-solid" id="continueBtn" type="button" data-i18n="tool_continue">Continue →</button></div>
+    <div class="tool-nav" id="continueNav" style="display:none"><button class="btn-solid" id="continueBtn" type="button" disabled data-i18n="tool_continue">Continue →</button></div>
   </section>
 
   <section class="tool-step" id="step2">
     <div class="tool-eyebrow" data-i18n="s2_eyebrow">Step 2 · Landmarks</div>
     <h2 class="tool-title" id="s2Title"></h2>
-    <p class="tool-text" id="s2Text" style="margin-bottom:16px"></p>
+    <p class="tool-text" id="s2Text" style="margin-bottom:10px"></p>
+    <p class="tool-hint" id="s2Auto" style="margin:0 0 12px"></p>
     <p class="lm-name" id="lmName"></p>
     <p class="lm-desc" id="lmDesc"></p>
     <div class="lm-chips" id="lmChips"></div>
     <div class="lm-stage"><canvas id="lmCanvas"></canvas></div>
     <div class="lm-dash">
+      <canvas id="lmLoupe" width="280" height="280"></canvas>
       <div class="lm-pad" id="lmPad">
         <span></span><button type="button" data-dx="0" data-dy="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button><span></span>
         <button type="button" data-dx="-1" data-dy="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><span class="c"><i></i></span>
@@ -182,7 +192,7 @@ body.lang-ar .rot-name{font-family:'Tajawal',sans-serif;font-weight:900;letter-s
 import { auth, onAuthStateChanged, signOut } from './firebase-config.js';
 import { getLang, applyDocumentDirection, applyTranslations, wireLangToggle, t } from './i18n.js';
 const $ = id => document.getElementById(id);
-let lang = getLang(), gender = null, photo = null, s2 = null, s3 = null;
+let lang = getLang(), gender = null, photo = null, s2 = null, s3 = null, prof = null;
 const L = (a, b) => lang === 'ar' ? b : a;
 const nf = n => lang === 'ar' ? String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -240,6 +250,7 @@ function applyStatic() {
 }
 function onLangChange(next) {
   lang = next; applyDocumentDirection(next); applyTranslations(next); applyStatic();
+  if (prof && photo) renderVerdict();
   if (s2) renderStep2();
   if ($('step3').classList.contains('active')) { renderS3(); skRelang(); }
 }
@@ -262,26 +273,90 @@ async function handleFile(file) {
   const m = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
   c.width = Math.round(img.naturalWidth * m); c.height = Math.round(img.naturalHeight * m);
   c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-  photo = c; s2 = null; showMsg('');
+  photo = c; s2 = null; prof = null; showMsg('');
   $('previewImg').src = c.toDataURL('image/jpeg', .9); $('fileName').textContent = file.name;
-  $('uploader').style.display = 'none'; $('previewBox').style.display = 'block'; $('continueNav').style.display = 'flex';
+  $('uploader').style.display = 'none'; $('previewBox').style.display = 'block'; $('continueNav').style.display = 'flex'; $('continueBtn').disabled = true;
+  const box = $('verdict'); box.className = 'verdict'; box.style.display = 'block';
+  box.innerHTML = `<div class="verdict-loading"><span class="mini-spinner"></span>${L('Checking the head angle…', 'جارٍ فحص زاوية الرأس…')}</div>`;
+  const r = await checkProfile(c);
+  if (photo !== c) return;                     // photo swapped mid-check
+  prof = r; renderVerdict();
 }
 $('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
-$('changeBtn').addEventListener('click', () => { photo = null; s2 = null; $('fileInput').value = ''; $('uploader').style.display = 'flex'; $('previewBox').style.display = 'none'; $('continueNav').style.display = 'none'; $('fileInput').click(); });
+$('changeBtn').addEventListener('click', () => { photo = null; s2 = null; prof = null; $('verdict').style.display = 'none'; $('fileInput').value = ''; $('uploader').style.display = 'flex'; $('previewBox').style.display = 'none'; $('continueNav').style.display = 'none'; $('fileInput').click(); });
 const up = $('uploader');
 ['dragenter', 'dragover'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.add('drag'); }));
 ['dragleave', 'drop'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.remove('drag'); }));
 up.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
 const show = id => { document.querySelectorAll('.tool-step').forEach(s => s.classList.toggle('active', s.id === id)); scrollTo({ top: 0, behavior: 'smooth' }); };
-$('continueBtn').addEventListener('click', () => { if (!photo) return; if (!s2) initS2('right'); show('step2'); layoutStage(); renderStep2(); });
+$('continueBtn').addEventListener('click', () => { if (!photo) return; if (!s2) initS2(prof?.facing || 'right', prof?.defs); show('step2'); layoutStage(); renderStep2(); });
 
+/* ── PROFILE CHECK · is the head turned ~90°, and which way does it face? (MediaPipe, in the browser)
+   1) Face model: if it finds a face with a clear yaw (<65°) the photo is not a side view.
+   2) Pose model: ears, eyes and nose. In a true profile the eyes collapse onto each other and one ear shows;
+      the eye-gap : ear-to-nose ratio gives a yaw estimate, and nose vs ear gives the facing side.
+   3) Pose points also seed sensible start positions (scaled to the head) for step 2. ── */
+const MP = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14', MODELS = 'https://storage.googleapis.com/mediapipe-models/';
+let vis = null, faceLm = null, poseLm = null;
+async function makeLm(Cls, model, extra) {
+  try { if (!vis) { const m = await import(MP + '/vision_bundle.mjs'); vis = { m, files: await m.FilesetResolver.forVisionTasks(MP + '/wasm') }; } } catch (e) { console.warn(e); return null; }
+  for (const delegate of ['GPU', 'CPU']) { try { return await vis.m[Cls].createFromOptions(vis.files, { baseOptions: { modelAssetPath: MODELS + model, delegate }, runningMode: 'IMAGE', ...extra }); } catch (e) { console.warn(Cls, delegate, e); } }
+  return null;
+}
+const getFace = async () => faceLm || (faceLm = await makeLm('FaceLandmarker', 'face_landmarker/face_landmarker/float16/1/face_landmarker.task', { numFaces: 1, outputFacialTransformationMatrixes: true }));
+const getPose = async () => poseLm || (poseLm = await makeLm('PoseLandmarker', 'pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task', { numPoses: 1 }));
+const yawFromRatio = r => { let best = 0, bd = 9; for (let y = 0; y <= 90; y++) { const c = Math.cos(y * Math.PI / 180), sn = Math.sin(y * Math.PI / 180), rr = 6.3 * c / Math.hypot(10.5 * sn, 7.5 * c), dd = Math.abs(rr - r); if (dd < bd) { bd = dd; best = y; } } return best; };
+async function checkProfile(c) {
+  const W = c.width, H = c.height; let faceYaw = null, poseYaw = null, facing = null, defs = null;
+  const fl = await getFace();
+  if (fl) { try { const r = fl.detect(c), mm = r.faceLandmarks?.length ? r.facialTransformationMatrixes?.[0]?.data : null; if (mm) faceYaw = Math.abs(Math.asin(clamp(-mm[2], -1, 1)) * 180 / Math.PI); } catch (e) { console.warn(e); } }
+  const pl = await getPose(); let P = null;
+  if (pl) { try { P = pl.detect(c).landmarks?.[0]; } catch (e) { console.warn(e); } }
+  if (P && P.length > 10) {
+    const g = i => ({ x: P[i].x * W, y: P[i].y * H, v: P[i].visibility ?? 1 }), n = g(0), eL = g(7), eR = g(8), ear = eL.v >= eR.v ? eL : eR;
+    const eyes = [1, 2, 3, 4, 5, 6].map(g), avg = (a, k) => a.reduce((t, q) => t + q[k], 0) / a.length;
+    const d = Math.abs(n.x - ear.x);
+    if (d > .03 * W && ear.v > .3) {
+      let yw = yawFromRatio(Math.abs(avg(eyes.slice(0, 3), 'x') - avg(eyes.slice(3), 'x')) / d);
+      if (Math.min(eL.v, eR.v) > .6) yw = Math.min(yw, 50);              // both ears clearly visible = not a profile
+      poseYaw = yw; facing = n.x > ear.x ? 'right' : 'left';
+      const sg = facing === 'right' ? 1 : -1, mouthY = (g(9).y + g(10).y) / 2, eye = { x: avg(eyes, 'x'), y: avg(eyes, 'y') };
+      const Me = { x: n.x - sg * .22 * d, y: mouthY + .28 * d }, Go = { x: ear.x + sg * .10 * d }; Go.y = Me.y - Math.tan(25 * Math.PI / 180) * Math.abs(Me.x - Go.x);
+      defs = { Po: { x: ear.x + sg * .05 * d, y: ear.y - .03 * d }, Or: { x: eye.x, y: eye.y + .07 * d }, Ra: { x: Go.x - sg * .03 * d, y: Go.y - .4 * d }, Go, Me };
+    }
+  }
+  const yaw = faceYaw !== null && faceYaw < 65 ? faceYaw : poseYaw !== null ? poseYaw : faceYaw;
+  return { yaw, facing, defs, src: poseYaw !== null ? 'pose' : faceYaw !== null ? 'face' : null };
+}
+function renderVerdict() {
+  const box = $('verdict'), r = prof; box.style.display = 'block';
+  const yaw = r.yaw === null ? null : Math.round(r.yaw), side = r.facing ? L(r.facing, r.facing === 'left' ? 'اليسار' : 'اليمين') : '';
+  let cls, head, txt, go = true;
+  if (yaw === null) { cls = 'warn'; head = L('Not confirmed', 'غير مؤكدة'); txt = L('The 90° turn could not be confirmed automatically. Make sure only one eye and one ear are visible, then continue and set the facing direction in the next step.', 'تعذّر تأكيد دوران ٩٠° تلقائياً. تأكد أن عيناً واحدة وأذناً واحدة فقط ظاهرتان، ثم تابع وحدّد اتجاه الوجه في الخطوة التالية.'); }
+  else if (yaw >= 78) { cls = 'ok'; head = L('Approved', 'مقبولة'); txt = L(`Side profile confirmed: the head is turned about ${yaw}°${side ? ', facing ' + side : ''}.`, `تم تأكيد الصورة الجانبية: الرأس مدار حوالي ${nf(yaw)}°${side ? '، والوجه نحو ' + side : ''}.`); }
+  else if (yaw >= 68) { cls = 'warn'; head = L('Almost', 'تقريباً'); txt = L(`The head is turned about ${yaw}°, not a full 90°. Accuracy drops, so turn a little more for the best result.`, `الرأس مدار حوالي ${nf(yaw)}° وليس ٩٠° كاملة. تقل الدقة، فأدر رأسك قليلاً أكثر لأفضل نتيجة.`); }
+  else { cls = 'bad'; go = false; head = L('Rejected', 'مرفوضة'); txt = L(`This is not a side profile: the head is turned only about ${yaw}°. Retake it with your head turned 90°, ear and jawline visible.`, `هذه ليست صورة جانبية: الرأس مدار حوالي ${nf(yaw)}° فقط. أعد التصوير مع إدارة رأسك ٩٠° بحيث تظهر الأذن وخط الفك.`); }
+  box.className = 'verdict ' + cls; box.innerHTML = `<div class="verdict-head">${head}</div><p>${txt}</p>`;
+  $('continueBtn').disabled = !go;
+}
 /* ── STEP 2 · landmarks (5 points: Po, Or, Ra, Go, Me) ── */
 const STEP_PX = { fine: .5, normal: 2, coarse: 8 };
 const DEF = { Po: [.40, .45], Or: [.64, .45], Ra: [.38, .58], Go: [.40, .72], Me: [.62, .82] };   // average profile, facing right
-function initS2(face) {
+function initS2(face, defs) {
   const W = photo.width, H = photo.height, pts = {};
-  PT.forEach(m => { const [x, y] = DEF[m.id]; pts[m.id] = { x: (face === 'left' ? 1 - x : x) * W, y: y * H, seen: false }; });
-  s2 = { W, H, pts, sel: 0, stepKey: 'normal', face }; pts.Po.seen = true;
+  PT.forEach(m => {
+    let x, y; if (defs) ({ x, y } = defs[m.id]); else { const [dx, dy] = DEF[m.id]; x = (face === 'left' ? 1 - dx : dx) * W; y = dy * H; }
+    pts[m.id] = { x: clamp(x, 0, W), y: clamp(y, 0, H), seen: false };
+  });
+  s2 = { W, H, pts, sel: 0, stepKey: 'normal', face, auto: !!defs }; pts.Po.seen = true;
+}
+function drawLoupe() {                          // 4x zoom around the selected point, for precise placement
+  const cv = $('lmLoupe'), g = cv.getContext('2d'), S = cv.width, p = s2.pts[PT[s2.sel].id], r = s2.H * .035, sx = p.x - r, sy = p.y - r, sw = 2 * r;
+  g.fillStyle = '#000'; g.fillRect(0, 0, S, S);
+  const ix = Math.max(0, sx), iy = Math.max(0, sy), ex = Math.min(s2.W, sx + sw), ey = Math.min(s2.H, sy + sw);
+  if (ex > ix && ey > iy) g.drawImage(photo, ix, iy, ex - ix, ey - iy, (ix - sx) / sw * S, (iy - sy) / sw * S, (ex - ix) / sw * S, (ey - iy) / sw * S);
+  g.strokeStyle = 'rgba(255,60,90,.95)'; g.lineWidth = 1.5; g.beginPath();
+  g.moveTo(S / 2, 0); g.lineTo(S / 2, S / 2 - 10); g.moveTo(S / 2, S / 2 + 10); g.lineTo(S / 2, S); g.moveTo(0, S / 2); g.lineTo(S / 2 - 10, S / 2); g.moveTo(S / 2 + 10, S / 2); g.lineTo(S, S / 2); g.stroke();
 }
 function layoutStage() {
   if (!s2) return;
@@ -297,7 +372,7 @@ function label(g, txt, x, y, col, d) {
 function draw() {
   if (!s2 || !s2.k) return;
   const cv = $('lmCanvas'), g = cv.getContext('2d'), sc = s2.k * s2.dpr, d = s2.dpr, P = s2.pts, cur = PT[s2.sel].id;
-  g.clearRect(0, 0, cv.width, cv.height); g.drawImage(photo, 0, 0, s2.W * sc, s2.H * sc);
+  g.clearRect(0, 0, cv.width, cv.height); g.drawImage(photo, 0, 0, s2.W * sc, s2.H * sc); drawLoupe();
   const ln = (a, b, col) => { g.strokeStyle = col; g.lineWidth = d; g.beginPath(); g.moveTo(P[a].x * sc, P[a].y * sc); g.lineTo(P[b].x * sc, P[b].y * sc); g.stroke(); };
   ln('Po', 'Or', 'rgba(255,255,255,.6)'); ln('Go', 'Me', 'rgba(255,60,90,.8)'); ln('Ra', 'Go', 'rgba(94,203,255,.8)');
   PT.forEach(m => {
@@ -311,6 +386,7 @@ function draw() {
 function renderStep2() {
   if (!s2) return;
   $('lmStepLbl').textContent = T('s2_step_label');
+  $('s2Auto').textContent = s2.auto ? L(`Auto-detected: facing ${s2.face}. Start positions are estimates, so move Go and Me onto the actual bone.`, `تم الكشف تلقائياً: الوجه نحو ${s2.face === 'left' ? 'اليسار' : 'اليمين'}. المواضع الأولية تقديرية، فحرّك Go وMe إلى العظم الفعلي.`) : '';
   const keys = ['s2_up', 's2_down', 's2_left', 's2_right'];
   $('lmChips').innerHTML = PT.map((m, i) => `<button type="button" class="lm-chip${i === s2.sel ? ' sel' : ''}${s2.pts[m.id].seen ? ' seen' : ''}" data-i="${i}">${m.id}</button>`).join('');
   $('lmName').textContent = L(...PT[s2.sel].n); $('lmDesc').textContent = L(...PT[s2.sel].d);
@@ -479,7 +555,7 @@ function skSpeak(text) {
 function skRelang() { const was = sk.on, say = s3 && !s3.bad ? s3.say : ''; skStop(); sk.full = say; $('skText').textContent = say; if (was && say) skSpeak(say); }
 const skToggle = () => { if (sk.on) skStop(); else skSpeak(s3 && !s3.bad ? s3.say : ''); };
 $('skPlay').addEventListener('click', skToggle); $('skullWrap').addEventListener('click', skToggle); addEventListener('pagehide', skStop);
-applyStatic();
+applyStatic(); getFace(); getPose();   // warm the models up while the user picks a photo
 </script>
 </body>
 </html>

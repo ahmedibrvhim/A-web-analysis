@@ -108,14 +108,14 @@ body.lang-ar .rot-name{font-family:'Tajawal',sans-serif;font-weight:900;letter-s
 body.lang-ar .tip-pill{letter-spacing:0;text-transform:none}
 .ref-title{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--white);text-align:center;margin:0 0 16px}
 body.lang-ar .ref-title{letter-spacing:0;text-transform:none}
-.ref-fig{max-width:340px;margin:0 auto 18px;border:1px solid var(--border);background:var(--panel);padding:10px}.ref-fig svg{display:block;width:100%;height:auto}
+.ref-fig{max-width:360px;margin:0 auto 18px;border:1px solid var(--border);background:#efeee9;padding:8px}.ref-fig svg{display:block;width:100%;height:auto}
 .ref-list{display:grid;gap:8px}
 .ref-row{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);background:var(--panel)}
 .ref-id{flex:none;min-width:36px;padding:5px 0;text-align:center;font-weight:700;font-size:12px;color:var(--white);background:rgba(139,0,0,.3);border:1px solid var(--blood);direction:ltr}
 .ref-row b{display:block;font-size:11px;color:var(--white);letter-spacing:.5px;margin-bottom:2px}
 .ref-row .d{font-size:11px;line-height:1.7;color:var(--text)}
 .lm-guide{display:flex;gap:14px;align-items:center;padding:12px;margin-bottom:12px;border:1px solid var(--border);background:var(--panel)}
-.lm-mini{flex:none;width:96px}.lm-mini svg{display:block;width:100%;height:auto}
+.lm-mini{flex:none;width:104px;background:#efeee9;padding:4px;border:1px solid var(--border)}.lm-mini svg{display:block;width:100%;height:auto}
 .lm-gtxt{flex:1;min-width:0}.lm-gtxt .lm-name{text-align:start;margin:0}.lm-gtxt .lm-desc{text-align:start;margin:4px 0 0;min-height:0;max-width:none}
 .lm-tip{text-align:center;font-size:10px;color:var(--ash);margin:8px 0 0;line-height:1.7}
 </style>
@@ -232,9 +232,9 @@ window.toggleMobileNav = () => ['hamburger', 'navLinks', 'navRight'].forEach(id 
 
 /* ── TEXT ── */
 const PT = [
-  { id: 'Po', s: ['Top of the ear-canal opening, at the small flap (tragus) in front of the ear hole.', 'أعلى فتحة قناة الأذن، عند النتوء الصغير (الزُّنَيم) أمام الأذن.'], n: ['Po — Porion (ear canal)', 'Po — البوريون (قناة الأذن)'], d: ['The top of the ear-canal opening: the upper edge of the small flap (tragus) in front of the ear hole.', 'أعلى فتحة قناة الأذن: الحافة العليا للنتوء الصغير (الزُّنَيم) أمام الأذن.'] },
+  { id: 'Po', s: ['Top edge of the tragus, the small flap beside the ear hole.', 'الحافة العليا للزُّنَيم، النتوء الصغير بجانب فتحة الأذن.'], n: ['Po — Porion (tragus, beside the ear)', 'Po — البوريون (الزُّنَيم بجانب الأذن)'], d: ['The top edge of the tragus: the small flap of cartilage right beside the ear hole, on the face side of the ear.', 'الحافة العليا للزُّنَيم: النتوء الغضروفي الصغير بجانب فتحة الأذن مباشرة، من جهة الوجه.'] },
   { id: 'Or', s: ['Lowest point of the eye-socket bone, just under the eyeball.', 'أخفض نقطة في عظم محجر العين، تحت مقلة العين مباشرة.'], n: ['Or — Orbitale (under the eye)', 'Or — الأوربيتال (تحت العين)'], d: ['The lowest point of the bony eye-socket rim, just under the eyeball.', 'أخفض نقطة في حافة محجر العين العظمية، تحت مقلة العين مباشرة.'] },
-  { id: 'Ra', s: ['On the rear edge of the jaw, about a third of the way up toward the ear.', 'على الحافة الخلفية للفك، على بعد ثلثه تقريباً نحو الأذن.'], n: ['Ra — Ramus (rear jaw edge)', 'Ra — الراموس (حافة الفك الخلفية)'], d: ['A point on the rear edge of the jaw, on the upright bone rising toward the ear, about a third of the way up.', 'نقطة على الحافة الخلفية للفك، على العظم العمودي الصاعد نحو الأذن، على بعد ثلثه تقريباً.'] },
+  { id: 'Ra', s: ['Rear edge of the jaw bone, a third of the way up from Go toward the earlobe.', 'الحافة الخلفية لعظم الفك، ثلث المسافة من Go نحو شحمة الأذن.'], n: ['Ra — Ramus (rear jaw edge, under the earlobe)', 'Ra — الراموس (حافة الفك الخلفية، تحت شحمة الأذن)'], d: ['On the rear edge of the upright jaw bone, about a third of the way up from Go toward the earlobe. Run a finger up from the jaw corner to feel the edge.', 'على الحافة الخلفية لعظم الفك العمودي، على بعد ثلث المسافة من Go نحو شحمة الأذن. مرّر إصبعك من زاوية الفك للأعلى لتشعر بالحافة.'] },
   { id: 'Go', s: ['The jaw corner, where the rear edge meets the bottom edge.', 'زاوية الفك، حيث تلتقي الحافة الخلفية بالحافة السفلية.'], n: ['Go — Gonion (jaw corner)', 'Go — الجونيون (زاوية الفك)'], d: ['The corner of the jaw where the rear edge meets the bottom edge.', 'زاوية الفك حيث تلتقي الحافة الخلفية بالحافة السفلية.'] },
   { id: 'Me', s: ['The lowest point of the chin.', 'أخفض نقطة في الذقن.'], n: ['Me — Menton (chin bottom)', 'Me — المنتون (أسفل الذقن)'], d: ['The lowest point of the chin.', 'أخفض نقطة في الذقن.'] },
   { id: 'Sn', opt: 1, s: ['Where the base of the nose meets the upper lip.', 'حيث تلتقي قاعدة الأنف بالشفة العليا.'], n: ['Sn — Subnasale (optional)', 'Sn — السبنازال (اختياري)'], d: ['Where the base of the nose meets the upper lip. Optional: with Pg it adds a chin-projection reading.', 'حيث تلتقي قاعدة الأنف بالشفة العليا. اختياري: مع Pg يضيف قياس بروز الذقن.'] },
@@ -367,23 +367,33 @@ function showS2(which) {
   if (which === 'place') { layoutStage(); renderStep2(); }
   scrollTo({ top: 0, behavior: 'smooth' });
 }
-/* Reference drawing of a right-facing profile. hi = id to highlight (mini mode, no labels). */
+/* Reference drawing: pencil-style head in profile (facing left). hi = id to highlight (mini mode, no labels). */
 function refSVG(hi, mini) {
-  const P = { Po: [119, 152], Or: [207, 150], Ra: [116, 232], Go: [122, 260], Me: [224, 286], Sn: [234, 190], Pg: [241, 264] };
-  const LB = { Po: [121, 133, 'middle'], Or: [207, 170, 'middle'], Ra: [104, 232, 'end'], Go: [110, 274, 'end'], Me: [224, 306, 'middle'], Sn: [250, 192, 'start'], Pg: [253, 268, 'start'] };
-  const out = 'M135 30 C190 26 226 62 229 105 C230 118 232 126 229 134 C236 148 252 166 258 178 C258 184 246 188 234 190 C238 198 242 204 240 208 C234 212 232 216 236 222 C240 228 232 234 230 240 C238 248 244 258 240 266 C238 276 232 284 224 286 L122 260 C118 250 114 220 112 190 C108 160 70 150 60 120 C52 70 90 32 135 30 Z';
-  const dim = mini ? .5 : 1, ln = (a, b, col, dash) => `<line x1="${P[a][0]}" y1="${P[a][1]}" x2="${P[b][0]}" y2="${P[b][1]}" stroke="${col}" stroke-width="2" ${dash ? 'stroke-dasharray="6 5"' : ''} opacity="${dim}"/>`;
-  let h = `<svg viewBox="30 10 250 310" xmlns="http://www.w3.org/2000/svg" role="img"><path d="${out}" fill="rgba(255,255,255,.04)" stroke="#bdbdbd" stroke-width="2" stroke-linejoin="round"/>`
-    + `<ellipse cx="104" cy="160" rx="11" ry="22" fill="none" stroke="#bdbdbd" stroke-width="1.6"/><ellipse cx="207" cy="130" rx="8" ry="4.5" fill="none" stroke="#bdbdbd" stroke-width="1.4"/><circle cx="208" cy="130" r="2.2" fill="#bdbdbd"/>`
-    + `<path d="M196 118 Q207 113 220 118" fill="none" stroke="#bdbdbd" stroke-width="1.4"/><path d="M194 134 Q207 164 222 136" fill="none" stroke="#bdbdbd" stroke-width="1.2" stroke-dasharray="3 3" opacity=".7"/>`
-    + ln('Po', 'Or', '#ffffff', 1) + ln('Ra', 'Go', '#5ecbff') + ln('Go', 'Me', '#ff3c5a');
+  const P = { Po: [167, 164], Or: [64, 166], Ra: [163, 215], Go: [160, 243], Me: [64, 294], Sn: [32, 212], Pg: [39, 280] };
+  const LB = { Po: [150, 158, 'end'], Or: [64, 189, 'middle'], Ra: [149, 214, 'end'], Go: [172, 258, 'start'], Me: [64, 316, 'middle'], Sn: [-4, 230, 'end', [0, 226]], Pg: [-4, 289, 'end', [0, 284]] };
+  const ink = '#2a2a2a', fine = '#c4c3bb', dim = mini ? .55 : 1;
+  const head = 'M149 374 C140 345 128 318 118 300 C100 299 80 298 64 294 C56 296 46 292 41 284 C36 277 34 268 36 260 C35 258 33 254 29 250 C26 246 28 241 33 238 C31 236 30 233 27 229 C24 222 28 217 32 212 C26 215 16 215 11 207 C9 203 11 199 15 191 C23 170 32 150 37 138 C34 132 34 128 34 123 C36 100 42 80 51 60 C70 24 120 10 157 10 C205 10 255 40 273 90 C280 125 278 170 268 215 C262 240 272 280 284 330 L300 372';
+  let h = `<svg viewBox="-34 -4 342 392" xmlns="http://www.w3.org/2000/svg" role="img">`
+    + `<g fill="none" stroke="${fine}" stroke-width=".9"><circle cx="157" cy="119" r="88"/><path d="M-10 10H296M-10 128H296M-10 212H296M-10 294H296M157 0V335"/></g>`
+    + `<path d="${head}" fill="none" stroke="${ink}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`
+    + `<g fill="none" stroke="${ink}" stroke-linecap="round" stroke-linejoin="round">`
+    + `<path d="M40 123 Q70 111 93 132" stroke-width="2.6"/><path d="M52 153 Q64 145 79 152 Q64 160 52 153Z" stroke-width="1.6"/><circle cx="66" cy="153" r="3.6" fill="${ink}" stroke="none"/><path d="M50 150 Q64 140 82 149" stroke-width="1.2"/>`
+    + `<path d="M19 207 C23 201 30 202 31 209" stroke-width="1.4"/><path d="M33 238 C44 240 52 242 60 240" stroke-width="1.5"/><path d="M36 260 C45 262 52 262 58 258" stroke-width="1" opacity=".6"/>`
+    + `<path d="M64 293 C90 288 130 270 160 243" stroke-width="1.7"/>`
+    + `<path d="M164 158 C164 142 176 130 192 130 C208 130 214 148 208 166 C203 182 195 196 186 206 C178 212 170 206 168 196 C167 184 164 172 164 158Z" stroke-width="2"/>`
+    + `<path d="M178 152 C186 142 199 145 199 160 C199 174 191 184 184 192" stroke-width="1.3"/><path d="M165 160 C172 160 177 166 173 176 C171 179 167 179 166 175" stroke-width="1.4"/>`
+    + `<path d="M118 300 C128 330 140 350 149 374 M300 372 L284 330" stroke-width="0" />`
+    + `</g>`
+    + `<g opacity="${dim}" stroke-linecap="round"><line x1="${P.Po[0]}" y1="${P.Po[1]}" x2="${P.Or[0]}" y2="${P.Or[1]}" stroke="#444" stroke-width="2" stroke-dasharray="6 5"/>`
+    + `<line x1="${P.Go[0]}" y1="${P.Go[1]}" x2="168" y2="187" stroke="#1f9bd6" stroke-width="2.4"/><line x1="${P.Go[0]}" y1="${P.Go[1]}" x2="${P.Me[0]}" y2="${P.Me[1]}" stroke="#e0143c" stroke-width="2.4"/></g>`;
   Object.keys(P).forEach(id => {
-    const [x, y] = P[id], [lx, ly, an] = LB[id];
+    const [x, y] = P[id], [lx, ly, an, ld] = LB[id];
     if (mini) {
-      if (id === hi) h += `<circle cx="${x}" cy="${y}" r="13" fill="rgba(255,60,90,.25)" stroke="#ff3c5a" stroke-width="2"/><circle cx="${x}" cy="${y}" r="5" fill="#ff3c5a" stroke="#fff" stroke-width="1.5"/>`;
-      else h += `<circle cx="${x}" cy="${y}" r="3" fill="#fff" opacity=".4"/>`;
+      if (id === hi) h += `<circle cx="${x}" cy="${y}" r="15" fill="rgba(224,20,60,.22)" stroke="#e0143c" stroke-width="2.5"/><circle cx="${x}" cy="${y}" r="5.5" fill="#e0143c" stroke="#fff" stroke-width="1.5"/>`;
+      else h += `<circle cx="${x}" cy="${y}" r="3.2" fill="#e0143c" opacity=".35"/>`;
     } else {
-      h += `<circle cx="${x}" cy="${y}" r="4.5" fill="#ff3c5a" stroke="#fff" stroke-width="1.5"/><text x="${lx}" y="${ly}" text-anchor="${an}" font-size="14" font-weight="700" font-family="sans-serif" fill="#fff" stroke="#000" stroke-width="3" paint-order="stroke">${id}</text>`;
+      if (ld) h += `<line x1="${x}" y1="${y}" x2="${ld[0]}" y2="${ld[1]}" stroke="#555" stroke-width="1"/>`;
+      h += `<circle cx="${x}" cy="${y}" r="4.6" fill="#e0143c" stroke="#fff" stroke-width="1.5"/><text x="${lx}" y="${ly}" text-anchor="${an}" font-size="15" font-weight="700" font-family="sans-serif" fill="#111" stroke="#efeee9" stroke-width="3.5" paint-order="stroke">${id}</text>`;
     }
   });
   return h + '</svg>';

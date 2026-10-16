@@ -97,7 +97,20 @@ body.lang-ar .rot-name{font-family:'Tajawal',sans-serif;font-weight:900;letter-s
 .sk-jaw{clip-path:polygon(28% 76%,74% 76%,74% 100%,28% 100%);will-change:transform}
 .skull-bubble{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}#skText{font-size:12px;line-height:1.85;color:var(--bone);min-height:5.5em}
 .skull-bubble .btn-ghost{width:auto;align-self:center;padding:8px 16px}.skull-bubble{width:100%}#skText{text-align:start}
-.s3-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start;margin-top:16px}.s3-grid #s3Rating{grid-column:1/-1}.s3-grid #s3Rating .s3-card{margin-top:0}.s3-grid .skull-wrap{width:110px;height:110px}
+.s3-stack{display:flex;flex-direction:column;gap:14px;margin-top:16px}.s3-stack .s3-card{margin-top:0}
+.tier-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;direction:ltr}
+.tier-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 10px 16px;border:1px solid var(--c);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.35));box-shadow:inset 0 0 26px color-mix(in srgb,var(--c) 18%,transparent),0 0 18px color-mix(in srgb,var(--c) 22%,transparent)}
+.tier-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c)}
+.tier-box.pot{border-style:dashed}
+.tier-cap{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--ash)}
+.tier-name{font-family:'Cinzel Decorative',cursive;font-size:clamp(24px,7vw,38px);letter-spacing:2px;color:var(--c);text-shadow:0 0 18px color-mix(in srgb,var(--c) 45%,transparent);line-height:1.1;text-align:center}
+body.lang-ar .tier-name{font-family:'Tajawal',sans-serif;font-weight:900;letter-spacing:0}
+body.lang-ar .tier-cap{letter-spacing:0;text-transform:none}
+.tier-score{font-size:11px;letter-spacing:2px;color:var(--white)}
+.s3-review{display:none;justify-content:center;margin-top:18px}.s3-review .btn-solid{min-width:240px}
+.s3-modal{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.94);display:none;overflow:auto;padding:20px 16px}
+.s3-modal.open{display:flex;flex-direction:column;align-items:center;gap:16px}
+.s3-modal .lm-stage{max-width:100%}
 @media(max-width:520px){.lm-chip{font-size:11px}#skText{font-size:11px}}
 .auth-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#150000 0%,#000 70%);display:flex;align-items:center;justify-content:center;transition:opacity .3s,visibility .3s}
 .auth-gate.auth-gate-hidden{opacity:0;visibility:hidden;pointer-events:none}.auth-gate-inner{text-align:center}
@@ -196,14 +209,15 @@ body.lang-ar .ref-title{letter-spacing:0;text-transform:none}
     <div class="tool-eyebrow" data-i18n="s3_eyebrow">Step 3 · Analysis</div>
     <h2 class="tool-title" id="s3Title"></h2>
     <div class="msg-bar" id="s3Msg"></div>
-    <div class="s3-grid">
-    <div class="lm-stage" id="s3Stage"><canvas id="s3Canvas"></canvas></div>
-    <div class="skull-card"><div class="skull-wrap" id="skullWrap"><div class="sk-up"></div><div class="sk-jaw" id="skJaw"></div></div>
-      <div class="skull-bubble"><div class="s3-h" style="margin:0" id="skH"></div><div id="skText"></div><button class="btn-ghost" type="button" id="skPlay"></button></div></div>
-    <div id="s3Rating"></div>
+    <div class="s3-stack">
+      <div class="skull-card"><div class="skull-wrap" id="skullWrap"><div class="sk-up"></div><div class="sk-jaw" id="skJaw"></div></div>
+        <div class="skull-bubble"><div class="s3-h" style="margin:0" id="skH"></div><div id="skText"></div><button class="btn-ghost" type="button" id="skPlay"></button></div></div>
+      <div id="s3Rating" class="s3-stack" style="margin-top:0"></div>
     </div>
+    <div class="s3-review" id="s3ReviewWrap"><button class="btn-solid" type="button" id="s3Review"></button></div>
     <div class="tool-nav"><button class="btn-ghost" type="button" id="s3Back" data-i18n="tool_back">← Back</button><button class="btn-solid" type="button" id="s3Restart" data-i18n="s3_restart">Start Over</button></div>
   </section>
+  <div class="s3-modal" id="s3Modal"><div class="lm-stage" id="s3Stage"><canvas id="s3Canvas"></canvas></div><button class="btn-solid" type="button" id="s3Close"></button></div>
 </div></div>
 
 <script type="module">
@@ -264,6 +278,7 @@ function applyStatic() {
   set('s2Reset', 'Reset Points', 'إعادة تعيين النقاط');
   renderRef();
   set('s3Title', 'Jaw Rotation Result', 'نتيجة دوران الفك'); set('skH', "The Skull's Verdict", 'حكم الجمجمة');
+  set('s3Review', '◉ Review Photo', '◉ مراجعة الصورة'); set('s3Close', 'Close', 'إغلاق');
   $('skPlay').textContent = sk.on ? L('■ Stop', '■ إيقاف') : L('▶ Replay', '▶ إعادة');
   const lb = $('logoutBtn'); if (lb) lb.textContent = t('sign_out', lang);
 }
@@ -519,25 +534,32 @@ function renderS3() {
   s3 = measure();
   const msg = $('s3Msg'); msg.className = 'msg-bar'; msg.textContent = '';
   if (!s3 || s3.bad) {
-    $('s3Rating').innerHTML = '';
+    $('s3Rating').innerHTML = ''; $('s3ReviewWrap').style.display = 'none';
     if (s3) { msg.className = 'msg-bar error'; msg.textContent = L('The points are not in a believable order: Porion must sit behind Orbitale, Ramus above Gonion, and Menton in front of Gonion. Go back and correct them.', 'ترتيب النقاط غير منطقي: يجب أن يكون Po خلف Or، وRa فوق Go، وMe أمام Go. ارجع وصحّحها.'); }
     drawS3(); return;
   }
-  const m = s3, C0 = CL[m.cls], fem = gender === 'female', C = { ...C0, t: C0.t.map(x => fem ? x.replace('Chad', 'Stacy') : x) }, pos = clamp((10 - m.psl) / 9, 0, 1) * 100;
+  const m = s3, C = CL[m.cls], fem = gender === 'female', pos = clamp((10 - m.psl) / 9, 0, 1) * 100;
+  const TIERS = [[8, fem ? 'Stacy' : 'Chad', fem ? 'ستاسي' : 'تشاد', '#5ecbff'], [6.5, fem ? 'Stacylite' : 'Chadlite', fem ? 'ستاسي لايت' : 'تشاد لايت', '#6ee7b7'], [5.25, fem ? 'HTB' : 'HTN', fem ? 'HTB' : 'HTN', '#b8e986'], [4, fem ? 'MTB' : 'MTN', fem ? 'MTB' : 'MTN', '#e6e6e6'], [2.75, fem ? 'LTB' : 'LTN', fem ? 'LTB' : 'LTN', '#ff9a4c'], [0, 'Sub5', 'Sub5', '#ff5555']];
+  const tierOf = p => { const r = TIERS.find(x => p >= x[0]); return { name: L(r[1], r[2]), c: r[3] }; };
+  const pot = Math.max(m.pm, m.pg), T1 = tierOf(m.psl), T2 = tierOf(pot);
   const gonTxt = m.gon < m.ideal.gonR[0]
     ? L(`Your gonial angle is tight, ${f1(m.gon)}°: a sharp, angular jaw corner, the forward-growth look.`, `زاوية فكك ضيقة، ${f1(m.gon)}°: زاوية فك حادة وبارزة، وهي سمة النمو الأمامي.`)
     : m.gon > m.ideal.gonR[1]
       ? L(`Your gonial angle is wide, ${f1(m.gon)}°: past ${nf(Math.round(m.ideal.gonR[1]))}° counts against you. A rounded, obtuse jaw corner reads soft and goes with downward growth.`, `زاوية فكك واسعة، ${f1(m.gon)}°: تجاوز ${nf(Math.round(m.ideal.gonR[1]))}° يُحتسب ضدك. زاوية مستديرة تبدو ناعمة وترافق النمو نحو الأسفل.`)
       : L(`Your gonial angle, ${f1(m.gon)}°, sits between the elite and average bands.`, `زاوية فكك، ${f1(m.gon)}°، بين فئة النخبة والمتوسط.`);
   m.say = [
-    L(`I measured your jaw. Your rotation is ${C.n[0]}: ${C.s[0].toLowerCase()}. Growth rating ${f1(m.psl)} out of 10, ${C.t[0]}. The mandibular plane angle is ${f1(m.fma)} degrees.`, `قست فكك. دورانك ${C.n[1]}: ${C.s[1]}. تقييم النمو ${f1(m.psl)} من ١٠، ${C.t[1]}. زاوية المستوى الفكي ${f1(m.fma)} درجة.`),
+    L(`I measured your jaw. Your rotation is ${C.n[0]}: ${C.s[0].toLowerCase()}. PSL rating ${f1(m.psl)} out of 10, ${T1.name}, with ${T2.name} potential. The mandibular plane angle is ${f1(m.fma)} degrees.`, `قست فكك. دورانك ${C.n[1]}: ${C.s[1]}. تقييم PSL ${f1(m.psl)} من ١٠، ${T1.name}، وإمكانية ${T2.name}. زاوية المستوى الفكي ${f1(m.fma)} درجة.`),
     L(...C.d), gonTxt,
     L('That is my verdict. Remember, this is one flat photo, not an X-ray.', 'هذا حكمي. تذكّر أنها صورة واحدة مسطحة وليست أشعة.')
   ].join(' ');
-  $('s3Rating').innerHTML = `<div class="s3-card s3-rate">
+  $('s3Rating').innerHTML = `<div class="tier-row">
+    <div class="tier-box" style="--c:${T1.c}"><span class="tier-cap">${L('PSL Rating', 'تقييم PSL')}</span><b class="tier-name">${T1.name}</b><span class="tier-score">${f1(m.psl)} / 10</span></div>
+    <div class="tier-box pot" style="--c:${T2.c}"><span class="tier-cap">${L('Potential', 'الإمكانية')}</span><b class="tier-name">${T2.name}</b><span class="tier-score">${f1(pot)} / 10</span></div>
+  </div>
+  <div class="s3-card s3-rate">
     <div class="s3-h">${L('Rotation', 'الدوران')}</div>
     <div class="rot-name" style="color:${C.c};text-shadow:0 0 18px ${C.c}66">${L(...C.n)}</div>
-    <div class="rot-sub">${L(...C.s)}</div><div class="rot-sub" style="color:${C.c}">${f1(m.psl)} / 10 · ${L(...C.t)}</div>
+    <div class="rot-sub">${L(...C.s)}</div>
     <div class="gauge"><i style="left:${pos.toFixed(1)}%"></i></div>
     <div class="gauge-lbl"><span>${L('CCW · Forward', 'CCW · أمام')}</span><span>${L('Neutral', 'محايد')}</span><span>${L('CW · Downward', 'CW · أسفل')}</span></div>
     <div class="stats">
@@ -545,16 +567,15 @@ function renderS3() {
       <div><b>${f1(m.gon)}°</b><span>${L('Gonial · ideal', 'الجونيال · المثالي')} ${nf(m.ideal.gon[0])}–${nf(m.ideal.gon[1])}°</span></div>
       ${m.chin === null ? '' : `<div><b>${m.chin > 0 ? '+' : m.chin < 0 ? '−' : ''}${f1(Math.abs(m.chin))}%</b><span>${L('Chin vs Sn (of lower face)', 'الذقن مقابل Sn (من الوجه السفلي)')}</span></div>`}
     </div>
-    <p class="desc">${L(...C.d)}</p><p class="desc" style="margin-top:8px">${gonTxt}</p>
     <p class="s3-disc">${L('This reads one flat photo. A real measurement comes from a lateral cephalometric X-ray read by an orthodontist. Lens distance, head position and soft tissue can shift these angles by a few degrees.', 'هذه قراءة لصورة واحدة مسطحة. القياس الحقيقي يأتي من أشعة سيفالومترية جانبية يقرأها طبيب تقويم. بعد العدسة ووضع الرأس والأنسجة الرخوة قد تغيّر الزوايا بضع درجات.')}</p>
   </div>`;
-  drawS3();
+  $('s3ReviewWrap').style.display = 'flex'; drawS3();
 }
 function drawS3() {
   const cv = $('s3Canvas'), d = window.sideLandmarks;
   if (!d || !s3 || s3.bad) { cv.style.display = 'none'; return; }
   cv.style.display = 'block';
-  const cw = Math.min($('s3Stage').clientWidth || 640, 720), k = cw / d.W, ch = Math.round(d.H * k), dpr = devicePixelRatio || 1;
+  const cw = Math.min(innerWidth - 34, 720), k = cw / d.W, ch = Math.round(d.H * k), dpr = devicePixelRatio || 1;
   cv.style.width = cw + 'px'; cv.style.height = ch + 'px'; cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
   const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
   c.drawImage(d.img, 0, 0, cw, ch); c.fillStyle = 'rgba(0,0,0,.3)'; c.fillRect(0, 0, cw, ch);
@@ -578,7 +599,11 @@ function drawS3() {
     c.textAlign = 'left'; label(c, id, q.x + 7, q.y - 8, '#fff', 1);
   });
 }
-$('s3Back').addEventListener('click', () => { skStop(); show('step2'); showS2('place'); });
+const closeReview = () => $('s3Modal').classList.remove('open');
+$('s3Review').addEventListener('click', () => { drawS3(); $('s3Modal').classList.add('open'); $('s3Modal').scrollTop = 0; });
+$('s3Close').addEventListener('click', closeReview);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeReview(); });
+$('s3Back').addEventListener('click', () => { skStop(); closeReview(); show('step2'); showS2('place'); });
 $('s3Restart').addEventListener('click', () => location.reload());
 
 /* ══ TALKING SKULL — jaw layer of Skull.png moves with each typed letter ══ */

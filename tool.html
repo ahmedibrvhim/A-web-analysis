@@ -254,8 +254,10 @@ const PT = [
   { id: 'Ra', s: ['Rear edge of the jaw bone, a third of the way up from Go toward the earlobe.', 'الحافة الخلفية لعظم الفك، ثلث المسافة من Go نحو شحمة الأذن.'], n: ['Ra — Ramus (rear jaw edge, under the earlobe)', 'Ra — الراموس (حافة الفك الخلفية، تحت شحمة الأذن)'], d: ['On the rear edge of the upright jaw bone, about a third of the way up from Go toward the earlobe. Run a finger up from the jaw corner to feel the edge.', 'على الحافة الخلفية لعظم الفك العمودي، على بعد ثلث المسافة من Go نحو شحمة الأذن. مرّر إصبعك من زاوية الفك للأعلى لتشعر بالحافة.'] },
   { id: 'Go', s: ['The jaw corner, where the rear edge meets the bottom edge.', 'زاوية الفك، حيث تلتقي الحافة الخلفية بالحافة السفلية.'], n: ['Go — Gonion (jaw corner)', 'Go — الجونيون (زاوية الفك)'], d: ['The corner of the jaw where the rear edge meets the bottom edge.', 'زاوية الفك حيث تلتقي الحافة الخلفية بالحافة السفلية.'] },
   { id: 'Me', s: ['The lowest point of the chin.', 'أخفض نقطة في الذقن.'], n: ['Me — Menton (chin bottom)', 'Me — المنتون (أسفل الذقن)'], d: ['The lowest point of the chin.', 'أخفض نقطة في الذقن.'] },
-  { id: 'Sn', opt: 1, s: ['Where the base of the nose meets the upper lip.', 'حيث تلتقي قاعدة الأنف بالشفة العليا.'], n: ['Sn — Subnasale (optional)', 'Sn — السبنازال (اختياري)'], d: ['Where the base of the nose meets the upper lip. Optional: with Pg it adds a chin-projection reading.', 'حيث تلتقي قاعدة الأنف بالشفة العليا. اختياري: مع Pg يضيف قياس بروز الذقن.'] },
-  { id: 'Pg', opt: 1, s: ['The most forward point of the chin.', 'أبرز نقطة في الذقن.'], n: ['Pg — Pogonion (optional)', 'Pg — البوغونيون (اختياري)'], d: ['The most forward point of the chin. Optional.', 'أبرز نقطة في الذقن. اختياري.'] }
+  { id: 'Sn', s: ['Where the base of the nose meets the upper lip.', 'حيث تلتقي قاعدة الأنف بالشفة العليا.'], n: ['Sn — Subnasale (under the nose)', 'Sn — السبنازال (تحت الأنف)'], d: ['Where the base of the nose meets the upper lip. It shows how far forward your upper jaw (maxilla) sits.', 'حيث تلتقي قاعدة الأنف بالشفة العليا. تُظهر مدى بروز فكك العلوي (الماكسيلا).'] },
+  { id: 'Pg', s: ['The most forward point of the chin.', 'أبرز نقطة في الذقن.'], n: ['Pg — Pogonion (chin front)', 'Pg — البوغونيون (مقدمة الذقن)'], d: ['The most forward point of the chin.', 'أبرز نقطة في الذقن.'] },
+  { id: 'G', s: ['Most forward point of the forehead, between the eyebrows.', 'أبرز نقطة في الجبهة بين الحاجبين.'], n: ['G — Glabella (forehead, between the brows)', 'G — الغلابيلا (الجبهة بين الحاجبين)'], d: ['The most forward point of the forehead, in the middle of the brow ridge between the eyebrows.', 'أبرز نقطة في الجبهة عند منتصف نتوء الحاجبين، بين الحاجبين.'] },
+  { id: 'Tr', s: ['Where the forehead curves into the hairline.', 'حيث تنحني الجبهة نحو خط الشعر.'], n: ['Tr — Top of forehead (hairline)', 'Tr — أعلى الجبهة (خط الشعر)'], d: ['Where the forehead curves into the scalp or hairline. Place it on the outline of the forehead, not on the hair.', 'حيث تنحني الجبهة نحو فروة الرأس أو خط الشعر. ضعها على حافة الجبهة وليس على الشعر.'] }
 ];
 const CL = [
   { t: ['Chad · Elite Tier', 'Chad · فئة النخبة'], c: '#5ecbff', n: ['Strong CCW', 'CCW قوي'], s: ['Strong forward growth', 'نمو أمامي قوي'],
@@ -369,7 +371,7 @@ function renderVerdict() {
   box.className = 'verdict ' + cls; box.innerHTML = `<div class="verdict-head">${head}</div><p>${txt}</p>`;
   $('continueBtn').disabled = !go;
 }
-/* ── STEP 2 · landmarks (5 points: Po, Or, Ra, Go, Me) ── */
+/* ── STEP 2 · landmarks (9 points: Po, Or, Ra, Go, Me, Sn, Pg, G, Tr) ── */
 const STEP_PX = { fine: .5, normal: 2, coarse: 8 };
 function initS2() {                              // every point starts UNPLACED: nothing is guessed, you place each one yourself
   const W = photo.width, H = photo.height, pts = {};
@@ -383,8 +385,8 @@ function showS2(which) {
 }
 /* Reference drawing: pencil-style head in profile (facing left). hi = id to highlight (mini mode, no labels). */
 function refSVG(hi, mini) {
-  const P = { Po: [167, 164], Or: [64, 166], Ra: [163, 215], Go: [160, 243], Me: [64, 294], Sn: [32, 212], Pg: [39, 280] };
-  const LB = { Po: [150, 158, 'end'], Or: [64, 189, 'middle'], Ra: [149, 214, 'end'], Go: [172, 258, 'start'], Me: [64, 316, 'middle'], Sn: [-4, 230, 'end', [0, 226]], Pg: [-4, 289, 'end', [0, 284]] };
+  const P = { Po: [167, 164], Or: [64, 166], Ra: [163, 215], Go: [160, 243], Me: [64, 294], Sn: [32, 212], Pg: [39, 280], G: [34, 124], Tr: [58, 48] };
+  const LB = { Po: [150, 158, 'end'], Or: [64, 189, 'middle'], Ra: [149, 214, 'end'], Go: [172, 258, 'start'], Me: [64, 316, 'middle'], Sn: [-4, 230, 'end', [0, 226]], Pg: [-4, 289, 'end', [0, 284]], G: [-4, 128, 'end', [0, 124]], Tr: [-4, 52, 'end', [30, 50]] };
   const ink = '#2a2a2a', fine = '#c4c3bb', dim = mini ? .55 : 1;
   const head = 'M149 374 C140 345 128 318 118 300 C100 299 80 298 64 294 C56 296 46 292 41 284 C36 277 34 268 36 260 C35 258 33 254 29 250 C26 246 28 241 33 238 C31 236 30 233 27 229 C24 222 28 217 32 212 C26 215 16 215 11 207 C9 203 11 199 15 191 C23 170 32 150 37 138 C34 132 34 128 34 123 C36 100 42 80 51 60 C70 24 120 10 157 10 C205 10 255 40 273 90 C280 125 278 170 268 215 C262 240 272 280 284 330 L300 372';
   let h = `<svg viewBox="-34 -4 342 392" xmlns="http://www.w3.org/2000/svg" role="img">`
@@ -399,7 +401,7 @@ function refSVG(hi, mini) {
     + `<path d="M118 300 C128 330 140 350 149 374 M300 372 L284 330" stroke-width="0" />`
     + `</g>`
     + `<g opacity="${dim}" stroke-linecap="round"><line x1="${P.Po[0]}" y1="${P.Po[1]}" x2="${P.Or[0]}" y2="${P.Or[1]}" stroke="#444" stroke-width="2" stroke-dasharray="6 5"/>`
-    + `<line x1="${P.Go[0]}" y1="${P.Go[1]}" x2="168" y2="187" stroke="#1f9bd6" stroke-width="2.4"/><line x1="${P.Go[0]}" y1="${P.Go[1]}" x2="${P.Me[0]}" y2="${P.Me[1]}" stroke="#e0143c" stroke-width="2.4"/></g>`;
+    + `<line x1="${P.Go[0]}" y1="${P.Go[1]}" x2="168" y2="187" stroke="#1f9bd6" stroke-width="2.4"/><line x1="${P.Go[0]}" y1="${P.Go[1]}" x2="${P.Me[0]}" y2="${P.Me[1]}" stroke="#e0143c" stroke-width="2.4"/><line x1="${P.G[0]}" y1="${P.G[1]}" x2="${P.Tr[0]}" y2="${P.Tr[1]}" stroke="#8a5cf5" stroke-width="2.4"/></g>`;
   Object.keys(P).forEach(id => {
     const [x, y] = P[id], [lx, ly, an, ld] = LB[id];
     if (mini) {
@@ -432,7 +434,7 @@ function draw() {
   const cv = $('lmCanvas'), g = cv.getContext('2d'), sc = s2.k * s2.dpr, d = s2.dpr, P = s2.pts, cur = PT[s2.sel].id;
   g.clearRect(0, 0, cv.width, cv.height); g.drawImage(photo, 0, 0, cv.width, cv.height);
   const ln = (a, b, col) => { if (!P[a].seen || !P[b].seen) return; g.strokeStyle = col; g.lineWidth = d; g.beginPath(); g.moveTo(P[a].x * sc, P[a].y * sc); g.lineTo(P[b].x * sc, P[b].y * sc); g.stroke(); };
-  ln('Po', 'Or', 'rgba(255,255,255,.7)'); ln('Go', 'Me', 'rgba(255,60,90,.85)'); ln('Ra', 'Go', 'rgba(94,203,255,.85)');
+  ln('Po', 'Or', 'rgba(255,255,255,.7)'); ln('Go', 'Me', 'rgba(255,60,90,.85)'); ln('Ra', 'Go', 'rgba(94,203,255,.85)'); ln('G', 'Tr', 'rgba(181,140,255,.85)');
   const ring = (x, y, r, col, w) => { g.lineWidth = (w + 2) * d; g.strokeStyle = 'rgba(0,0,0,.65)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); g.lineWidth = w * d; g.strokeStyle = col; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); };
   PT.forEach(m => {
     const p = P[m.id]; if (!p.seen) return;
@@ -511,6 +513,14 @@ const MPA_PSL = {
 const GON_PSL = {
   m: [[115, 10], [122.5, 7.75], [125.5, 6.25], [130.5, 4.25], [135.5, 2.5], [145, 1]],
   f: [[120, 10], [128.5, 7.75], [131.5, 6.25], [135.5, 4.25], [140.5, 2.5], [150, 1]] };
+/* ── Whole-profile scoring. The jaw (MPA + gonial) is only ONE feature now; maxilla, chin and forehead count too.
+   !! These anchors are PROVISIONAL starting values (value -> PSL). Tune them against faces you trust. !! */
+const FEAT_W = { jaw: .35, max: .25, chin: .20, fore: .20 };           // weights, must add to 1
+const MAX_PSL = [[-30, 1], [-20, 2.5], [-12, 4.25], [-6, 6.25], [0, 7.75], [7, 10]];   // Sn ahead of the Or-vertical, % of lower-face height (neg = recessed maxilla)
+const CHIN_PSL = { m: [[-25, 1], [-16, 2.5], [-9, 4.25], [-4, 6.25], [1, 7.75], [7, 10]], f: [[-25, 1], [-16, 2.5], [-9, 4.25], [-4, 6.25], [0, 7.75], [5, 10]] };   // Pg vs Sn-vertical, % of lower-face height
+const FORE_IDEAL = { m: [4, 14], f: [0, 10] };                          // forehead tilt back from vertical, degrees
+const FORE_DEV_PSL = [[0, 10], [4, 7.75], [8, 6.25], [13, 4.25], [20, 2.5], [30, 1]];  // degrees outside the ideal band -> PSL
+const CAP_MARGIN = 2.5;                                                 // weakest feature caps the total at (weakest + this)
 const IDEAL = { m: { mpa: [15, 27], gon: [115, 125], gonR: [122.5, 130.5] }, f: { mpa: [17, 28], gon: [120, 131], gonR: [128.5, 135.5] } };
 const interp = (x, A) => { if (x <= A[0][0]) return A[0][1]; for (let i = 1; i < A.length; i++) if (x <= A[i][0]) { const [x0, y0] = A[i - 1], [x1, y1] = A[i]; return y0 + (y1 - y0) * (x - x0) / (x1 - x0); } return A[A.length - 1][1]; };
 function measure() {
@@ -523,11 +533,20 @@ function measure() {
   const u = { x: u0.x / len(u0), y: u0.y / len(u0) }, w = { x: w0.x / len(w0), y: w0.y / len(w0) }, n = { x: -u.y * s, y: u.x * s };
   const fma = Math.atan2(dot(w, n), dot(w, u)) * 180 / Math.PI;
   const gon = Math.acos(clamp(dot(a0, w0) / (len(a0) * len(w0)), -1, 1)) * 180 / Math.PI;
-  const gk = gender === 'female' ? 'f' : 'm', pm = interp(fma, MPA_PSL[gk]), pg = interp(gon, GON_PSL[gk]), psl = .6 * pm + .4 * pg;   // MPA weighted higher: the ramus point is the less reliable one on a photo
-  const cls = psl >= 8 ? 0 : psl >= 6.5 ? 1 : psl >= 4.5 ? 2 : psl >= 3 ? 3 : 4;
-  let chin = null;
-  if (P.Sn && P.Pg && P.Sn.seen && P.Pg.seen) { const lf = len(v('Sn', 'Me')); if (lf > 8) chin = dot(v('Sn', 'Pg'), u) / lf * 100; }   // % of lower-face height; + = chin ahead of Sn
-  return { chin, u, w, a: { x: a0.x / len(a0), y: a0.y / len(a0) }, fma, gon, psl, pm, pg, cls, ideal: IDEAL[gk] };
+  const gk = gender === 'female' ? 'f' : 'm', pm = interp(fma, MPA_PSL[gk]), pg = interp(gon, GON_PSL[gk]), jaw = .6 * pm + .4 * pg;   // MPA weighted higher: the ramus point is the less reliable one on a photo
+  const cls = jaw >= 8 ? 0 : jaw >= 6.5 ? 1 : jaw >= 4.5 ? 2 : jaw >= 3 ? 3 : 4;   // rotation class = jaw only
+  const up = { x: -n.x, y: -n.y }, lf = len(v('Sn', 'Me')), fv = v('G', 'Tr');
+  if (lf < 8 || len(fv) < 8 || dot(v('Sn', 'Me'), n) <= 0 || dot(v('Sn', 'Pg'), n) <= 0 || dot(fv, up) <= 0) return { bad: true };
+  const mx = dot(v('Or', 'Sn'), u) / lf * 100;                    // maxilla: Sn vs the vertical through Or, % of lower-face height; + = ahead
+  const chin = dot(v('Sn', 'Pg'), u) / lf * 100;                  // chin: Pg vs the vertical through Sn; + = ahead
+  const fore = Math.atan2(-dot(fv, u), dot(fv, up)) * 180 / Math.PI;   // forehead tilt from vertical; + = sloping back
+  const [flo, fhi] = FORE_IDEAL[gk], fdev = fore < flo ? flo - fore : fore > fhi ? fore - fhi : 0;
+  const sMax = interp(mx, MAX_PSL), sChin = interp(chin, CHIN_PSL[gk]), sFore = interp(fdev, FORE_DEV_PSL);
+  const total = j => { const avg = FEAT_W.jaw * j + FEAT_W.max * sMax + FEAT_W.chin * sChin + FEAT_W.fore * sFore, cap = Math.min(j, sMax, sChin, sFore) + CAP_MARGIN; return Math.min(avg, cap); };
+  const psl = total(jaw), pot = total(Math.max(pm, pg));
+  const feats = [{ k: 'jaw', s: jaw, w: FEAT_W.jaw }, { k: 'max', s: sMax, w: FEAT_W.max }, { k: 'chin', s: sChin, w: FEAT_W.chin }, { k: 'fore', s: sFore, w: FEAT_W.fore }];
+  const avgOnly = feats.reduce((a, f) => a + f.s * f.w, 0), capped = psl < avgOnly - .05, weak = feats.slice().sort((a, b) => a.s - b.s)[0];
+  return { chin, mx, fore, jaw, pot, feats, capped, weak, u, w, a: { x: a0.x / len(a0), y: a0.y / len(a0) }, fma, gon, psl, pm, pg, cls, ideal: IDEAL[gk] };
 }
 const f1 = n => nf(n.toFixed(1));
 function renderS3() {
@@ -538,24 +557,35 @@ function renderS3() {
     if (s3) { msg.className = 'msg-bar error'; msg.textContent = L('The points are not in a believable order: Porion must sit behind Orbitale, Ramus above Gonion, and Menton in front of Gonion. Go back and correct them.', 'ترتيب النقاط غير منطقي: يجب أن يكون Po خلف Or، وRa فوق Go، وMe أمام Go. ارجع وصحّحها.'); }
     drawS3(); return;
   }
-  const m = s3, C = CL[m.cls], fem = gender === 'female', pos = clamp((10 - m.psl) / 9, 0, 1) * 100;
+  const m = s3, C = CL[m.cls], fem = gender === 'female', pos = clamp((10 - m.jaw) / 9, 0, 1) * 100;
   const TIERS = [[8, fem ? 'Stacy' : 'Chad', fem ? 'ستاسي' : 'تشاد', '#5ecbff'], [6.5, fem ? 'Stacylite' : 'Chadlite', fem ? 'ستاسي لايت' : 'تشاد لايت', '#6ee7b7'], [5.25, fem ? 'HTB' : 'HTN', fem ? 'HTB' : 'HTN', '#b8e986'], [4, fem ? 'MTB' : 'MTN', fem ? 'MTB' : 'MTN', '#e6e6e6'], [2.75, fem ? 'LTB' : 'LTN', fem ? 'LTB' : 'LTN', '#ff9a4c'], [0, 'Sub5', 'Sub5', '#ff5555']];
   const tierOf = p => { const r = TIERS.find(x => p >= x[0]); return { name: L(r[1], r[2]), c: r[3] }; };
-  const pot = Math.max(m.pm, m.pg), T1 = tierOf(m.psl), T2 = tierOf(pot);
+  const pot = m.pot, T1 = tierOf(m.psl), T2 = tierOf(pot);
+  const FL = { jaw: ['Jaw rotation', 'دوران الفك'], max: ['Maxilla (upper jaw)', 'الفك العلوي'], chin: ['Chin projection', 'بروز الذقن'], fore: ['Forehead slope', 'ميل الجبهة'] };
+  const sg = x => (x > 0 ? '+' : x < 0 ? '\u2212' : '') + f1(Math.abs(x));
+  const FV = { jaw: `${f1(m.fma)}° MPA · ${f1(m.gon)}° ${L('gonial', 'جونيال')}`, max: `${sg(m.mx)}% ${L('vs Or line', 'مقابل خط Or')}`, chin: `${sg(m.chin)}% ${L('vs Sn line', 'مقابل خط Sn')}`, fore: `${f1(m.fore)}° ${L('back from vertical', 'ميل للخلف عن العمودي')}` };
+  const bar = s => `<div style="height:5px;background:rgba(255,255,255,.1);margin-top:6px"><i style="display:block;height:100%;width:${(s * 10).toFixed(0)}%;background:${tierOf(s).c}"></i></div>`;
+  const featRows = m.feats.map(f => `<div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.07)"><div style="display:flex;justify-content:space-between;gap:10px;font-size:13px"><span>${L(...FL[f.k])}</span><b>${f1(f.s)} / 10</b></div><div style="font-size:11px;opacity:.7;margin-top:2px">${FV[f.k]} · ${L('weight', 'الوزن')} ${nf(Math.round(f.w * 100))}%</div>${bar(f.s)}</div>`).join('');
+  const wl = L(...FL[m.weak.k]).toLowerCase();
+  const weakTxt = m.capped
+    ? L(`Your ${wl} is the weak link at ${f1(m.weak.s)} out of 10, and it holds your total down. A strong feature elsewhere cannot fully cover it.`, `${L(...FL[m.weak.k])} هو الحلقة الأضعف بدرجة ${f1(m.weak.s)} من ١٠، وهو يسحب تقييمك الكلي للأسفل. ميزة قوية في مكان آخر لا تعوّضه بالكامل.`)
+    : L(`Your weakest feature is ${wl}, at ${f1(m.weak.s)} out of 10.`, `أضعف ميزة لديك هي ${L(...FL[m.weak.k])} بدرجة ${f1(m.weak.s)} من ١٠.`);
+  const breakdownCard = `<div class="s3-card"><div class="s3-h">${L('Profile breakdown', 'تفصيل الملف الجانبي')}</div>${featRows}${m.capped ? `<p class="s3-disc" style="margin-top:10px">${weakTxt}</p>` : ''}</div>`;
   const gonTxt = m.gon < m.ideal.gonR[0]
     ? L(`Your gonial angle is tight, ${f1(m.gon)}°: a sharp, angular jaw corner, the forward-growth look.`, `زاوية فكك ضيقة، ${f1(m.gon)}°: زاوية فك حادة وبارزة، وهي سمة النمو الأمامي.`)
     : m.gon > m.ideal.gonR[1]
       ? L(`Your gonial angle is wide, ${f1(m.gon)}°: past ${nf(Math.round(m.ideal.gonR[1]))}° counts against you. A rounded, obtuse jaw corner reads soft and goes with downward growth.`, `زاوية فكك واسعة، ${f1(m.gon)}°: تجاوز ${nf(Math.round(m.ideal.gonR[1]))}° يُحتسب ضدك. زاوية مستديرة تبدو ناعمة وترافق النمو نحو الأسفل.`)
       : L(`Your gonial angle, ${f1(m.gon)}°, sits between the elite and average bands.`, `زاوية فكك، ${f1(m.gon)}°، بين فئة النخبة والمتوسط.`);
   m.say = [
-    L(`I measured your jaw. Your rotation is ${C.n[0]}: ${C.s[0].toLowerCase()}. PSL rating ${f1(m.psl)} out of 10, ${T1.name}, with ${T2.name} potential. The mandibular plane angle is ${f1(m.fma)} degrees.`, `قست فكك. دورانك ${C.n[1]}: ${C.s[1]}. تقييم PSL ${f1(m.psl)} من ١٠، ${T1.name}، وإمكانية ${T2.name}. زاوية المستوى الفكي ${f1(m.fma)} درجة.`),
-    L(...C.d), gonTxt,
+    L(`I measured your side profile. Your jaw rotation is ${C.n[0]}: ${C.s[0].toLowerCase()}. PSL rating ${f1(m.psl)} out of 10, ${T1.name}, with ${T2.name} potential. The mandibular plane angle is ${f1(m.fma)} degrees.`, `قست جانب وجهك. دوران فكك ${C.n[1]}: ${C.s[1]}. تقييم PSL ${f1(m.psl)} من ١٠، ${T1.name}، وإمكانية ${T2.name}. زاوية المستوى الفكي ${f1(m.fma)} درجة.`),
+    L(...C.d), gonTxt, weakTxt,
     L('That is my verdict. Remember, this is one flat photo, not an X-ray.', 'هذا حكمي. تذكّر أنها صورة واحدة مسطحة وليست أشعة.')
   ].join(' ');
   $('s3Rating').innerHTML = `<div class="tier-row">
     <div class="tier-box" style="--c:${T1.c}"><span class="tier-cap">${L('PSL Rating', 'تقييم PSL')}</span><b class="tier-name">${T1.name}</b><span class="tier-score">${f1(m.psl)} / 10</span></div>
     <div class="tier-box pot" style="--c:${T2.c}"><span class="tier-cap">${L('Potential', 'الإمكانية')}</span><b class="tier-name">${T2.name}</b><span class="tier-score">${f1(pot)} / 10</span></div>
   </div>
+  ${breakdownCard}
   <div class="s3-card s3-rate">
     <div class="s3-h">${L('Rotation', 'الدوران')}</div>
     <div class="rot-name" style="color:${C.c};text-shadow:0 0 18px ${C.c}66">${L(...C.n)}</div>
@@ -593,8 +623,13 @@ function drawS3() {
   };
   arc(ang(s3.u), ang(s3.w), cw * .17, '#ffc933', 'MPA ' + f1(s3.fma) + '°');
   arc(ang(s3.a), ang(s3.w), cw * .08, '#5ecbff', f1(s3.gon) + '°');
-  if (s3.chin !== null) ext(p('Sn'), { x: -s3.u.y, y: s3.u.x }, 'rgba(255,60,90,.7)', 1.2, [3, 4]);   // line through Sn, perpendicular to Frankfort
-  [['Po', Po], ['Or', Or], ['Ra', Ra], ['Go', Go], ['Me', Me], ...(s3.chin !== null ? [['Sn', p('Sn')], ['Pg', p('Pg')]] : [])].forEach(([id, q]) => {
+  const perp = { x: -s3.u.y, y: s3.u.x }, G = p('G'), Tr = p('Tr');
+  ext(p('Sn'), perp, 'rgba(255,60,90,.7)', 1.2, [3, 4]);        // line through Sn, perpendicular to Frankfort (chin test)
+  ext(Or, perp, 'rgba(255,201,51,.7)', 1.2, [3, 4]);            // line through Or, perpendicular to Frankfort (maxilla test)
+  ext(G, perp, 'rgba(255,255,255,.3)', 1, [2, 4]);              // vertical through glabella
+  c.strokeStyle = '#b58cff'; c.lineWidth = 1.8; c.beginPath(); c.moveTo(G.x, G.y); c.lineTo(Tr.x, Tr.y); c.stroke();   // forehead line
+  c.textAlign = 'left'; label(c, f1(s3.fore) + '\u00b0', Tr.x + 10, Tr.y + 14, '#b58cff', 1);
+  [['Po', Po], ['Or', Or], ['Ra', Ra], ['Go', Go], ['Me', Me], ['Sn', p('Sn')], ['Pg', p('Pg')], ['G', G], ['Tr', Tr]].forEach(([id, q]) => {
     c.fillStyle = '#fff'; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1; c.beginPath(); c.arc(q.x, q.y, 2.5, 0, 7); c.fill(); c.stroke();
     c.textAlign = 'left'; label(c, id, q.x + 7, q.y - 8, '#fff', 1);
   });

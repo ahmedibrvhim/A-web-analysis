@@ -53,9 +53,9 @@ body.lang-ar .tool-title,body.lang-ar .tool-eyebrow{font-family:'Tajawal',sans-s
 .verdict p{font-size:11px;line-height:1.8;color:var(--text)}
 .verdict-loading{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
 .mini-spinner{width:20px;height:20px;border:2px solid var(--smoke);border-top-color:var(--blood);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0}@keyframes spin{to{transform:rotate(360deg)}}
-#lmLoupe{width:140px;height:140px;border:1px solid var(--smoke);background:#000}
+#lmLoupe{position:absolute;top:8px;left:8px;width:112px;height:112px;border:2px solid var(--crimson);border-radius:50%;background:#000;pointer-events:none;box-shadow:0 2px 14px rgba(0,0,0,.75);display:none;z-index:3}
 .lm-stage{position:relative;background:#000;border:1px solid var(--border);display:flex;justify-content:center;overflow:hidden}
-.lm-stage canvas{display:block;max-width:100%;cursor:crosshair}
+.lm-stage #lmCanvas,.lm-stage #s3Canvas{display:block;max-width:none}.lm-stage #lmCanvas{cursor:crosshair;touch-action:none;-webkit-user-select:none;user-select:none}
 .lm-chips{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:12px 0;direction:ltr}
 .lm-chip{position:relative;padding:11px 2px;font-size:13px;font-weight:700;text-align:center;color:var(--text);background:var(--panel);border:1px solid var(--border);cursor:pointer;font-family:inherit}
 .lm-chip.sel{border-color:var(--crimson);background:rgba(139,0,0,.16);color:var(--white);box-shadow:0 0 14px rgba(220,20,60,.25)}
@@ -102,6 +102,22 @@ body.lang-ar .rot-name{font-family:'Tajawal',sans-serif;font-weight:900;letter-s
 .auth-gate.auth-gate-hidden{opacity:0;visibility:hidden;pointer-events:none}.auth-gate-inner{text-align:center}
 .auth-gate-skull{width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid var(--blood);box-shadow:0 0 30px rgba(139,0,0,.4);margin:0 auto 16px;display:block}
 .auth-gate-text{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
+.photo-tip{margin:0 0 16px;padding:14px 16px;border:1px solid var(--blood);background:rgba(139,0,0,.1);text-align:center}
+.photo-tip p{font-size:11px;line-height:1.8;color:var(--bone);margin:0 0 10px}
+.tip-pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.tip-pill{font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:5px 12px;border:1px solid var(--crimson);color:var(--white)}
+body.lang-ar .tip-pill{letter-spacing:0;text-transform:none}
+.ref-title{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--white);text-align:center;margin:0 0 16px}
+body.lang-ar .ref-title{letter-spacing:0;text-transform:none}
+.ref-fig{max-width:340px;margin:0 auto 18px;border:1px solid var(--border);background:var(--panel);padding:10px}.ref-fig svg{display:block;width:100%;height:auto}
+.ref-list{display:grid;gap:8px}
+.ref-row{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);background:var(--panel)}
+.ref-id{flex:none;min-width:36px;padding:5px 0;text-align:center;font-weight:700;font-size:12px;color:var(--white);background:rgba(139,0,0,.3);border:1px solid var(--blood);direction:ltr}
+.ref-row b{display:block;font-size:11px;color:var(--white);letter-spacing:.5px;margin-bottom:2px}
+.ref-row .d{font-size:11px;line-height:1.7;color:var(--text)}
+.lm-guide{display:flex;gap:14px;align-items:center;padding:12px;margin-bottom:12px;border:1px solid var(--border);background:var(--panel)}
+.lm-mini{flex:none;width:96px}.lm-mini svg{display:block;width:100%;height:auto}
+.lm-gtxt{flex:1;min-width:0}.lm-gtxt .lm-name{text-align:start;margin:0}.lm-gtxt .lm-desc{text-align:start;margin:4px 0 0;min-height:0;max-width:none}
+.lm-tip{text-align:center;font-size:10px;color:var(--ash);margin:8px 0 0;line-height:1.7}
 </style>
 </head>
 <body>
@@ -124,9 +140,6 @@ body.lang-ar .rot-name{font-family:'Tajawal',sans-serif;font-weight:900;letter-s
   <div class="msg-bar" id="toolMsg"></div>
 
   <section class="tool-step active" id="step1">
-    <div class="tool-eyebrow" id="tEye"></div>
-    <h2 class="tool-title" id="tTitle"></h2>
-    <p class="tool-text" id="tText"></p>
     <div class="gender-box">
       <div class="gb-title" data-i18n="g_title">Select Your Gender</div>
       <p class="gb-text" data-i18n="g_text"></p>
@@ -136,6 +149,7 @@ body.lang-ar .rot-name{font-family:'Tajawal',sans-serif;font-weight:900;letter-s
       </div>
     </div>
     <p class="lock-hint" id="lockHint" data-i18n="g_locked"></p>
+    <div class="photo-tip" id="photoTip"></div>
     <label class="uploader locked" id="uploader">
       <input type="file" accept="image/*" id="fileInput" disabled>
       <span class="uploader-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span>
@@ -146,34 +160,35 @@ body.lang-ar .rot-name{font-family:'Tajawal',sans-serif;font-weight:900;letter-s
       <div class="upload-preview-bar"><span class="upload-preview-name" id="fileName"></span><button class="btn-ghost" id="changeBtn" type="button" data-i18n="tool_change_photo">Change Photo</button></div>
     </div>
     <div class="verdict" id="verdict" style="display:none"></div>
-    <p class="tool-hint" id="tHint"></p>
     <div class="tool-nav" id="continueNav" style="display:none"><button class="btn-solid" id="continueBtn" type="button" disabled data-i18n="tool_continue">Continue →</button></div>
   </section>
 
   <section class="tool-step" id="step2">
-    <div class="tool-eyebrow" data-i18n="s2_eyebrow">Step 2 · Landmarks</div>
-    <h2 class="tool-title" id="s2Title"></h2>
-    <p class="tool-text" id="s2Text" style="margin-bottom:10px"></p>
-    <p class="tool-hint" id="s2Auto" style="margin:0 0 12px"></p>
-    <p class="lm-name" id="lmName"></p>
-    <p class="lm-desc" id="lmDesc"></p>
-    <div class="lm-chips" id="lmChips"></div>
-    <div class="lm-stage"><canvas id="lmCanvas"></canvas></div>
-    <div class="lm-dash">
-      <canvas id="lmLoupe" width="280" height="280"></canvas>
-      <div class="lm-pad" id="lmPad">
-        <span></span><button type="button" data-dx="0" data-dy="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button><span></span>
-        <button type="button" data-dx="-1" data-dy="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><span class="c"><i></i></span>
-        <button type="button" data-dx="1" data-dy="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
-        <span></span><button type="button" data-dx="0" data-dy="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><span></span>
-      </div>
-      <div class="lm-side">
-        <div><div class="lm-cap" id="lmStepLbl"></div><div class="lm-seg" id="lmSeg"><button type="button" data-step="fine" data-i18n="tool_dash_step_fine">Fine</button><button type="button" data-step="normal" class="on" data-i18n="tool_dash_step_normal">Normal</button><button type="button" data-step="coarse" data-i18n="tool_dash_step_coarse">Coarse</button></div></div>
-        <div><div class="lm-cap" id="faceLbl"></div><div class="lm-seg" id="faceSeg"><button type="button" data-face="left" id="fL"></button><button type="button" data-face="right" class="on" id="fR"></button></div></div>
-      </div>
+    <div id="s2Ref">
+      <h2 class="ref-title" id="refTitle"></h2>
+      <div class="ref-fig" id="refFig"></div>
+      <div class="ref-list" id="refList"></div>
+      <div class="tool-nav"><button class="btn-ghost" type="button" id="refBack" data-i18n="tool_back">← Back</button><button class="btn-solid" type="button" id="refStart"></button></div>
     </div>
-    <div class="lm-progress" id="lmProgress"></div>
-    <div class="tool-nav"><button class="btn-ghost" type="button" id="s2Back" data-i18n="tool_back">← Back</button><button class="btn-solid" type="button" id="s2Confirm" disabled data-i18n="s2_confirm">Confirm Landmarks →</button></div>
+    <div id="s2Place" style="display:none">
+      <div class="lm-guide"><div class="lm-mini" id="lmMini"></div><div class="lm-gtxt"><p class="lm-name" id="lmName"></p><p class="lm-desc" id="lmDesc"></p></div></div>
+      <div class="lm-chips" id="lmChips"></div>
+      <div class="lm-stage" id="lmStage"><canvas id="lmCanvas"></canvas><canvas id="lmLoupe" width="240" height="240"></canvas></div>
+      <p class="lm-tip" id="lmTip"></p>
+      <div class="lm-dash">
+        <div class="lm-pad" id="lmPad">
+          <span></span><button type="button" data-dx="0" data-dy="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button><span></span>
+          <button type="button" data-dx="-1" data-dy="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><span class="c"><i></i></span>
+          <button type="button" data-dx="1" data-dy="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+          <span></span><button type="button" data-dx="0" data-dy="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><span></span>
+        </div>
+        <div class="lm-side">
+          <div><div class="lm-cap" id="lmStepLbl"></div><div class="lm-seg" id="lmSeg"><button type="button" data-step="fine" data-i18n="tool_dash_step_fine">Fine</button><button type="button" data-step="normal" class="on" data-i18n="tool_dash_step_normal">Normal</button><button type="button" data-step="coarse" data-i18n="tool_dash_step_coarse">Coarse</button></div></div>
+        </div>
+      </div>
+      <div class="lm-progress" id="lmProgress"></div>
+      <div class="tool-nav"><button class="btn-ghost" type="button" id="s2Back" data-i18n="tool_back">← Back</button><button class="btn-solid" type="button" id="s2Confirm" disabled data-i18n="s2_confirm">Confirm Landmarks →</button></div>
+    </div>
   </section>
 
   <section class="tool-step" id="step3">
@@ -217,13 +232,13 @@ window.toggleMobileNav = () => ['hamburger', 'navLinks', 'navRight'].forEach(id 
 
 /* ── TEXT ── */
 const PT = [
-  { id: 'Po', n: ['Po — Porion (ear canal)', 'Po — البوريون (قناة الأذن)'], d: ['The top of the ear-canal opening: the upper edge of the small flap (tragus) in front of the ear hole.', 'أعلى فتحة قناة الأذن: الحافة العليا للنتوء الصغير (الزُّنَيم) أمام الأذن.'] },
-  { id: 'Or', n: ['Or — Orbitale (under the eye)', 'Or — الأوربيتال (تحت العين)'], d: ['The lowest point of the bony eye-socket rim, just under the eyeball.', 'أخفض نقطة في حافة محجر العين العظمية، تحت مقلة العين مباشرة.'] },
-  { id: 'Ra', n: ['Ra — Ramus (rear jaw edge)', 'Ra — الراموس (حافة الفك الخلفية)'], d: ['A point on the rear edge of the jaw, on the upright bone rising toward the ear, about a third of the way up.', 'نقطة على الحافة الخلفية للفك، على العظم العمودي الصاعد نحو الأذن، على بعد ثلثه تقريباً.'] },
-  { id: 'Go', n: ['Go — Gonion (jaw corner)', 'Go — الجونيون (زاوية الفك)'], d: ['The corner of the jaw where the rear edge meets the bottom edge.', 'زاوية الفك حيث تلتقي الحافة الخلفية بالحافة السفلية.'] },
-  { id: 'Me', n: ['Me — Menton (chin bottom)', 'Me — المنتون (أسفل الذقن)'], d: ['The lowest point of the chin.', 'أخفض نقطة في الذقن.'] },
-  { id: 'Sn', opt: 1, n: ['Sn — Subnasale (optional)', 'Sn — السبنازال (اختياري)'], d: ['Where the base of the nose meets the upper lip. Optional: with Pg it adds a chin-projection reading.', 'حيث تلتقي قاعدة الأنف بالشفة العليا. اختياري: مع Pg يضيف قياس بروز الذقن.'] },
-  { id: 'Pg', opt: 1, n: ['Pg — Pogonion (optional)', 'Pg — البوغونيون (اختياري)'], d: ['The most forward point of the chin. Optional.', 'أبرز نقطة في الذقن. اختياري.'] }
+  { id: 'Po', s: ['Top of the ear-canal opening, at the small flap (tragus) in front of the ear hole.', 'أعلى فتحة قناة الأذن، عند النتوء الصغير (الزُّنَيم) أمام الأذن.'], n: ['Po — Porion (ear canal)', 'Po — البوريون (قناة الأذن)'], d: ['The top of the ear-canal opening: the upper edge of the small flap (tragus) in front of the ear hole.', 'أعلى فتحة قناة الأذن: الحافة العليا للنتوء الصغير (الزُّنَيم) أمام الأذن.'] },
+  { id: 'Or', s: ['Lowest point of the eye-socket bone, just under the eyeball.', 'أخفض نقطة في عظم محجر العين، تحت مقلة العين مباشرة.'], n: ['Or — Orbitale (under the eye)', 'Or — الأوربيتال (تحت العين)'], d: ['The lowest point of the bony eye-socket rim, just under the eyeball.', 'أخفض نقطة في حافة محجر العين العظمية، تحت مقلة العين مباشرة.'] },
+  { id: 'Ra', s: ['On the rear edge of the jaw, about a third of the way up toward the ear.', 'على الحافة الخلفية للفك، على بعد ثلثه تقريباً نحو الأذن.'], n: ['Ra — Ramus (rear jaw edge)', 'Ra — الراموس (حافة الفك الخلفية)'], d: ['A point on the rear edge of the jaw, on the upright bone rising toward the ear, about a third of the way up.', 'نقطة على الحافة الخلفية للفك، على العظم العمودي الصاعد نحو الأذن، على بعد ثلثه تقريباً.'] },
+  { id: 'Go', s: ['The jaw corner, where the rear edge meets the bottom edge.', 'زاوية الفك، حيث تلتقي الحافة الخلفية بالحافة السفلية.'], n: ['Go — Gonion (jaw corner)', 'Go — الجونيون (زاوية الفك)'], d: ['The corner of the jaw where the rear edge meets the bottom edge.', 'زاوية الفك حيث تلتقي الحافة الخلفية بالحافة السفلية.'] },
+  { id: 'Me', s: ['The lowest point of the chin.', 'أخفض نقطة في الذقن.'], n: ['Me — Menton (chin bottom)', 'Me — المنتون (أسفل الذقن)'], d: ['The lowest point of the chin.', 'أخفض نقطة في الذقن.'] },
+  { id: 'Sn', opt: 1, s: ['Where the base of the nose meets the upper lip.', 'حيث تلتقي قاعدة الأنف بالشفة العليا.'], n: ['Sn — Subnasale (optional)', 'Sn — السبنازال (اختياري)'], d: ['Where the base of the nose meets the upper lip. Optional: with Pg it adds a chin-projection reading.', 'حيث تلتقي قاعدة الأنف بالشفة العليا. اختياري: مع Pg يضيف قياس بروز الذقن.'] },
+  { id: 'Pg', opt: 1, s: ['The most forward point of the chin.', 'أبرز نقطة في الذقن.'], n: ['Pg — Pogonion (optional)', 'Pg — البوغونيون (اختياري)'], d: ['The most forward point of the chin. Optional.', 'أبرز نقطة في الذقن. اختياري.'] }
 ];
 const CL = [
   { t: ['Chad · Elite Tier', 'Chad · فئة النخبة'], c: '#5ecbff', n: ['Strong CCW', 'CCW قوي'], s: ['Strong forward growth', 'نمو أمامي قوي'],
@@ -239,13 +254,11 @@ const CL = [
 ];
 function applyStatic() {
   const set = (id, a, b) => { $(id).textContent = L(a, b); };
-  set('tEye', '☠ Side Profile ☠', '☠ الجانب ☠'); set('tTitle', 'CCW / CW Jaw Rotation', 'دوران الفك CCW / CW');
-  set('tText', 'Upload one true side photo. Mr Skull measures whether your jaw grows forward (CCW) or downward (CW).', 'ارفع صورة جانبية حقيقية واحدة. يقيس Mr Skull ما إذا كان فكك ينمو للأمام (CCW) أم للأسفل (CW).');
-  set('tHint', 'Turn your head 90° (one eye, one ear). A visible jawline helps, but you can place hidden points by estimate. Look straight ahead, teeth together, hair away from the ear and jaw.', 'أدر رأسك ٩٠° (عين واحدة وأذن واحدة). ظهور خط الفك يساعد، ويمكنك تقدير النقاط المخفية. انظر للأمام، الأسنان متلامسة، وأبعد الشعر عن الأذن والفك.');
+  $('photoTip').innerHTML = `<p>${L('Take a true side photo (90°). Your ear and your jawline must both be clearly visible: pull hair back from the ear and jaw, look straight ahead, teeth together.', 'التقط صورة جانبية حقيقية (٩٠°). يجب أن تظهر أذنك وخط فكك بوضوح: أبعد الشعر عن الأذن والفك، انظر للأمام، والأسنان متلامسة.')}</p><div class="tip-pills"><span class="tip-pill">${L('Ear visible', 'الأذن ظاهرة')}</span><span class="tip-pill">${L('Jawline visible', 'خط الفك ظاهر')}</span></div>`;
   $('uploaderCta').innerHTML = `${T('tool_drop_prefix')} <span class="browse-word">${T('tool_drop_browse')}</span>`;
-  set('s2Title', 'Place The Landmarks', 'ضع النقاط المرجعية');
-  set('s2Text', 'Tap the photo to drop the selected point there, then fine-tune it with the arrows. Place the 5 main points (Sn and Pg are optional).', 'اضغط على الصورة لوضع النقطة المختارة، ثم اضبطها بالأسهم. ضع النقاط الخمس الأساسية (Sn وPg اختياريتان).');
-  set('faceLbl', 'Photo faces', 'اتجاه الوجه'); set('fL', '← Left', '← يسار'); set('fR', 'Right →', 'يمين →');
+  set('refTitle', 'Landmarks Reference', 'مرجع النقاط'); set('refStart', 'Start Placing →', 'ابدأ وضع النقاط ←');
+  set('lmTip', 'Tap the photo to place the point · drag a point to move it · use the arrows to fine-tune', 'اضغط على الصورة لوضع النقطة · اسحب أي نقطة لتحريكها · استخدم الأسهم للضبط الدقيق');
+  renderRef();
   set('s3Title', 'Jaw Rotation Result', 'نتيجة دوران الفك'); set('skH', "The Skull's Verdict", 'حكم الجمجمة');
   $('skPlay').textContent = sk.on ? L('■ Stop', '■ إيقاف') : L('▶ Replay', '▶ إعادة');
   const lb = $('logoutBtn'); if (lb) lb.textContent = t('sign_out', lang);
@@ -292,7 +305,7 @@ const up = $('uploader');
 ['dragleave', 'drop'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.remove('drag'); }));
 up.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
 const show = id => { document.querySelectorAll('.tool-step').forEach(s => s.classList.toggle('active', s.id === id)); scrollTo({ top: 0, behavior: 'smooth' }); };
-$('continueBtn').addEventListener('click', () => { if (!photo) return; if (!s2) initS2(prof?.facing || 'right', prof?.defs); show('step2'); layoutStage(); renderStep2(); });
+$('continueBtn').addEventListener('click', () => { if (!photo) return; const first = !s2; if (first) initS2(); show('step2'); showS2(first ? 'ref' : 'place'); });
 
 /* ── PROFILE CHECK · is the head turned ~90°, and which way does it face? (MediaPipe, in the browser)
    1) Face model: if it finds a face with a clear yaw (<65°) the photo is not a side view.
@@ -344,29 +357,67 @@ function renderVerdict() {
 }
 /* ── STEP 2 · landmarks (5 points: Po, Or, Ra, Go, Me) ── */
 const STEP_PX = { fine: .5, normal: 2, coarse: 8 };
-const DEF = { Po: [.40, .45], Or: [.64, .45], Ra: [.38, .58], Go: [.40, .72], Me: [.62, .82], Sn: [.68, .60], Pg: [.64, .79] };   // average profile, facing right
-function initS2(face, defs) {
+function initS2() {                              // every point starts UNPLACED: nothing is guessed, you place each one yourself
   const W = photo.width, H = photo.height, pts = {};
-  PT.forEach(m => {
-    let x, y; if (defs) ({ x, y } = defs[m.id]); else { const [dx, dy] = DEF[m.id]; x = (face === 'left' ? 1 - dx : dx) * W; y = dy * H; }
-    pts[m.id] = { x: clamp(x, 0, W), y: clamp(y, 0, H), seen: false };
-  });
-  s2 = { W, H, pts, sel: 0, stepKey: 'normal', face, auto: !!defs }; pts.Po.seen = true;
+  PT.forEach(m => { pts[m.id] = { x: W / 2, y: H / 2, seen: false }; });
+  s2 = { W, H, pts, sel: 0, stepKey: 'normal', hover: null, drag: null };
 }
-function drawLoupe() {                          // 4x zoom around the selected point, for precise placement
-  const cv = $('lmLoupe'), g = cv.getContext('2d'), S = cv.width, p = s2.pts[PT[s2.sel].id], r = s2.H * .035, sx = p.x - r, sy = p.y - r, sw = 2 * r;
+function showS2(which) {
+  $('s2Ref').style.display = which === 'ref' ? 'block' : 'none'; $('s2Place').style.display = which === 'place' ? 'block' : 'none';
+  if (which === 'place') { layoutStage(); renderStep2(); }
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+/* Reference drawing of a right-facing profile. hi = id to highlight (mini mode, no labels). */
+function refSVG(hi, mini) {
+  const P = { Po: [119, 152], Or: [207, 150], Ra: [116, 232], Go: [122, 260], Me: [224, 286], Sn: [234, 190], Pg: [241, 264] };
+  const LB = { Po: [121, 133, 'middle'], Or: [207, 170, 'middle'], Ra: [104, 232, 'end'], Go: [110, 274, 'end'], Me: [224, 306, 'middle'], Sn: [250, 192, 'start'], Pg: [253, 268, 'start'] };
+  const out = 'M135 30 C190 26 226 62 229 105 C230 118 232 126 229 134 C236 148 252 166 258 178 C258 184 246 188 234 190 C238 198 242 204 240 208 C234 212 232 216 236 222 C240 228 232 234 230 240 C238 248 244 258 240 266 C238 276 232 284 224 286 L122 260 C118 250 114 220 112 190 C108 160 70 150 60 120 C52 70 90 32 135 30 Z';
+  const dim = mini ? .5 : 1, ln = (a, b, col, dash) => `<line x1="${P[a][0]}" y1="${P[a][1]}" x2="${P[b][0]}" y2="${P[b][1]}" stroke="${col}" stroke-width="2" ${dash ? 'stroke-dasharray="6 5"' : ''} opacity="${dim}"/>`;
+  let h = `<svg viewBox="30 10 250 310" xmlns="http://www.w3.org/2000/svg" role="img"><path d="${out}" fill="rgba(255,255,255,.04)" stroke="#bdbdbd" stroke-width="2" stroke-linejoin="round"/>`
+    + `<ellipse cx="104" cy="160" rx="11" ry="22" fill="none" stroke="#bdbdbd" stroke-width="1.6"/><ellipse cx="207" cy="130" rx="8" ry="4.5" fill="none" stroke="#bdbdbd" stroke-width="1.4"/><circle cx="208" cy="130" r="2.2" fill="#bdbdbd"/>`
+    + `<path d="M196 118 Q207 113 220 118" fill="none" stroke="#bdbdbd" stroke-width="1.4"/><path d="M194 134 Q207 164 222 136" fill="none" stroke="#bdbdbd" stroke-width="1.2" stroke-dasharray="3 3" opacity=".7"/>`
+    + ln('Po', 'Or', '#ffffff', 1) + ln('Ra', 'Go', '#5ecbff') + ln('Go', 'Me', '#ff3c5a');
+  Object.keys(P).forEach(id => {
+    const [x, y] = P[id], [lx, ly, an] = LB[id];
+    if (mini) {
+      if (id === hi) h += `<circle cx="${x}" cy="${y}" r="13" fill="rgba(255,60,90,.25)" stroke="#ff3c5a" stroke-width="2"/><circle cx="${x}" cy="${y}" r="5" fill="#ff3c5a" stroke="#fff" stroke-width="1.5"/>`;
+      else h += `<circle cx="${x}" cy="${y}" r="3" fill="#fff" opacity=".4"/>`;
+    } else {
+      h += `<circle cx="${x}" cy="${y}" r="4.5" fill="#ff3c5a" stroke="#fff" stroke-width="1.5"/><text x="${lx}" y="${ly}" text-anchor="${an}" font-size="14" font-weight="700" font-family="sans-serif" fill="#fff" stroke="#000" stroke-width="3" paint-order="stroke">${id}</text>`;
+    }
+  });
+  return h + '</svg>';
+}
+function renderRef() {
+  $('refFig').innerHTML = refSVG(null, false);
+  $('refList').innerHTML = PT.map(m => `<div class="ref-row"><span class="ref-id">${m.id}</span><div><b>${L(...m.n).split(' — ')[1] || ''}</b><div class="d">${L(...m.s)}</div></div></div>`).join('');
+}
+function loupeCenter() {
+  if (s2.drag) return s2.pts[s2.drag.id];
+  if (s2.hover) return s2.hover;
+  const p = s2.pts[PT[s2.sel].id]; return p.seen ? p : null;
+}
+function drawLoupe() {                          // zoom bubble that floats in the corner away from your finger / cursor
+  const cv = $('lmLoupe'), c = loupeCenter();
+  if (!c || !s2.k) { cv.style.display = 'none'; return; }
+  cv.style.display = 'block';
+  const g = cv.getContext('2d'), S = cv.width, r = s2.H * .03, sx = c.x - r, sy = c.y - r, sw = 2 * r;
   g.fillStyle = '#000'; g.fillRect(0, 0, S, S);
   const ix = Math.max(0, sx), iy = Math.max(0, sy), ex = Math.min(s2.W, sx + sw), ey = Math.min(s2.H, sy + sw);
   if (ex > ix && ey > iy) g.drawImage(photo, ix, iy, ex - ix, ey - iy, (ix - sx) / sw * S, (iy - sy) / sw * S, (ex - ix) / sw * S, (ey - iy) / sw * S);
-  g.strokeStyle = 'rgba(255,60,90,.95)'; g.lineWidth = 1.5; g.beginPath();
-  g.moveTo(S / 2, 0); g.lineTo(S / 2, S / 2 - 10); g.moveTo(S / 2, S / 2 + 10); g.lineTo(S / 2, S); g.moveTo(0, S / 2); g.lineTo(S / 2 - 10, S / 2); g.moveTo(S / 2 + 10, S / 2); g.lineTo(S, S / 2); g.stroke();
+  g.strokeStyle = 'rgba(255,60,90,.95)'; g.lineWidth = 2; g.beginPath();
+  g.moveTo(S / 2, 0); g.lineTo(S / 2, S / 2 - 12); g.moveTo(S / 2, S / 2 + 12); g.lineTo(S / 2, S); g.moveTo(0, S / 2); g.lineTo(S / 2 - 12, S / 2); g.moveTo(S / 2 + 12, S / 2); g.lineTo(S, S / 2); g.stroke();
+  const cvs = $('lmCanvas'), st = $('lmStage'), onLeft = c.x < s2.W / 2;
+  cv.style.top = (cvs.offsetTop + 8) + 'px';
+  if (onLeft) { cv.style.left = 'auto'; cv.style.right = (st.clientWidth - cvs.offsetLeft - cvs.offsetWidth + 8) + 'px'; }
+  else { cv.style.right = 'auto'; cv.style.left = (cvs.offsetLeft + 8) + 'px'; }
 }
 function layoutStage() {
   if (!s2) return;
-  const wrap = $('lmCanvas').parentElement, cv = $('lmCanvas'), maxW = wrap.clientWidth || 600, maxH = Math.min(innerHeight * .72, 780);
-  const k = Math.min(maxW / s2.W, maxH / s2.H), dpr = devicePixelRatio || 1, cw = Math.round(s2.W * k), ch = Math.round(s2.H * k);
+  const wrap = $('lmStage'), cv = $('lmCanvas'), maxW = wrap.clientWidth; if (!maxW) return;   // hidden panel: nothing to size yet
+  const maxH = Math.min(innerHeight * .72, 780), k = Math.min(maxW / s2.W, maxH / s2.H), dpr = devicePixelRatio || 1, cw = Math.round(s2.W * k), ch = Math.round(s2.H * k);
   cv.style.width = cw + 'px'; cv.style.height = ch + 'px'; cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
-  s2.k = k; s2.dpr = dpr; draw();
+  s2.k = cw / s2.W; s2.dpr = cv.width / cw; draw();
 }
 function label(g, txt, x, y, col, d) {
   g.font = `700 ${11 * d}px sans-serif`; g.textBaseline = 'middle'; g.lineWidth = 3 * d; g.strokeStyle = 'rgba(0,0,0,.85)'; g.fillStyle = col;
@@ -375,37 +426,36 @@ function label(g, txt, x, y, col, d) {
 function draw() {
   if (!s2 || !s2.k) return;
   const cv = $('lmCanvas'), g = cv.getContext('2d'), sc = s2.k * s2.dpr, d = s2.dpr, P = s2.pts, cur = PT[s2.sel].id;
-  g.clearRect(0, 0, cv.width, cv.height); g.drawImage(photo, 0, 0, s2.W * sc, s2.H * sc); drawLoupe();
-  const ln = (a, b, col) => { g.strokeStyle = col; g.lineWidth = d; g.beginPath(); g.moveTo(P[a].x * sc, P[a].y * sc); g.lineTo(P[b].x * sc, P[b].y * sc); g.stroke(); };
-  ln('Po', 'Or', 'rgba(255,255,255,.6)'); ln('Go', 'Me', 'rgba(255,60,90,.8)'); ln('Ra', 'Go', 'rgba(94,203,255,.8)');
+  g.clearRect(0, 0, cv.width, cv.height); g.drawImage(photo, 0, 0, cv.width, cv.height);
+  const ln = (a, b, col) => { if (!P[a].seen || !P[b].seen) return; g.strokeStyle = col; g.lineWidth = d; g.beginPath(); g.moveTo(P[a].x * sc, P[a].y * sc); g.lineTo(P[b].x * sc, P[b].y * sc); g.stroke(); };
+  ln('Po', 'Or', 'rgba(255,255,255,.7)'); ln('Go', 'Me', 'rgba(255,60,90,.85)'); ln('Ra', 'Go', 'rgba(94,203,255,.85)');
+  const ring = (x, y, r, col, w) => { g.lineWidth = (w + 2) * d; g.strokeStyle = 'rgba(0,0,0,.65)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); g.lineWidth = w * d; g.strokeStyle = col; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); };
   PT.forEach(m => {
-    const p = P[m.id], x = p.x * sc, y = p.y * sc, on = m.id === cur;
-    if (on) { g.strokeStyle = 'rgba(255,60,90,.9)'; g.lineWidth = d; g.beginPath(); g.arc(x, y, 9 * d, 0, 7); g.stroke(); }
-    g.fillStyle = on ? '#ff3c5a' : '#fff'; g.strokeStyle = 'rgba(0,0,0,.75)'; g.lineWidth = .8 * d;
-    g.beginPath(); g.arc(x, y, (on ? 2 : 1.6) * d, 0, 7); g.fill(); g.stroke();
-    g.textAlign = 'left'; label(g, m.id, x + 8 * d, y - 8 * d, on ? '#ff8095' : '#fff', d);
+    const p = P[m.id]; if (!p.seen) return;
+    const x = p.x * sc, y = p.y * sc, on = m.id === cur, col = on ? '#ff3c5a' : '#ffffff';
+    ring(x, y, (on ? 7 : 5) * d, col, on ? 1.6 : 1.2);
+    g.fillStyle = col; g.beginPath(); g.arc(x, y, 1.4 * d, 0, 7); g.fill();
+    g.textAlign = 'left'; label(g, m.id, x + 10 * d, y - 10 * d, on ? '#ff8095' : '#fff', d);
   });
+  drawLoupe();
 }
 function renderStep2() {
   if (!s2) return;
   $('lmStepLbl').textContent = T('s2_step_label');
-  $('s2Auto').textContent = s2.auto ? L(`Auto-detected: facing ${s2.face}. Start positions are estimates, so move Go and Me onto the actual bone.`, `تم الكشف تلقائياً: الوجه نحو ${s2.face === 'left' ? 'اليسار' : 'اليمين'}. المواضع الأولية تقديرية، فحرّك Go وMe إلى العظم الفعلي.`) : '';
-  const keys = ['s2_up', 's2_down', 's2_left', 's2_right'];
   $('lmChips').innerHTML = PT.map((m, i) => `<button type="button" class="lm-chip${i === s2.sel ? ' sel' : ''}${s2.pts[m.id].seen ? ' seen' : ''}" data-i="${i}">${m.id}</button>`).join('');
-  $('lmName').textContent = L(...PT[s2.sel].n); $('lmDesc').textContent = L(...PT[s2.sel].d);
+  const cur = PT[s2.sel]; $('lmName').textContent = L(...cur.n); $('lmDesc').textContent = L(...cur.d); $('lmMini').innerHTML = refSVG(cur.id, true);
   const REQ = PT.filter(m => !m.opt), n = REQ.filter(m => s2.pts[m.id].seen).length;
   $('lmProgress').textContent = T('s2_progress').replace('{n}', nf(n)).replace('{total}', nf(REQ.length));
   $('s2Confirm').disabled = n < REQ.length;
   $('lmSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.step === s2.stepKey));
-  $('faceSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.face === s2.face));
   draw();
 }
-function select(i) { s2.sel = (i + PT.length) % PT.length; s2.pts[PT[s2.sel].id].seen = true; renderStep2(); }
+function select(i) { s2.sel = (i + PT.length) % PT.length; s2.hover = null; renderStep2(); }
 function nudge(dx, dy, coarse) {
   if (!s2) return;
-  const p = s2.pts[PT[s2.sel].id], step = STEP_PX[coarse ? 'coarse' : s2.stepKey] * s2.H / 1000;
-  p.x = clamp(p.x + dx * step, 0, s2.W); p.y = clamp(p.y + dy * step, 0, s2.H);
-  if (!p.seen) { p.seen = true; renderStep2(); } else draw();
+  const p = s2.pts[PT[s2.sel].id]; if (!p.seen) return;       // place the point on the photo first, then fine-tune
+  const step = STEP_PX[coarse ? 'coarse' : s2.stepKey] * s2.H / 1000;
+  s2.hover = null; p.x = clamp(p.x + dx * step, 0, s2.W); p.y = clamp(p.y + dy * step, 0, s2.H); draw();
 }
 (() => {
   let to = null, iv = null, btn = null;
@@ -423,16 +473,38 @@ document.addEventListener('keydown', e => {
   const m = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
   if (m) { e.preventDefault(); nudge(m[0], m[1], e.shiftKey); }
 });
-$('lmCanvas').addEventListener('click', e => {            // tap = drop the selected point here (then fine-tune with the arrows)
-  if (!s2) return;
-  const r = e.currentTarget.getBoundingClientRect(), p = s2.pts[PT[s2.sel].id];
-  p.x = clamp((e.clientX - r.left) / r.width * s2.W, 0, s2.W); p.y = clamp((e.clientY - r.top) / r.height * s2.H, 0, s2.H);
-  p.seen = true; renderStep2();
-});
+(() => {                                          // tap to place · drag any point to move it · loupe follows
+  const cv = $('lmCanvas');
+  const toImg = e => { const r = cv.getBoundingClientRect(); return { x: clamp((e.clientX - r.left) / r.width * s2.W, 0, s2.W), y: clamp((e.clientY - r.top) / r.height * s2.H, 0, s2.H) }; };
+  cv.addEventListener('contextmenu', e => e.preventDefault());
+  cv.addEventListener('pointerdown', e => {
+    if (!s2 || !s2.k || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    const q = toImg(e); let best = -1, bd = (e.pointerType === 'mouse' ? 14 : 28) / s2.k, off = { x: 0, y: 0 }, fresh = false;
+    PT.forEach((m, i) => { const p = s2.pts[m.id]; if (!p.seen) return; const dd = Math.hypot(p.x - q.x, p.y - q.y); if (dd < bd) { bd = dd; best = i; } });
+    if (best >= 0) { s2.sel = best; const p = s2.pts[PT[best].id]; off = { x: p.x - q.x, y: p.y - q.y }; }   // grabbed an existing point: move it without jumping
+    else { const p = s2.pts[PT[s2.sel].id]; fresh = !p.seen; p.x = q.x; p.y = q.y; p.seen = true; }          // empty spot: drop the selected point here
+    s2.drag = { id: PT[s2.sel].id, off, fresh }; s2.hover = null; draw();
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!s2 || !s2.k) return; const q = toImg(e);
+    if (s2.drag) { const p = s2.pts[s2.drag.id]; p.x = clamp(q.x + s2.drag.off.x, 0, s2.W); p.y = clamp(q.y + s2.drag.off.y, 0, s2.H); draw(); }
+    else if (e.pointerType === 'mouse') { s2.hover = q; drawLoupe(); }
+  });
+  const end = () => {
+    if (!s2 || !s2.drag) return;
+    const dr = s2.drag; s2.drag = null;
+    if (dr.fresh) { const nx = PT.map((_, i) => (s2.sel + 1 + i) % PT.length).find(i => !s2.pts[PT[i].id].seen); if (nx !== undefined) s2.sel = nx; }   // jump to the next point still to place
+    renderStep2();
+  };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  cv.addEventListener('pointerleave', () => { if (s2 && !s2.drag) { s2.hover = null; drawLoupe(); } });
+})();
 $('lmChips').addEventListener('click', e => { const c = e.target.closest('.lm-chip'); if (c) select(+c.dataset.i); });
 $('lmSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && s2) { s2.stepKey = b.dataset.step; renderStep2(); } });
-$('faceSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && s2 && b.dataset.face !== s2.face) { initS2(b.dataset.face); renderStep2(); } });
-$('s2Back').addEventListener('click', () => show('step1'));
+$('refBack').addEventListener('click', () => show('step1'));
+$('refStart').addEventListener('click', () => showS2('place'));
+$('s2Back').addEventListener('click', () => showS2('ref'));
 $('s2Confirm').addEventListener('click', () => {
   if (!s2 || PT.some(m => !m.opt && !s2.pts[m.id].seen)) return;
   const pts = {}; PT.forEach(m => pts[m.id] = { x: s2.pts[m.id].x, y: s2.pts[m.id].y, seen: s2.pts[m.id].seen });
@@ -534,7 +606,7 @@ function drawS3() {
     c.textAlign = 'left'; label(c, id, q.x + 7, q.y - 8, '#fff', 1);
   });
 }
-$('s3Back').addEventListener('click', () => { skStop(); show('step2'); layoutStage(); renderStep2(); });
+$('s3Back').addEventListener('click', () => { skStop(); show('step2'); showS2('place'); });
 $('s3Restart').addEventListener('click', () => location.reload());
 
 /* ══ TALKING SKULL — jaw layer of Skull.png moves with each typed letter ══ */

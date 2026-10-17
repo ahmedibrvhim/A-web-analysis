@@ -132,6 +132,20 @@ body.lang-ar .ref-title{letter-spacing:0;text-transform:none}
 .lm-mini{flex:none;width:104px;background:#efeee9;padding:4px;border:1px solid var(--border)}.lm-mini svg{display:block;width:100%;height:auto}
 .lm-gtxt{flex:1;min-width:0}.lm-gtxt .lm-name{text-align:start;margin:0}.lm-gtxt .lm-desc{text-align:start;margin:4px 0 0;min-height:0;max-width:none}
 .lm-tip{text-align:center;font-size:10px;color:var(--ash);margin:8px 0 0;line-height:1.7}
+.rs-list{list-style:none;margin:10px 0 0;padding:0;text-align:start}.rs-list li{font-size:11px;line-height:1.7;color:var(--text);padding:6px 0 6px 12px;border-top:1px solid rgba(255,255,255,.07);position:relative}
+.rs-list li::before{content:'';position:absolute;left:0;top:13px;width:5px;height:5px;border-radius:50%;background:#ff9a4c}.rs-list li.bad::before{background:#ff5555}
+.verdict .rs-list li{color:inherit}
+.ruler{position:relative;height:10px;margin:26px 6px 6px;border-radius:5px;direction:ltr;background:rgba(255,255,255,.14)}
+.ruler s{position:absolute;top:-3px;bottom:-3px;width:1px;background:rgba(255,255,255,.35)}
+.ruler i{position:absolute;top:-7px;width:4px;height:24px;margin-left:-2px;background:#fff;box-shadow:0 0 10px #000,0 0 8px #fff}
+.ruler .ruler-band{position:absolute;top:0;bottom:0;background:rgba(255,201,51,.45);border-radius:5px}
+.ruler-lbl{display:flex;justify-content:space-between;font-size:8px;letter-spacing:1px;color:var(--ash);direction:ltr}
+.lm-tbl{width:100%;border-collapse:collapse;font-size:11px;direction:ltr;text-align:start}.lm-tbl th{font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--ash);font-weight:400;padding:4px 6px;text-align:start}
+.lm-tbl td{padding:5px 6px;border-top:1px solid rgba(255,255,255,.07);color:var(--text)}.lm-tbl td.ok{color:#5ecb96}.lm-tbl td.warn{color:#ff9a4c}.lm-tbl td.bad{color:#ff5555}
+.lm-ack{display:flex;gap:10px;align-items:flex-start;margin-top:10px;font-size:11px;line-height:1.7;color:var(--bone);cursor:pointer}.lm-ack input{margin-top:4px;flex:none}
+#lmCheck{margin-top:14px;padding:12px;border:1px solid var(--border);background:var(--panel)}
+.exp-banner{display:inline-block;margin-bottom:10px;padding:4px 10px;font-size:9px;letter-spacing:2px;border:1px dashed #ff9a4c;color:#ff9a4c}
+#lmSugg{width:auto;padding:8px 10px;font-size:10px}
 </style>
 </head>
 <body>
@@ -198,9 +212,11 @@ body.lang-ar .ref-title{letter-spacing:0;text-transform:none}
         </div>
         <div class="lm-side">
           <div><div class="lm-cap" id="lmStepLbl"></div><div class="lm-seg" id="lmSeg"><button type="button" data-step="fine" data-i18n="tool_dash_step_fine">Fine</button><button type="button" data-step="normal" class="on" data-i18n="tool_dash_step_normal">Normal</button><button type="button" data-step="coarse" data-i18n="tool_dash_step_coarse">Coarse</button></div></div>
+          <button type="button" class="btn-ghost" id="lmSugg" style="display:none"></button>
         </div>
       </div>
       <div class="lm-progress" id="lmProgress"></div>
+      <div id="lmCheck"></div>
       <div class="tool-nav"><button class="btn-ghost" type="button" id="s2Back" data-i18n="tool_back">← Back</button><button class="btn-ghost" type="button" id="s2Reset"></button><button class="btn-solid" type="button" id="s2Confirm" disabled data-i18n="s2_confirm">Confirm Landmarks →</button></div>
     </div>
   </section>
@@ -259,18 +275,6 @@ const PT = [
   { id: 'G', s: ['Most forward point of the forehead, between the eyebrows.', 'أبرز نقطة في الجبهة بين الحاجبين.'], n: ['G — Glabella (forehead, between the brows)', 'G — الغلابيلا (الجبهة بين الحاجبين)'], d: ['The most forward point of the forehead, in the middle of the brow ridge between the eyebrows.', 'أبرز نقطة في الجبهة عند منتصف نتوء الحاجبين، بين الحاجبين.'] },
   { id: 'Tr', s: ['Where the forehead curves into the hairline.', 'حيث تنحني الجبهة نحو خط الشعر.'], n: ['Tr — Top of forehead (hairline)', 'Tr — أعلى الجبهة (خط الشعر)'], d: ['Where the forehead curves into the scalp or hairline. Place it on the outline of the forehead, not on the hair.', 'حيث تنحني الجبهة نحو فروة الرأس أو خط الشعر. ضعها على حافة الجبهة وليس على الشعر.'] }
 ];
-const CL = [
-  { t: ['Chad · Elite Tier', 'Chad · فئة النخبة'], c: '#5ecbff', n: ['Strong CCW', 'CCW قوي'], s: ['Strong forward growth', 'نمو أمامي قوي'],
-    d: ['Your jaw swings far forward and up. This is strong horizontal growth: a short, deep lower face, a projecting chin and a powerful jawline from the side. Watch for a very deep bite.', 'فكك يدور كثيراً للأمام والأعلى. هذا نمو أفقي قوي: وجه سفلي قصير وعميق وذقن بارزة وفك قوي من الجانب. انتبه لعضة عميقة جداً.'] },
-  { t: ['Chadlite · High Tier', 'Chadlite · فئة عالية'], c: '#6ee7b7', n: ['CCW', 'CCW'], s: ['Forward growth', 'نمو أمامي'],
-    d: ['Your jaw rotates forward. The jaw plane runs flatter than average, which gives a well-supported lower face, good chin projection and a defined jawline in profile.', 'فكك يدور للأمام. مستوى الفك أكثر استواءً من المتوسط، وهذا يمنح وجهاً سفلياً مدعوماً وذقناً بارزة وفكاً واضحاً من الجانب.'] },
-  { t: ['Normie · Average', 'عادي · متوسط'], c: '#e6e6e6', n: ['Neutral', 'محايد'], s: ['Balanced growth', 'نمو متوازن'],
-    d: ['Your jaw sits in the average range, with no clear forward or downward tilt. Your profile will be decided more by chin projection and soft tissue than by rotation.', 'فكك ضمن المعدل المتوسط بلا ميل واضح للأمام أو للأسفل. شكل جانب وجهك يحدده بروز الذقن والأنسجة الرخوة أكثر من الدوران.'] },
-  { t: ['Below Average · Weak', 'دون المتوسط · ضعيف'], c: '#ff9a4c', n: ['CW', 'CW'], s: ['Downward growth', 'نمو نحو الأسفل'],
-    d: ['Your jaw rotates downward and back. The jaw plane is steeper than average, which lengthens the lower face, pulls the chin back and softens the jawline in profile.', 'فكك يدور للأسفل والخلف. مستوى الفك أكثر انحداراً من المتوسط، فيطيل الوجه السفلي ويسحب الذقن للخلف ويُليّن خط الفك من الجانب.'] },
-  { t: ['Sub-3 · Severe', 'Sub-3 · شديد'], c: '#ff5555', n: ['Strong CW', 'CW قوي'], s: ['Strong downward growth', 'نمو قوي نحو الأسفل'],
-    d: ['Your jaw is steeply rotated: a long lower face, a recessed chin and a weak jawline from the side. This pattern is usually skeletal, so see an orthodontist or maxillofacial surgeon for a real lateral X-ray before deciding anything.', 'فكك مائل بشدة: وجه سفلي طويل وذقن متراجعة وفك ضعيف من الجانب. هذا النمط غالباً هيكلي، فراجع طبيب تقويم أو جراح فكين لإجراء أشعة جانبية حقيقية قبل أي قرار.'] }
-];
 function applyStatic() {
   const set = (id, a, b) => { $(id).textContent = L(a, b); };
   $('photoTip').innerHTML = `<p>${L('Take a true side photo (90°). Your ear and your jawline must both be clearly visible: pull hair back from the ear and jaw, look straight ahead, teeth together.', 'التقط صورة جانبية حقيقية (٩٠°). يجب أن تظهر أذنك وخط فكك بوضوح: أبعد الشعر عن الأذن والفك، انظر للأمام، والأسنان متلامسة.')}</p><div class="tip-pills"><span class="tip-pill">${L('Ear visible', 'الأذن ظاهرة')}</span><span class="tip-pill">${L('Jawline visible', 'خط الفك ظاهر')}</span></div>`;
@@ -279,14 +283,14 @@ function applyStatic() {
   set('lmTip', 'Pick a point, tap the photo to place it close, then fine-tune with the arrows', 'اختر نقطة، اضغط على الصورة لوضعها قريباً، ثم اضبطها بالأسهم');
   set('s2Reset', 'Reset Points', 'إعادة تعيين النقاط');
   renderRef();
-  set('s3Title', 'Jaw Rotation Result', 'نتيجة دوران الفك'); set('skH', "The Skull's Verdict", 'حكم الجمجمة');
+  set('s3Title', 'Profile Measurement Result', 'نتيجة قياس الملف الجانبي'); set('skH', "The Skull's Notes", 'ملاحظات الجمجمة'); set('lmSugg', 'Use suggested position (approximate)', 'استخدم الموضع المقترح (تقريبي)');
   set('s3Review', '◉ Review Photo', '◉ مراجعة الصورة'); set('s3Close', 'Close', 'إغلاق');
   $('skPlay').textContent = sk.on ? L('■ Stop', '■ إيقاف') : L('▶ Replay', '▶ إعادة');
   const lb = $('logoutBtn'); if (lb) lb.textContent = t('sign_out', lang);
 }
 function onLangChange(next) {
   lang = next; applyDocumentDirection(next); applyTranslations(next); applyStatic();
-  if (prof && photo) renderVerdict();
+  if (photo && photoMeta) renderVerdict();
   if (s2) renderStep2();
   if ($('step3').classList.contains('active')) { renderS3(); skRelang(); }
 }
@@ -309,13 +313,13 @@ async function handleFile(file) {
   const m = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
   c.width = Math.round(img.naturalWidth * m); c.height = Math.round(img.naturalHeight * m);
   c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-  photo = c; s2 = null; prof = null; showMsg('');
+  photo = c; s2 = null; prof = null; showMsg(''); expOn = GEO.EXPERIMENTAL_SCORING_DEFAULT; photoMeta = { nw: img.naturalWidth, nh: img.naturalHeight, lap: sharpness(c) }; const tk = ++qToken;
   $('previewImg').src = c.toDataURL('image/jpeg', .9); $('fileName').textContent = file.name;
   $('uploader').style.display = 'none'; $('previewBox').style.display = 'block'; $('continueNav').style.display = 'flex'; $('continueBtn').disabled = true;
-  $('verdict').style.display = 'none'; $('continueBtn').disabled = false;
+  $('continueBtn').disabled = false; renderVerdict(); runQuality(tk);
 }
 $('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
-$('changeBtn').addEventListener('click', () => { photo = null; s2 = null; prof = null; $('verdict').style.display = 'none'; $('fileInput').value = ''; $('uploader').style.display = 'flex'; $('previewBox').style.display = 'none'; $('continueNav').style.display = 'none'; $('fileInput').click(); });
+$('changeBtn').addEventListener('click', () => { photo = null; s2 = null; prof = null; photoMeta = null; qToken++; $('verdict').style.display = 'none'; $('fileInput').value = ''; $('uploader').style.display = 'flex'; $('previewBox').style.display = 'none'; $('continueNav').style.display = 'none'; $('fileInput').click(); });
 const up = $('uploader');
 ['dragenter', 'dragover'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.add('drag'); }));
 ['dragleave', 'drop'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.remove('drag'); }));
@@ -323,11 +327,12 @@ up.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
 const show = id => { document.querySelectorAll('.tool-step').forEach(s => s.classList.toggle('active', s.id === id)); scrollTo({ top: 0, behavior: 'smooth' }); };
 $('continueBtn').addEventListener('click', () => { if (!photo) return; const first = !s2; if (first) initS2(); show('step2'); showS2(first ? 'ref' : 'place'); });
 
-/* ── PROFILE CHECK · is the head turned ~90°, and which way does it face? (MediaPipe, in the browser)
-   1) Face model: if it finds a face with a clear yaw (<65°) the photo is not a side view.
-   2) Pose model: ears, eyes and nose. In a true profile the eyes collapse onto each other and one ear shows;
-      the eye-gap : ear-to-nose ratio gives a yaw estimate, and nose vs ear gives the facing side.
-   3) Pose points also seed sensible start positions (scaled to the head) for step 2. ── */
+/* ── PHOTO CHECK · runs when a photo is chosen (MediaPipe in the browser, plus pixel checks)
+   1) Face model: a clear yaw (<65°) means the photo is not a side view.
+   2) Pose model: ears, eyes, nose. The eye-gap : ear-to-nose ratio gives a HEURISTIC yaw estimate (error can be 10° or more); nose vs ear gives the facing side.
+   3) Pose points seed APPROXIMATE start suggestions for Po, Or and Sn only. Go, Ra, Me and Pg are never guessed: MediaPipe's generic mesh is not a
+      cephalometric landmark detector, and a guessed jaw would pre-decide the very angles being measured. Suggestions must be accepted or adjusted by you.
+   4) Resolution and sharpness are measured from pixels (heuristic advisory gates, see GEO.QC). ── */
 const MP = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14', MODELS = 'https://storage.googleapis.com/mediapipe-models/';
 let vis = null, faceLm = null, poseLm = null;
 async function makeLm(Cls, model, extra) {
@@ -339,7 +344,7 @@ const getFace = async () => faceLm || (faceLm = await makeLm('FaceLandmarker', '
 const getPose = async () => poseLm || (poseLm = await makeLm('PoseLandmarker', 'pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task', { numPoses: 1 }));
 const yawFromRatio = r => { let best = 0, bd = 9; for (let y = 0; y <= 90; y++) { const c = Math.cos(y * Math.PI / 180), sn = Math.sin(y * Math.PI / 180), rr = 6.3 * c / Math.hypot(10.5 * sn, 7.5 * c), dd = Math.abs(rr - r); if (dd < bd) { bd = dd; best = y; } } return best; };
 async function checkProfile(c) {
-  const W = c.width, H = c.height; let faceYaw = null, poseYaw = null, facing = null, defs = null;
+  const W = c.width, H = c.height; let faceYaw = null, poseYaw = null, facing = null, defs = null, tilt = null;
   const fl = await getFace();
   if (fl) { try { const r = fl.detect(c), mm = r.faceLandmarks?.length ? r.facialTransformationMatrixes?.[0]?.data : null; if (mm) faceYaw = Math.abs(Math.asin(clamp(-mm[2], -1, 1)) * 180 / Math.PI); } catch (e) { console.warn(e); } }
   const pl = await getPose(); let P = null;
@@ -352,31 +357,52 @@ async function checkProfile(c) {
       let yw = yawFromRatio(Math.abs(avg(eyes.slice(0, 3), 'x') - avg(eyes.slice(3), 'x')) / d);
       if (Math.min(eL.v, eR.v) > .6) yw = Math.min(yw, 50);              // both ears clearly visible = not a profile
       poseYaw = yw; facing = n.x > ear.x ? 'right' : 'left';
-      const sg = facing === 'right' ? 1 : -1, mouthY = (g(9).y + g(10).y) / 2, eye = { x: avg(eyes, 'x'), y: avg(eyes, 'y') };
-      const Me = { x: n.x - sg * .22 * d, y: mouthY + .28 * d }, Go = { x: ear.x + sg * .10 * d }; Go.y = Me.y - Math.tan(25 * Math.PI / 180) * Math.abs(Me.x - Go.x);
-      defs = { Po: { x: ear.x + sg * .05 * d, y: ear.y - .03 * d }, Or: { x: eye.x, y: eye.y + .07 * d }, Ra: { x: Go.x - sg * .03 * d, y: Go.y - .4 * d }, Go, Me, Sn: { x: n.x - sg * .02 * d, y: n.y + .12 * d }, Pg: { x: Me.x + sg * .02 * d, y: Me.y - .06 * d } };
+      const sg = facing === 'right' ? 1 : -1, eye = { x: avg(eyes, 'x'), y: avg(eyes, 'y') };
+      tilt = Math.atan2(eye.y - ear.y, Math.abs(eye.x - ear.x)) * 180 / Math.PI;      // ear→eye line inclination in the photo (advisory)
+      defs = { Po: { x: ear.x + sg * .05 * d, y: ear.y - .03 * d }, Or: { x: eye.x, y: eye.y + .07 * d }, Sn: { x: n.x - sg * .02 * d, y: n.y + .12 * d } };
+      Object.keys(defs).forEach(id => { const q = defs[id]; if (!(q.x >= 0 && q.x <= W && q.y >= 0 && q.y <= H)) delete defs[id]; });
     }
   }
   const yaw = faceYaw !== null && faceYaw < 65 ? faceYaw : poseYaw !== null ? poseYaw : faceYaw;
-  return { yaw, facing, defs, src: poseYaw !== null ? 'pose' : faceYaw !== null ? 'face' : null };
+  return { yaw, facing, defs, tilt, src: poseYaw !== null ? 'pose' : faceYaw !== null ? 'face' : null };
+}
+function sharpness(c) {            // Laplacian variance on a 640px grayscale copy: a RELATIVE blur indicator, content-dependent
+  try {
+    const m = Math.min(1, 640 / Math.max(c.width, c.height)), w = Math.max(3, Math.round(c.width * m)), h = Math.max(3, Math.round(c.height * m)), t = document.createElement('canvas');
+    t.width = w; t.height = h; const g = t.getContext('2d'); g.drawImage(c, 0, 0, w, h);
+    const px = g.getImageData(0, 0, w, h).data, gray = new Float32Array(w * h);
+    for (let i = 0; i < w * h; i++) gray[i] = .299 * px[4 * i] + .587 * px[4 * i + 1] + .114 * px[4 * i + 2];
+    return GEO.laplacianVariance(gray, w, h);
+  } catch (e) { console.warn(e); return null; }
+}
+let qToken = 0;
+async function runQuality(token) {
+  let r; try { r = await checkProfile(photo); } catch (e) { console.warn(e); r = { yaw: null, facing: null, defs: null, tilt: null, src: null }; }
+  if (token !== qToken) return;                                  // photo changed while the models were running
+  prof = r; renderVerdict(); applySuggestions();
+}
+function applySuggestions() {
+  if (!s2 || !prof || !prof.defs) return;
+  PT.forEach(m => { const q = s2.pts[m.id]; if (!q.seen && !q.sugg && prof.defs[m.id]) q.sugg = prof.defs[m.id]; });
+  if ($('s2Place').style.display !== 'none') renderStep2();
 }
 function renderVerdict() {
-  const box = $('verdict'), r = prof; box.style.display = 'block';
-  const yaw = r.yaw === null ? null : Math.round(r.yaw), side = r.facing ? L(r.facing, r.facing === 'left' ? 'اليسار' : 'اليمين') : '';
-  let cls, head, txt, go = true;
-  if (yaw === null) { cls = 'warn'; head = L('Not confirmed', 'غير مؤكدة'); txt = L('The 90° turn could not be confirmed automatically. Make sure only one eye and one ear are visible, then continue and set the facing direction in the next step.', 'تعذّر تأكيد دوران ٩٠° تلقائياً. تأكد أن عيناً واحدة وأذناً واحدة فقط ظاهرتان، ثم تابع وحدّد اتجاه الوجه في الخطوة التالية.'); }
-  else if (yaw >= 78) { cls = 'ok'; head = L('Approved', 'مقبولة'); txt = L(`Side profile confirmed: the head is turned about ${yaw}°${side ? ', facing ' + side : ''}.`, `تم تأكيد الصورة الجانبية: الرأس مدار حوالي ${nf(yaw)}°${side ? '، والوجه نحو ' + side : ''}.`); }
-  else if (yaw >= 68) { cls = 'warn'; head = L('Almost', 'تقريباً'); txt = L(`The head is turned about ${yaw}°, not a full 90°. Accuracy drops, so turn a little more for the best result.`, `الرأس مدار حوالي ${nf(yaw)}° وليس ٩٠° كاملة. تقل الدقة، فأدر رأسك قليلاً أكثر لأفضل نتيجة.`); }
-  else { cls = 'bad'; go = true; head = L('Warning', 'تحذير'); txt = L(`This is not a side profile: the head is turned only about ${yaw}°. You can continue, but the angles will be less reliable. A true 90° photo is better.`, `هذه ليست صورة جانبية: الرأس مدار حوالي ${nf(yaw)}° فقط. يمكنك المتابعة لكن الزوايا ستكون أقل دقة. الأفضل صورة جانبية ٩٠° حقيقية.`); }
-  box.className = 'verdict ' + cls; box.innerHTML = `<div class="verdict-head">${head}</div><p>${txt}</p>`;
-  $('continueBtn').disabled = !go;
+  const box = $('verdict'); if (!photoMeta) return; box.style.display = 'block';
+  const checking = !prof, q = GEO.assessQuality({ naturalW: photoMeta.nw, naturalH: photoMeta.nh, lapVar: photoMeta.lap, yawDeg: prof ? prof.yaw : null, tiltDeg: prof ? prof.tilt : null });
+  const items = q.findings.filter(f => !(checking && f.code.startsWith('yaw')));
+  const cls = checking ? 'warn' : q.level === 'ok' ? 'ok' : q.level === 'caution' ? 'warn' : 'bad';
+  const head = checking ? L('Checking photo…', 'جارٍ فحص الصورة…') : q.level === 'ok' ? L('No flags', 'بلا ملاحظات') : q.level === 'caution' ? L('Caution', 'تنبيه') : L('Poor photo', 'صورة ضعيفة');
+  const yaw = prof && prof.yaw !== null ? `<p>${L('Estimated head turn (heuristic):', 'دوران الرأس التقديري (تقريبي):')} ${nf(Math.round(prof.yaw))}°${prof.facing ? ', ' + L('facing ' + prof.facing, 'نحو ' + (prof.facing === 'left' ? 'اليسار' : 'اليمين')) : ''}</p>` : '';
+  box.className = 'verdict ' + cls;
+  box.innerHTML = `<div class="verdict-head">${head}</div>${yaw}<ul class="rs-list">${items.map(f => `<li class="${f.level === 'poor' ? 'bad' : ''}">${qcTxt(f)}</li>`).join('')}</ul><p>${L('You can still continue. Weak photos produce a low-confidence or inconclusive result, never a confident one.', 'يمكنك المتابعة. الصور الضعيفة تعطي نتيجة منخفضة الثقة أو غير حاسمة، وليس نتيجة واثقة.')}</p>`;
+  $('continueBtn').disabled = false;
 }
 /* ── STEP 2 · landmarks (9 points: Po, Or, Ra, Go, Me, Sn, Pg, G, Tr) ── */
 const STEP_PX = { fine: .5, normal: 2, coarse: 8 };
 function initS2() {                              // every point starts UNPLACED: nothing is guessed, you place each one yourself
   const W = photo.width, H = photo.height, pts = {};
-  PT.forEach(m => { pts[m.id] = { x: W / 2, y: H / 2, seen: false }; });
-  s2 = { W, H, pts, sel: 0, stepKey: 'normal', hover: null, drag: null };
+  PT.forEach(m => { pts[m.id] = { x: W / 2, y: H / 2, seen: false, src: null, sugg: (prof && prof.defs && prof.defs[m.id]) || null }; });
+  s2 = { W, H, pts, sel: 0, stepKey: 'normal', hover: null, drag: null, ack: false, needsAck: false };
 }
 function showS2(which) {
   $('s2Ref').style.display = which === 'ref' ? 'block' : 'none'; $('s2Place').style.display = which === 'place' ? 'block' : 'none';
@@ -436,6 +462,10 @@ function draw() {
   const ln = (a, b, col) => { if (!P[a].seen || !P[b].seen) return; g.strokeStyle = col; g.lineWidth = d; g.beginPath(); g.moveTo(P[a].x * sc, P[a].y * sc); g.lineTo(P[b].x * sc, P[b].y * sc); g.stroke(); };
   ln('Po', 'Or', 'rgba(255,255,255,.7)'); ln('Go', 'Me', 'rgba(255,60,90,.85)'); ln('Ra', 'Go', 'rgba(94,203,255,.85)'); ln('G', 'Tr', 'rgba(181,140,255,.85)');
   const ring = (x, y, r, col, w) => { g.lineWidth = (w + 2) * d; g.strokeStyle = 'rgba(0,0,0,.65)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); g.lineWidth = w * d; g.strokeStyle = col; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); };
+  PT.forEach(m => {      // MediaPipe suggestions not yet accepted: dashed amber ring, nothing is applied until you accept or place the point
+    const p = P[m.id]; if (p.seen || !p.sugg) return; const x = p.sugg.x * sc, y = p.sugg.y * sc;
+    g.save(); g.setLineDash([4 * d, 3 * d]); ring(x, y, (m.id === cur ? 8 : 6) * d, 'rgba(255,200,80,.95)', 1.2); g.restore(); g.textAlign = 'left'; label(g, m.id + '?', x + 10 * d, y - 10 * d, 'rgba(255,200,80,.95)', d);
+  });
   PT.forEach(m => {
     const p = P[m.id]; if (!p.seen) return;
     const x = p.x * sc, y = p.y * sc, on = m.id === cur, col = on ? '#ff3c5a' : '#ffffff';
@@ -451,7 +481,8 @@ function renderStep2() {
   const cur = PT[s2.sel]; $('lmName').textContent = L(...cur.n); $('lmDesc').textContent = L(...cur.d); $('lmMini').innerHTML = refSVG(cur.id, true);
   const REQ = PT.filter(m => !m.opt), n = REQ.filter(m => s2.pts[m.id].seen).length;
   $('lmProgress').textContent = T('s2_progress').replace('{n}', nf(n)).replace('{total}', nf(REQ.length));
-  $('s2Confirm').disabled = n < REQ.length;
+  const cp = s2.pts[cur.id]; $('lmSugg').style.display = cp.sugg && !cp.seen ? '' : 'none';
+  renderCheck(n, REQ.length);
   $('lmSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.step === s2.stepKey));
   draw();
 }
@@ -460,7 +491,7 @@ function nudge(dx, dy, coarse) {
   if (!s2) return;
   const p = s2.pts[PT[s2.sel].id]; if (!p.seen) return;       // place the point on the photo first, then fine-tune
   const step = STEP_PX[coarse ? 'coarse' : s2.stepKey] * s2.H / 1000;
-  s2.hover = null; p.x = clamp(p.x + dx * step, 0, s2.W); p.y = clamp(p.y + dy * step, 0, s2.H); draw();
+  s2.hover = null; p.x = clamp(p.x + dx * step, 0, s2.W); p.y = clamp(p.y + dy * step, 0, s2.H); p.src = p.src === 'mediapipe-approx' || p.src === 'mediapipe-adjusted' ? 'mediapipe-adjusted' : 'manual'; s2.ack = false; draw(); renderCheck(PT.filter(m => s2.pts[m.id].seen).length, PT.length);
 }
 (() => {
   let to = null, iv = null, btn = null;
@@ -482,7 +513,7 @@ $('lmCanvas').addEventListener('click', e => {      // tap = drop the selected p
   if (!s2 || !s2.k) return;
   const r = e.currentTarget.getBoundingClientRect(), p = s2.pts[PT[s2.sel].id];
   p.x = clamp((e.clientX - r.left) / r.width * s2.W, 0, s2.W); p.y = clamp((e.clientY - r.top) / r.height * s2.H, 0, s2.H);
-  p.seen = true; renderStep2();
+  p.seen = true; p.src = 'manual'; s2.ack = false; renderStep2();
 });
 $('lmCanvas').addEventListener('contextmenu', e => e.preventDefault());
 let lastTap = 0;
@@ -493,146 +524,430 @@ $('lmSeg').addEventListener('click', e => { const b = e.target.closest('button')
 $('refBack').addEventListener('click', () => show('step1'));
 $('refStart').addEventListener('click', () => showS2('place'));
 $('s2Back').addEventListener('click', () => showS2('ref'));
-$('s2Reset').addEventListener('click', () => { if (!s2) return; PT.forEach(m => { const q = s2.pts[m.id]; q.seen = false; q.x = s2.W / 2; q.y = s2.H / 2; }); s2.sel = 0; renderStep2(); });
+$('s2Reset').addEventListener('click', () => { if (!s2) return; PT.forEach(m => { const q = s2.pts[m.id]; q.seen = false; q.src = null; q.x = s2.W / 2; q.y = s2.H / 2; }); s2.sel = 0; s2.ack = false; renderStep2(); });
 $('s2Confirm').addEventListener('click', () => {
-  if (!s2 || PT.some(m => !m.opt && !s2.pts[m.id].seen)) return;
-  const pts = {}; PT.forEach(m => pts[m.id] = { x: s2.pts[m.id].x, y: s2.pts[m.id].y, seen: s2.pts[m.id].seen });
-  window.sideLandmarks = { W: s2.W, H: s2.H, img: photo, pts };
+  if (!s2 || $('s2Confirm').disabled) return;
+  const pts = {}; PT.forEach(m => { const q = s2.pts[m.id]; pts[m.id] = { x: q.x, y: q.y, seen: q.seen, src: q.src || 'manual' }; });
+  window.sideLandmarks = { W: s2.W, H: s2.H, img: photo, pts, confirmed: true, ack: !!s2.ack };
   show('step3'); renderS3(); skSpeak(s3 && !s3.bad ? s3.say : '');
 });
+$('lmSugg').addEventListener('click', () => { if (!s2) return; const p = s2.pts[PT[s2.sel].id]; if (!p.sugg || p.seen) return; p.x = p.sugg.x; p.y = p.sugg.y; p.seen = true; p.src = 'mediapipe-approx'; s2.ack = false; renderStep2(); });
+$('lmCheck').addEventListener('change', e => { if (e.target.id === 'lmAck' && s2) { s2.ack = e.target.checked; renderCheck(PT.filter(m => s2.pts[m.id].seen).length, PT.length); } });
 let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { layoutStage(); if ($('step3').classList.contains('active')) drawS3(); }, 120); });
 
-/* ══ STEP 3 · rotation maths ══
-   Frankfort plane = Po→Or (the reference "level" of the head, so photo tilt does not matter).
-   MPA = angle from the Frankfort plane to the jaw plane Go→Me; positive = chin points downward (CW).
-   Gonial angle = Ra–Go–Me. Low FMA / sharp gonial = CCW (forward); high FMA / obtuse gonial = CW (downward). */
-/* PSL anchors from the reference table (angle -> PSL), linearly interpolated between tiers */
-const MPA_PSL = {
-  m: [[15, 10], [22.5, 7.75], [27.5, 6.25], [32.5, 4.25], [38.5, 2.5], [48, 1]],
-  f: [[17, 10], [24.5, 7.75], [28.5, 6.25], [33.5, 4.25], [39.5, 2.5], [49, 1]] };
-const GON_PSL = {
-  m: [[115, 10], [122.5, 7.75], [125.5, 6.25], [130.5, 4.25], [135.5, 2.5], [145, 1]],
-  f: [[120, 10], [128.5, 7.75], [131.5, 6.25], [135.5, 4.25], [140.5, 2.5], [150, 1]] };
-/* ── Whole-profile scoring. The jaw (MPA + gonial) is only ONE feature now; maxilla, chin and forehead count too.
-   !! These anchors are PROVISIONAL starting values (value -> PSL). Tune them against faces you trust. !! */
-const FEAT_W = { jaw: .35, max: .25, chin: .20, fore: .20 };           // weights, must add to 1
-const MAX_PSL = [[-30, 1], [-20, 2.5], [-12, 4.25], [-6, 6.25], [0, 7.75], [7, 10]];   // Sn ahead of the Or-vertical, % of lower-face height (neg = recessed maxilla)
-const CHIN_PSL = { m: [[-25, 1], [-16, 2.5], [-9, 4.25], [-4, 6.25], [1, 7.75], [7, 10]], f: [[-25, 1], [-16, 2.5], [-9, 4.25], [-4, 6.25], [0, 7.75], [5, 10]] };   // Pg vs Sn-vertical, % of lower-face height
-const FORE_IDEAL = { m: [4, 14], f: [0, 10] };                          // forehead tilt back from vertical, degrees
-const FORE_DEV_PSL = [[0, 10], [4, 7.75], [8, 6.25], [13, 4.25], [20, 2.5], [30, 1]];  // degrees outside the ideal band -> PSL
-const CAP_MARGIN = 2.5;                                                 // weakest feature caps the total at (weakest + this)
-const IDEAL = { m: { mpa: [15, 27], gon: [115, 125], gonR: [122.5, 130.5] }, f: { mpa: [17, 28], gon: [120, 131], gonR: [128.5, 135.5] } };
-const interp = (x, A) => { if (x <= A[0][0]) return A[0][1]; for (let i = 1; i < A.length; i++) if (x <= A[i][0]) { const [x0, y0] = A[i - 1], [x1, y1] = A[i]; return y0 + (y1 - y0) * (x - x0) / (x1 - x0); } return A[A.length - 1][1]; };
-function measure() {
-  const d = window.sideLandmarks; if (!d) return null;
-  const P = d.pts, v = (a, b) => ({ x: P[b].x - P[a].x, y: P[b].y - P[a].y }), len = o => Math.hypot(o.x, o.y), dot = (a, b) => a.x * b.x + a.y * b.y;
-  const u0 = v('Po', 'Or'), w0 = v('Go', 'Me'), a0 = v('Go', 'Ra');
-  if (len(u0) < 8 || len(w0) < 8 || len(a0) < 8) return { bad: true };
-  const s = u0.x >= 0 ? 1 : -1;
-  if (Math.abs(u0.x) < Math.abs(u0.y) || Math.sign(w0.x) !== s || P.Ra.y >= P.Go.y) return { bad: true };
-  const u = { x: u0.x / len(u0), y: u0.y / len(u0) }, w = { x: w0.x / len(w0), y: w0.y / len(w0) }, n = { x: -u.y * s, y: u.x * s };
-  const fma = Math.atan2(dot(w, n), dot(w, u)) * 180 / Math.PI;
-  const gon = Math.acos(clamp(dot(a0, w0) / (len(a0) * len(w0)), -1, 1)) * 180 / Math.PI;
-  const gk = gender === 'female' ? 'f' : 'm', pm = interp(fma, MPA_PSL[gk]), pg = interp(gon, GON_PSL[gk]), jaw = .6 * pm + .4 * pg;   // MPA weighted higher: the ramus point is the less reliable one on a photo
-  const cls = jaw >= 8 ? 0 : jaw >= 6.5 ? 1 : jaw >= 4.5 ? 2 : jaw >= 3 ? 3 : 4;   // rotation class = jaw only
-  const up = { x: -n.x, y: -n.y }, lf = len(v('Sn', 'Me')), fv = v('G', 'Tr');
-  if (lf < 8 || len(fv) < 8 || dot(v('Sn', 'Me'), n) <= 0 || dot(v('Sn', 'Pg'), n) <= 0 || dot(fv, up) <= 0) return { bad: true };
-  const mx = dot(v('Or', 'Sn'), u) / lf * 100;                    // maxilla: Sn vs the vertical through Or, % of lower-face height; + = ahead
-  const chin = dot(v('Sn', 'Pg'), u) / lf * 100;                  // chin: Pg vs the vertical through Sn; + = ahead
-  const fore = Math.atan2(-dot(fv, u), dot(fv, up)) * 180 / Math.PI;   // forehead tilt from vertical; + = sloping back
-  const [flo, fhi] = FORE_IDEAL[gk], fdev = fore < flo ? flo - fore : fore > fhi ? fore - fhi : 0;
-  const sMax = interp(mx, MAX_PSL), sChin = interp(chin, CHIN_PSL[gk]), sFore = interp(fdev, FORE_DEV_PSL);
-  const total = j => { const avg = FEAT_W.jaw * j + FEAT_W.max * sMax + FEAT_W.chin * sChin + FEAT_W.fore * sFore, cap = Math.min(j, sMax, sChin, sFore) + CAP_MARGIN; return Math.min(avg, cap); };
-  const psl = total(jaw), pot = total(Math.max(pm, pg));
-  const feats = [{ k: 'jaw', s: jaw, w: FEAT_W.jaw }, { k: 'max', s: sMax, w: FEAT_W.max }, { k: 'chin', s: sChin, w: FEAT_W.chin }, { k: 'fore', s: sFore, w: FEAT_W.fore }];
-  const avgOnly = feats.reduce((a, f) => a + f.s * f.w, 0), capped = psl < avgOnly - .05, weak = feats.slice().sort((a, b) => a.s - b.s)[0];
-  return { chin, mx, fore, jaw, pot, feats, capped, weak, u, w, a: { x: a0.x / len(a0), y: a0.y / len(a0) }, fma, gon, psl, pm, pg, cls, ideal: IDEAL[gk] };
-}
-const f1 = n => nf(n.toFixed(1));
-function renderS3() {
-  s3 = measure();
-  const msg = $('s3Msg'); msg.className = 'msg-bar'; msg.textContent = '';
-  if (!s3 || s3.bad) {
-    $('s3Rating').innerHTML = ''; $('s3ReviewWrap').style.display = 'none';
-    if (s3) { msg.className = 'msg-bar error'; msg.textContent = L('The points are not in a believable order: Porion must sit behind Orbitale, Ramus above Gonion, and Menton in front of Gonion. Go back and correct them.', 'ترتيب النقاط غير منطقي: يجب أن يكون Po خلف Or، وRa فوق Go، وMe أمام Go. ارجع وصحّحها.'); }
-    drawS3(); return;
+/*GEO-BEGIN*/
+/* Pure geometry / validation / scoring core. No DOM access, so tests/geometry.test.mjs can run this exact block.
+   COORDINATES: image pixels, x → right, y → DOWN (screen). ANGLES: degrees.
+   signedAngleDeg(a, b) = rotation from vector a to vector b; POSITIVE = clockwise as drawn on screen.
+   MPA = angle from the Frankfort direction (Po→Or, taken as "forward") to the jaw vector Go→Me, measured toward "down";
+         positive = Go→Me slopes downward toward the front of the face. Gonial = unsigned angle between Go→Ra and Go→Me. */
+const GEO = (() => {
+  const DEG = 180 / Math.PI;
+  const isNum = v => typeof v === 'number' && Number.isFinite(v);
+  const isPt = p => !!p && isNum(p.x) && isNum(p.y);
+  const vec = (a, b) => ({ x: b.x - a.x, y: b.y - a.y });
+  const dot = (a, b) => a.x * b.x + a.y * b.y;
+  const cross = (a, b) => a.x * b.y - a.y * b.x;
+  const len = v => Math.hypot(v.x, v.y);
+  const ANGLE_PTS = ['Po', 'Or', 'Ra', 'Go', 'Me'], SOFT_PTS = ['Sn', 'Pg', 'G', 'Tr'], ALL_PTS = ANGLE_PTS.concat(SOFT_PTS);
+  /* Engineering limits (NOT diagnostic thresholds): minimum vector length, degenerate-angle tolerance, assumed landmark
+     placement error for the uncertainty estimate, and broad "did you place this point correctly?" sanity ranges. */
+  const OPTS = { minLenPx: 8, degenerateDeg: 1, sigmaFrac: .015, mcN: 500, mcSeed: 20240611, sanity: { mpa: [-10, 70], gon: [80, 175] } };
+
+  function signedAngleDeg(a, b) {
+    if (!isPt(a) || !isPt(b)) return null;
+    const la = len(a), lb = len(b); if (!(la > 0) || !(lb > 0)) return null;
+    return Math.atan2(cross(a, b), dot(a, b)) * DEG;
   }
-  const m = s3, C = CL[m.cls], fem = gender === 'female', pos = clamp((10 - m.jaw) / 9, 0, 1) * 100;
-  const TIERS = [[8, fem ? 'Stacy' : 'Chad', fem ? 'ستاسي' : 'تشاد', '#5ecbff'], [6.5, fem ? 'Stacylite' : 'Chadlite', fem ? 'ستاسي لايت' : 'تشاد لايت', '#6ee7b7'], [5.25, fem ? 'HTB' : 'HTN', fem ? 'HTB' : 'HTN', '#b8e986'], [4, fem ? 'MTB' : 'MTN', fem ? 'MTB' : 'MTN', '#e6e6e6'], [2.75, fem ? 'LTB' : 'LTN', fem ? 'LTB' : 'LTN', '#ff9a4c'], [0, 'Sub5', 'Sub5', '#ff5555']];
-  const tierOf = p => { const r = TIERS.find(x => p >= x[0]); return { name: L(r[1], r[2]), c: r[3] }; };
-  const pot = m.pot, T1 = tierOf(m.psl), T2 = tierOf(pot);
-  const FL = { jaw: ['Jaw rotation', 'دوران الفك'], max: ['Maxilla (upper jaw)', 'الفك العلوي'], chin: ['Chin projection', 'بروز الذقن'], fore: ['Forehead slope', 'ميل الجبهة'] };
-  const sg = x => (x > 0 ? '+' : x < 0 ? '\u2212' : '') + f1(Math.abs(x));
-  const FV = { jaw: `${f1(m.fma)}° MPA · ${f1(m.gon)}° ${L('gonial', 'جونيال')}`, max: `${sg(m.mx)}% ${L('vs Or line', 'مقابل خط Or')}`, chin: `${sg(m.chin)}% ${L('vs Sn line', 'مقابل خط Sn')}`, fore: `${f1(m.fore)}° ${L('back from vertical', 'ميل للخلف عن العمودي')}` };
-  const bar = s => `<div style="height:5px;background:rgba(255,255,255,.1);margin-top:6px"><i style="display:block;height:100%;width:${(s * 10).toFixed(0)}%;background:${tierOf(s).c}"></i></div>`;
-  const featRows = m.feats.map(f => `<div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.07)"><div style="display:flex;justify-content:space-between;gap:10px;font-size:13px"><span>${L(...FL[f.k])}</span><b>${f1(f.s)} / 10</b></div><div style="font-size:11px;opacity:.7;margin-top:2px">${FV[f.k]} · ${L('weight', 'الوزن')} ${nf(Math.round(f.w * 100))}%</div>${bar(f.s)}</div>`).join('');
-  const wl = L(...FL[m.weak.k]).toLowerCase();
-  const weakTxt = m.capped
-    ? L(`Your ${wl} is the weak link at ${f1(m.weak.s)} out of 10, and it holds your total down. A strong feature elsewhere cannot fully cover it.`, `${L(...FL[m.weak.k])} هو الحلقة الأضعف بدرجة ${f1(m.weak.s)} من ١٠، وهو يسحب تقييمك الكلي للأسفل. ميزة قوية في مكان آخر لا تعوّضه بالكامل.`)
-    : L(`Your weakest feature is ${wl}, at ${f1(m.weak.s)} out of 10.`, `أضعف ميزة لديك هي ${L(...FL[m.weak.k])} بدرجة ${f1(m.weak.s)} من ١٠.`);
-  const breakdownCard = `<div class="s3-card"><div class="s3-h">${L('Profile breakdown', 'تفصيل الملف الجانبي')}</div>${featRows}${m.capped ? `<p class="s3-disc" style="margin-top:10px">${weakTxt}</p>` : ''}</div>`;
-  const gonTxt = m.gon < m.ideal.gonR[0]
-    ? L(`Your gonial angle is tight, ${f1(m.gon)}°: a sharp, angular jaw corner, the forward-growth look.`, `زاوية فكك ضيقة، ${f1(m.gon)}°: زاوية فك حادة وبارزة، وهي سمة النمو الأمامي.`)
-    : m.gon > m.ideal.gonR[1]
-      ? L(`Your gonial angle is wide, ${f1(m.gon)}°: past ${nf(Math.round(m.ideal.gonR[1]))}° counts against you. A rounded, obtuse jaw corner reads soft and goes with downward growth.`, `زاوية فكك واسعة، ${f1(m.gon)}°: تجاوز ${nf(Math.round(m.ideal.gonR[1]))}° يُحتسب ضدك. زاوية مستديرة تبدو ناعمة وترافق النمو نحو الأسفل.`)
-      : L(`Your gonial angle, ${f1(m.gon)}°, sits between the elite and average bands.`, `زاوية فكك، ${f1(m.gon)}°، بين فئة النخبة والمتوسط.`);
-  m.say = [
-    L(`I measured your side profile. Your jaw rotation is ${C.n[0]}: ${C.s[0].toLowerCase()}. PSL rating ${f1(m.psl)} out of 10, ${T1.name}, with ${T2.name} potential. The mandibular plane angle is ${f1(m.fma)} degrees.`, `قست جانب وجهك. دوران فكك ${C.n[1]}: ${C.s[1]}. تقييم PSL ${f1(m.psl)} من ١٠، ${T1.name}، وإمكانية ${T2.name}. زاوية المستوى الفكي ${f1(m.fma)} درجة.`),
-    L(...C.d), gonTxt, weakTxt,
-    L('That is my verdict. Remember, this is one flat photo, not an X-ray.', 'هذا حكمي. تذكّر أنها صورة واحدة مسطحة وليست أشعة.')
-  ].join(' ');
-  $('s3Rating').innerHTML = `<div class="tier-row">
-    <div class="tier-box" style="--c:${T1.c}"><span class="tier-cap">${L('PSL Rating', 'تقييم PSL')}</span><b class="tier-name">${T1.name}</b><span class="tier-score">${f1(m.psl)} / 10</span></div>
-    <div class="tier-box pot" style="--c:${T2.c}"><span class="tier-cap">${L('Potential', 'الإمكانية')}</span><b class="tier-name">${T2.name}</b><span class="tier-score">${f1(pot)} / 10</span></div>
-  </div>
-  ${breakdownCard}
-  <div class="s3-card s3-rate">
-    <div class="s3-h">${L('Rotation', 'الدوران')}</div>
-    <div class="rot-name" style="color:${C.c};text-shadow:0 0 18px ${C.c}66">${L(...C.n)}</div>
-    <div class="rot-sub">${L(...C.s)}</div>
-    <div class="gauge"><i style="left:${pos.toFixed(1)}%"></i></div>
-    <div class="gauge-lbl"><span>${L('CCW · Forward', 'CCW · أمام')}</span><span>${L('Neutral', 'محايد')}</span><span>${L('CW · Downward', 'CW · أسفل')}</span></div>
+  function angleBetweenDeg(a, b) {
+    if (!isPt(a) || !isPt(b)) return null;
+    const la = len(a), lb = len(b); if (!(la > 0) || !(lb > 0)) return null;
+    return Math.atan2(Math.abs(cross(a, b)), dot(a, b)) * DEG;
+  }
+  /* Frankfort frame from Po→Or. u = forward unit vector, down = unit vector perpendicular to u pointing to the image bottom. */
+  function makeFrame(Po, Or, minLen) {
+    if (!isPt(Po) || !isPt(Or)) return { ok: false, code: 'nonfinite_point' };
+    const v = vec(Po, Or), l = len(v);
+    if (!(l >= minLen)) return { ok: false, code: 'degenerate_vector', pair: ['Po', 'Or'] };
+    if (Math.abs(v.x) < Math.abs(v.y)) return { ok: false, code: 'frankfort_steep' };
+    const u = { x: v.x / l, y: v.y / l }, s = u.x > 0 ? 1 : -1, down = { x: -u.y * s, y: u.x * s };
+    return { ok: true, u, s, down, up: { x: -down.x, y: -down.y }, facing: s > 0 ? 'right' : 'left', tiltDeg: Math.atan2(u.y, Math.abs(u.x)) * DEG };
+  }
+
+  /* One pass of validation + measurement. Every value is null unless its own preconditions hold; nothing is clamped. */
+  function core(P, o) {
+    o = Object.assign({}, OPTS, o || {});
+    const issues = [], R = { mpa: null, gon: null, mx: null, chin: null, fore: null, frame: null, lowerFace: null, issues };
+    const add = (code, scope, extra, sev) => issues.push(Object.assign({ code, scope, sev: sev || 'error' }, extra));
+    const bad = {};
+    const chk = (ids, scope) => ids.forEach(id => {
+      const p = P && P[id];
+      if (!p || p.seen === false) { bad[id] = 1; add('missing_point', scope, { p: id, ids: [id] }); }
+      else if (!isPt(p)) { bad[id] = 1; add('nonfinite_point', scope, { p: id, ids: [id] }); }
+      else if (isNum(o.W) && isNum(o.H) && (p.x < 0 || p.y < 0 || p.x > o.W || p.y > o.H)) { bad[id] = 1; add('out_of_image', scope, { p: id, ids: [id] }); }
+    });
+    chk(ANGLE_PTS, 'angles'); chk(SOFT_PTS, 'soft');
+    const ok = ids => ids.every(id => !bad[id]);
+    if (ok(['Po', 'Or'])) { const F = makeFrame(P.Po, P.Or, o.minLenPx); if (F.ok) R.frame = F; else add(F.code, 'all', { p: F.pair ? F.pair.join('–') : undefined, ids: ['Po', 'Or'] }); }
+    const F = R.frame; if (!F) return R;
+    /* facing consistency: the face must lie in front of Po along Po→Or. Catches swapped Po/Or and wrong-side placements. */
+    const behind = ['Me', 'Sn', 'Pg', 'G'].filter(id => ok([id]) && dot(vec(P.Po, P[id]), F.u) <= 0);
+    if (behind.length) { add('facing_inconsistent', 'all', { p: behind.join(', '), ids: behind.concat(['Po', 'Or']) }); R.frame = null; return R; }
+    if ((o.expectedFacing === 'left' || o.expectedFacing === 'right') && o.expectedFacing !== F.facing)
+      add('facing_mismatch', 'all', { a: F.facing, b: o.expectedFacing, ids: ['Po', 'Or'] }, 'warn');
+    let w = null;
+    if (ok(['Go', 'Me'])) {
+      w = vec(P.Go, P.Me);
+      if (len(w) < o.minLenPx) { add('degenerate_vector', 'angles', { p: 'Go–Me', ids: ['Go', 'Me'] }); w = null; }
+      else if (dot(w, F.u) <= 0) { add('me_not_forward', 'angles', { ids: ['Go', 'Me'] }); w = null; }
+      else R.mpa = Math.atan2(dot(w, F.down), dot(w, F.u)) * DEG;
+    }
+    if (w && ok(['Ra'])) {
+      const a = vec(P.Go, P.Ra);
+      if (len(a) < o.minLenPx) add('degenerate_vector', 'angles', { p: 'Go–Ra', ids: ['Go', 'Ra'] });
+      else if (dot(a, F.up) <= 0) add('ra_not_above_go', 'angles', { ids: ['Ra', 'Go'] });
+      else {
+        const g = angleBetweenDeg(a, w);
+        if (g < o.degenerateDeg || g > 180 - o.degenerateDeg) add('gonial_degenerate', 'angles', { ids: ['Ra', 'Go', 'Me'] });
+        else if (F.s * cross(w, a) >= 0) add('gonial_orientation', 'angles', { ids: ['Ra', 'Go', 'Me'] });
+        else R.gon = g;
+      }
+    }
+    if (ok(['Sn', 'Me', 'Pg'])) {
+      const sm = vec(P.Sn, P.Me), sp = vec(P.Sn, P.Pg), lf = len(sm);
+      if (lf < o.minLenPx) add('degenerate_vector', 'soft', { p: 'Sn–Me', ids: ['Sn', 'Me'] });
+      else if (dot(sm, F.down) <= 0 || dot(sp, F.down) <= 0) add('soft_order', 'soft', { p: 'Sn, Me, Pg', ids: ['Sn', 'Me', 'Pg'] });
+      else { R.lowerFace = lf; if (ok(['Or'])) R.mx = dot(vec(P.Or, P.Sn), F.u) / lf * 100; R.chin = dot(sp, F.u) / lf * 100; }
+    }
+    if (ok(['G', 'Tr'])) {
+      const fv = vec(P.G, P.Tr);
+      if (len(fv) < o.minLenPx) add('degenerate_vector', 'soft', { p: 'G–Tr', ids: ['G', 'Tr'] });
+      else if (dot(fv, F.up) <= 0) add('soft_order', 'soft', { p: 'G, Tr', ids: ['G', 'Tr'] });
+      else R.fore = Math.atan2(-dot(fv, F.u), dot(fv, F.up)) * DEG;
+    }
+    const sr = o.sanity;
+    if (R.mpa !== null && (R.mpa < sr.mpa[0] || R.mpa > sr.mpa[1])) add('angle_unusual', 'angles', { p: 'MPA', r: sr.mpa[0] + '…' + sr.mpa[1] + '°', ids: ['Po', 'Or', 'Go', 'Me'] }, 'warn');
+    if (R.gon !== null && (R.gon < sr.gon[0] || R.gon > sr.gon[1])) add('angle_unusual', 'angles', { p: 'Gonial', r: sr.gon[0] + '…' + sr.gon[1] + '°', ids: ['Ra', 'Go', 'Me'] }, 'warn');
+    return R;
+  }
+
+  function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const pct = (s, q) => { const i = (s.length - 1) * q, lo = Math.floor(i), hi = Math.ceil(i); return s[lo] + (s[hi] - s[lo]) * (i - lo); };
+  const KEYS = ['mpa', 'gon', 'mx', 'chin', 'fore'];
+  /* Monte-Carlo propagation of an ASSUMED landmark placement error (Gaussian, sigma px, same for every point). It shows how sensitive each
+     number is to placement error; it is not an empirically calibrated error of this tool. Deterministic (seeded). */
+  function propagate(P, sigma, n, seed, o) {
+    const rng = mulberry32(seed), gauss = () => Math.sqrt(-2 * Math.log(1 - rng())) * Math.cos(2 * Math.PI * rng());
+    const draws = {}; KEYS.forEach(k => draws[k] = []);
+    const ids = ALL_PTS.filter(id => P[id] && isPt(P[id]) && P[id].seen !== false);
+    for (let i = 0; i < n; i++) {
+      const Q = {}; ids.forEach(id => { Q[id] = { x: P[id].x + gauss() * sigma, y: P[id].y + gauss() * sigma }; });
+      const r = core(Q, Object.assign({}, o, { W: undefined, H: undefined, expectedFacing: undefined }));
+      KEYS.forEach(k => { if (r[k] !== null) draws[k].push(r[k]); });
+    }
+    const out = { sigmaPx: sigma, n, validFrac: {}, ci: {} };
+    KEYS.forEach(k => { const d = draws[k].sort((a, b) => a - b); out.validFrac[k] = d.length / n; out.ci[k] = d.length >= n / 2 ? [pct(d, .025), pct(d, .975)] : null; });
+    return out;
+  }
+  /* Full measurement: validation + values + uncertainty. opts.mc === false skips the Monte-Carlo (used for live checks while placing). */
+  function measureProfile(P, opts) {
+    opts = opts || {}; const o = Object.assign({}, OPTS, opts), R = core(P, o);
+    R.facing = R.frame ? R.frame.facing : null; R.uncertainty = null;
+    if (R.frame && (R.mpa !== null || R.gon !== null) && opts.mc !== false) {
+      const sc = isPt(P.Po) && isPt(P.Me) ? len(vec(P.Po, P.Me)) : len(vec(P.Po, P.Or)) * 2.5;
+      const sigma = isNum(opts.sigmaPx) ? opts.sigmaPx : o.sigmaFrac * sc;
+      R.uncertainty = propagate(P, sigma, o.mcN, o.mcSeed, o);
+      ['mpa', 'gon'].forEach(k => { if (R[k] !== null && R.uncertainty.validFrac[k] < .9) R.issues.push({ code: 'unstable', scope: 'angles', sev: 'warn', p: k === 'mpa' ? 'MPA' : 'Gonial', ids: k === 'mpa' ? ['Po', 'Or', 'Go', 'Me'] : ['Ra', 'Go', 'Me'] }); });
+    }
+    return R;
+  }
+
+  /* ── Interpolation: strict. No clamping, no extrapolation, no silent best/worst score outside the table. ── */
+  function validateAnchors(A) {
+    if (!Array.isArray(A) || A.length < 2) return { ok: false, reason: 'bad_table' };
+    for (let i = 0; i < A.length; i++) {
+      if (!Array.isArray(A[i]) || !isNum(A[i][0]) || !isNum(A[i][1])) return { ok: false, reason: 'bad_table' };
+      if (i && !(A[i][0] > A[i - 1][0])) return { ok: false, reason: 'bad_table' };
+    }
+    return { ok: true };
+  }
+  function interpStrict(x, A) {
+    if (x === null || x === undefined) return { ok: false, value: null, reason: 'missing' };
+    if (!isNum(x)) return { ok: false, value: null, reason: 'non_finite' };
+    const v = validateAnchors(A); if (!v.ok) return { ok: false, value: null, reason: v.reason };
+    if (x < A[0][0]) return { ok: false, value: null, reason: 'below_table' };
+    if (x > A[A.length - 1][0]) return { ok: false, value: null, reason: 'above_table' };
+    for (let i = 1; i < A.length; i++) if (x <= A[i][0]) { const [x0, y0] = A[i - 1], [x1, y1] = A[i]; return { ok: true, value: y0 + (y1 - y0) * (x - x0) / (x1 - x0), reason: null }; }
+    return { ok: true, value: A[A.length - 1][1], reason: null };
+  }
+
+  /* ── Reference tables. PROVISIONAL starting values with no independent source; NOT medically validated. The male/female
+     split is an unsourced assumption. Used only by the opt-in experimental PSL score, never by the rotation assessment. ── */
+  const REF_STATUS = { validated: false, status: 'provisional', sexSpecificSupported: false };
+  const EXPERIMENTAL_SCORING_DEFAULT = false;
+  const TABLES = {
+    MPA: { m: [[15, 10], [22.5, 7.75], [27.5, 6.25], [32.5, 4.25], [38.5, 2.5], [48, 1]], f: [[17, 10], [24.5, 7.75], [28.5, 6.25], [33.5, 4.25], [39.5, 2.5], [49, 1]] },
+    GON: { m: [[115, 10], [122.5, 7.75], [125.5, 6.25], [130.5, 4.25], [135.5, 2.5], [145, 1]], f: [[120, 10], [128.5, 7.75], [131.5, 6.25], [135.5, 4.25], [140.5, 2.5], [150, 1]] },
+    MAX: [[-30, 1], [-20, 2.5], [-12, 4.25], [-6, 6.25], [0, 7.75], [7, 10]],
+    CHIN: { m: [[-25, 1], [-16, 2.5], [-9, 4.25], [-4, 6.25], [1, 7.75], [7, 10]], f: [[-25, 1], [-16, 2.5], [-9, 4.25], [-4, 6.25], [0, 7.75], [5, 10]] },
+    FORE_IDEAL: { m: [4, 14], f: [0, 10] },
+    FORE_DEV: [[0, 10], [4, 7.75], [8, 6.25], [13, 4.25], [20, 2.5], [30, 1]],
+    W: { jaw: .35, max: .25, chin: .20, fore: .20 }, JAW_MIX: { mpa: .6, gon: .4 }, CAP_MARGIN: 2.5,
+    TIER_CUTS: [8, 6.5, 5.25, 4, 2.75, 0]
+  };
+  const tierIndex = s => { if (!isNum(s)) return null; const i = TABLES.TIER_CUTS.findIndex(c => s >= c); return i < 0 ? null : i; };
+  const sc = (x, A) => { const r = interpStrict(x, A); return { score: r.ok ? r.value : null, reason: r.reason }; };
+  const scRange = (ci, A) => { if (!ci) return null; const a = interpStrict(ci[0], A), b = interpStrict(ci[1], A); return a.ok && b.ok ? [Math.min(a.value, b.value), Math.max(a.value, b.value)] : null; };
+
+  /* Experimental, opt-in profile-aesthetic score for ONE table set (sex = 'm' | 'f'). Does not look at, and cannot affect, the rotation assessment. */
+  function scoreProfile(meas, sex, opts) {
+    opts = opts || {};
+    if (!opts.enabled) return { enabled: false, experimental: true, validated: false };
+    const T = TABLES, ci = (meas && meas.uncertainty && meas.uncertainty.ci) || {}, g = k => (meas ? meas[k] : null);
+    const pm = sc(g('mpa'), T.MPA[sex]), pg = sc(g('gon'), T.GON[sex]), sMax = sc(g('mx'), T.MAX), sChin = sc(g('chin'), T.CHIN[sex]);
+    let fdev = null; if (isNum(g('fore'))) { const [lo, hi] = T.FORE_IDEAL[sex], f = g('fore'); fdev = f < lo ? lo - f : f > hi ? f - hi : 0; }
+    const sFore = sc(fdev, T.FORE_DEV);
+    const jawScore = pm.score !== null && pg.score !== null ? T.JAW_MIX.mpa * pm.score + T.JAW_MIX.gon * pg.score : null;
+    const jawReason = jawScore === null ? (pm.score === null ? 'MPA: ' + pm.reason : 'Gonial: ' + pg.reason) : null;
+    const feats = [
+      { k: 'jaw', score: jawScore, reason: jawReason, w: T.W.jaw, parts: { mpa: pm, gon: pg }, range: jawScore !== null && ci.mpa && ci.gon ? (() => { const a = scRange(ci.mpa, T.MPA[sex]), b = scRange(ci.gon, T.GON[sex]); return a && b ? [T.JAW_MIX.mpa * a[0] + T.JAW_MIX.gon * b[0], T.JAW_MIX.mpa * a[1] + T.JAW_MIX.gon * b[1]] : null; })() : null },
+      { k: 'max', score: sMax.score, reason: sMax.reason, w: T.W.max, range: scRange(ci.mx, T.MAX) },
+      { k: 'chin', score: sChin.score, reason: sChin.reason, w: T.W.chin, range: scRange(ci.chin, T.CHIN[sex]) },
+      { k: 'fore', score: sFore.score, reason: sFore.reason, w: T.W.fore, range: null }
+    ];
+    const missing = feats.filter(f => f.score === null).map(f => f.k);
+    let total = null, capped = false, weak = null;
+    if (!missing.length) {
+      const avg = feats.reduce((a, f) => a + f.score * f.w, 0), cap = Math.min(...feats.map(f => f.score)) + T.CAP_MARGIN;
+      total = Math.min(avg, cap); capped = total < avg - .05; weak = feats.slice().sort((a, b) => a.score - b.score)[0].k;
+    }
+    return { enabled: true, experimental: true, validated: false, sex, feats, total, capped, weak, missing, tier: total === null ? null : tierIndex(total) };
+  }
+
+  /* ── Photo quality. Pure functions over numbers; the page supplies the numbers. Limits are HEURISTIC advisory gates, not validated. ── */
+  const QC = { minSidePoor: 480, minSideCaution: 720, blurPoor: 15, blurCaution: 40, yawOk: 78, yawCaution: 68, tiltCaution: 25, headFracCaution: .8 };
+  function laplacianVariance(gray, w, h) {
+    if (!gray || !(w >= 3) || !(h >= 3) || gray.length !== w * h) return null;
+    let n = 0, s = 0, s2 = 0;
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { const i = y * w + x, v = 4 * gray[i] - gray[i - 1] - gray[i + 1] - gray[i - w] - gray[i + w]; s += v; s2 += v * v; n++; }
+    const m = s / n; return s2 / n - m * m;
+  }
+  function assessQuality(m) {
+    m = m || {}; const F = [], add = (code, level, v) => F.push({ code, level, v });
+    const side = isNum(m.naturalW) && isNum(m.naturalH) ? Math.min(m.naturalW, m.naturalH) : null;
+    if (side === null) add('res_unknown', 'caution'); else if (side < QC.minSidePoor) add('res_low', 'poor', side); else if (side < QC.minSideCaution) add('res_mid', 'caution', side);
+    if (isNum(m.lapVar)) { if (m.lapVar < QC.blurPoor) add('blur_poor', 'poor', m.lapVar); else if (m.lapVar < QC.blurCaution) add('blur_caution', 'caution', m.lapVar); }
+    else add('blur_unknown', 'caution');
+    if (!isNum(m.yawDeg)) add('yaw_unknown', 'caution'); else if (m.yawDeg < QC.yawCaution) add('yaw_poor', 'poor', m.yawDeg); else if (m.yawDeg < QC.yawOk) add('yaw_caution', 'caution', m.yawDeg);
+    if (isNum(m.tiltDeg) && Math.abs(m.tiltDeg) > QC.tiltCaution) add('tilt_caution', 'caution', m.tiltDeg);
+    if (isNum(m.headFrac) && m.headFrac > QC.headFracCaution) add('head_fill', 'caution', m.headFrac);
+    add('perspective_unverifiable', 'info');
+    const level = F.some(f => f.level === 'poor') ? 'poor' : F.some(f => f.level === 'caution') ? 'caution' : 'ok';
+    return { level, findings: F };
+  }
+
+  /* ── Rotation assessment: deliberately NOT a classifier. No validated method exists here for diagnosing skeletal rotation from a photo,
+     and no replacement thresholds are invented. It reports raw angles, uncertainty and why no label is given. It never reads the PSL tables. ── */
+  function rotationAssessment(meas) {
+    const ci = (meas && meas.uncertainty && meas.uncertainty.ci) || {};
+    return { classified: false, label: null, status: 'not_classified', reasons: ['no_validated_method'],
+      mpaDeg: meas && isNum(meas.mpa) ? meas.mpa : null, gonialDeg: meas && isNum(meas.gon) ? meas.gon : null, mpaCI: ci.mpa || null, gonialCI: ci.gon || null };
+  }
+
+  /* ── Report: ties measurement, quality, rotation and (optional) experimental scoring together, keeping them separate. ── */
+  function buildReport(inp) {
+    const meas = inp.meas, q = inp.quality || { level: 'poor', findings: [] }, reasons = [];
+    const haveBoth = !!meas && meas.mpa !== null && meas.gon !== null;
+    meas && meas.issues.filter(i => i.sev === 'error').forEach(i => reasons.push({ code: i.code, p: i.p, kind: 'geometry', issue: i }));
+    let status;
+    if (!haveBoth) { status = 'inconclusive'; if (!reasons.length) reasons.push({ code: 'no_measurement', kind: 'geometry' }); }
+    else {
+      const warns = meas.issues.filter(i => i.sev === 'warn'); warns.forEach(i => reasons.push({ code: i.code, p: i.p, kind: 'geometry', issue: i }));
+      q.findings.filter(f => f.level === 'poor' || f.level === 'caution').forEach(f => reasons.push({ code: f.code, kind: 'quality', f }));
+      if (!inp.confirmed) reasons.push({ code: 'unconfirmed', kind: 'placement' });
+      status = reasons.length ? 'low_confidence' : 'measured';
+    }
+    const rotation = rotationAssessment(meas);
+    let scoring = { enabled: false, experimental: true, validated: false };
+    if (inp.scoringEnabled) {
+      const blockReason = status === 'inconclusive' ? 'measurement_inconclusive' : q.level === 'poor' ? 'photo_quality_poor' : (meas.uncertainty && ['mpa', 'gon'].some(k => meas.uncertainty.validFrac[k] < .9)) ? 'unstable' : null;
+      scoring = blockReason ? { enabled: true, blocked: true, blockReason, experimental: true, validated: false }
+        : { enabled: true, blocked: false, experimental: true, validated: false, byTable: { m: scoreProfile(meas, 'm', { enabled: true }), f: scoreProfile(meas, 'f', { enabled: true }) }, selected: inp.sex === 'f' ? 'f' : 'm' };
+    }
+    return { status, reasons, quality: q, measurement: meas, rotation, scoring };
+  }
+
+  return { isNum, isPt, signedAngleDeg, angleBetweenDeg, makeFrame, core, measureProfile, propagate, validateAnchors, interpStrict, REF_STATUS, EXPERIMENTAL_SCORING_DEFAULT, TABLES, tierIndex, scoreProfile, QC, laplacianVariance, assessQuality, rotationAssessment, buildReport, OPTS, ALL_PTS, ANGLE_PTS, SOFT_PTS };
+})();
+/*GEO-END*/
+
+/* ── Bilingual message tables for validation / quality / scoring reasons ── */
+const ISSUE = {
+  missing_point: ['Landmark {p} has not been placed.', 'لم يتم وضع النقطة {p}.'],
+  nonfinite_point: ['Landmark {p} has an invalid (non-finite) position.', 'موضع النقطة {p} غير صالح.'],
+  out_of_image: ['Landmark {p} lies outside the photo.', 'النقطة {p} خارج الصورة.'],
+  degenerate_vector: ['{p} are too close together to define a direction.', 'النقطتان {p} متقاربتان جداً لتحديد اتجاه.'],
+  frankfort_steep: ['The Po→Or line is steeper than 45° in the photo, so it cannot serve as the horizontal reference. Check Po and Or.', 'خط Po→Or أكثر انحداراً من ٤٥° في الصورة فلا يصلح مرجعاً أفقياً. راجع Po وOr.'],
+  me_not_forward: ['Me must lie in front of Go, in the direction the face points.', 'يجب أن تقع Me أمام Go في اتجاه نظر الوجه.'],
+  ra_not_above_go: ['Ra must lie above Go.', 'يجب أن تقع Ra فوق Go.'],
+  gonial_degenerate: ['Ra, Go and Me are almost on one straight line, so the gonial angle is undefined.', 'النقاط Ra وGo وMe شبه على خط واحد فالزاوية الجونيالية غير معرّفة.'],
+  gonial_orientation: ['Ra and Me are on the wrong sides of Go for this facing direction (vectors look reversed).', 'موضع Ra وMe بالنسبة إلى Go معكوس لهذا الاتجاه.'],
+  facing_inconsistent: ['{p} lie behind Po, but the Po→Or direction says the face points the other way. Po and Or may be swapped or misplaced.', 'النقاط {p} خلف Po بينما اتجاه Po→Or يشير للجهة المعاكسة. ربما تبدّلت Po وOr أو وُضعت بشكل خاطئ.'],
+  soft_order: ['{p}: these points are not in a believable vertical order.', '{p}: ترتيب هذه النقاط عمودياً غير منطقي.'],
+  angle_unusual: ['{p} is outside the broad sanity range {r}. This is a placement check, not a diagnosis: re-check the landmarks.', '{p} خارج النطاق العام {r}. هذا فحص لوضع النقاط وليس تشخيصاً: راجع النقاط.'],
+  unstable: ['{p}: a small landmark shift changes the result a lot or makes it invalid, so it is unstable.', '{p}: إزاحة صغيرة في النقاط تغيّر النتيجة كثيراً أو تُبطلها، فهي غير مستقرة.'],
+  facing_mismatch: ['Your landmarks say the face points {a}, but the photo check detected {b}.', 'نقاطك تقول إن الوجه نحو {a} بينما فحص الصورة رصد {b}.'],
+  no_measurement: ['No angle could be measured from these points.', 'تعذّر قياس أي زاوية من هذه النقاط.'],
+  unconfirmed: ['The landmark placement was not explicitly confirmed.', 'لم يتم تأكيد وضع النقاط صراحةً.']
+};
+const QCT = {
+  res_unknown: ['Image size unknown.', 'حجم الصورة غير معروف.'], res_low: ['Low resolution ({v}px short side): landmarks cannot be placed precisely.', 'دقة منخفضة ({v} بكسل للضلع القصير): لا يمكن وضع النقاط بدقة.'],
+  res_mid: ['Modest resolution ({v}px short side).', 'دقة متوسطة ({v} بكسل للضلع القصير).'],
+  blur_unknown: ['Sharpness could not be measured.', 'تعذّر قياس الحدة.'], blur_poor: ['The photo looks very blurry (sharpness score {v}).', 'الصورة تبدو ضبابية جداً (درجة الحدة {v}).'],
+  blur_caution: ['The photo may be blurry (sharpness score {v}).', 'قد تكون الصورة ضبابية (درجة الحدة {v}).'],
+  yaw_unknown: ['The 90° side turn could not be confirmed automatically.', 'تعذّر تأكيد دوران ٩٠° تلقائياً.'], yaw_poor: ['Not a side profile: the head turn is estimated at only about {v}°.', 'ليست صورة جانبية: دوران الرأس يُقدَّر بحوالي {v}° فقط.'],
+  yaw_caution: ['The head turn is estimated at about {v}°, short of a full side view.', 'دوران الرأس يُقدَّر بحوالي {v}° وهو أقل من جانبي كامل.'],
+  tilt_caution: ['The ear–eye / Frankfort line is inclined about {v}° in the photo: unusual head pitch or camera roll.', 'خط الأذن–العين / فرانكفورت مائل بحوالي {v}° في الصورة: ميل رأس أو كاميرا غير معتاد.'],
+  head_fill: ['The head fills about {v} of the frame height: the camera was probably close, which raises perspective distortion.', 'يملأ الرأس حوالي {v} من ارتفاع الإطار: الكاميرا غالباً قريبة مما يزيد تشوه المنظور.'],
+  perspective_unverifiable: ['Perspective distortion and lateral head tilt cannot be measured from one photo. Treat every angle as approximate.', 'لا يمكن قياس تشوه المنظور ولا ميل الرأس الجانبي من صورة واحدة. اعتبر كل الزوايا تقريبية.']
+};
+const SCR = {
+  below_table: ['below the first table anchor: not scored', 'أقل من أول نقطة في الجدول: لم تُحتسب'], above_table: ['above the last table anchor: not scored', 'أعلى من آخر نقطة في الجدول: لم تُحتسب'],
+  non_finite: ['invalid value: not scored', 'قيمة غير صالحة: لم تُحتسب'], missing: ['not measured: not scored', 'غير مقاسة: لم تُحتسب'], bad_table: ['table invalid: not scored', 'الجدول غير صالح: لم تُحتسب']
+};
+const BLOCK = { measurement_inconclusive: ['the measurement is inconclusive', 'القياس غير حاسم'], photo_quality_poor: ['the photo quality is poor', 'جودة الصورة ضعيفة'], unstable: ['the angles are unstable under small landmark shifts', 'الزوايا غير مستقرة عند إزاحات صغيرة'] };
+const ST = { inconclusive: { c: '#ff5555', t: ['INCONCLUSIVE', 'غير حاسم'] }, low_confidence: { c: '#ff9a4c', t: ['LOW CONFIDENCE', 'ثقة منخفضة'] }, measured: { c: '#6ee7b7', t: ['MEASURED', 'تم القياس'] } };
+const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => (o[k] === undefined || o[k] === null ? '' : o[k]));
+const issueTxt = i => { const m = ISSUE[i.code]; return m ? fill(L(...m), i) : i.code; };
+const qcTxt = f => { const m = QCT[f.code], v = f.v === undefined ? '' : f.code === 'head_fill' ? nf(Math.round(f.v * 100)) + '%' : f.code.startsWith('blur') ? nf(f.v.toFixed(1)) : nf(Math.round(f.v)); return m ? fill(L(...m), { v }) : f.code; };
+const reasonTxt = r => r.kind === 'quality' ? qcTxt(r.f) : r.issue ? issueTxt(r.issue) : (ISSUE[r.code] ? L(...ISSUE[r.code]) : r.code);
+const f1 = n => nf(Number(n).toFixed(1));
+const sgn = x => (x > 0 ? '+' : x < 0 ? '\u2212' : '') + f1(Math.abs(x));
+const ciTxt = ci => ci ? `${L('95% range', 'نطاق ٩٥٪')} ${f1(ci[0])}–${f1(ci[1])}°` : L('range unavailable', 'النطاق غير متاح');
+let expOn = GEO.EXPERIMENTAL_SCORING_DEFAULT, photoMeta = null;
+
+function analyze() {
+  const d = window.sideLandmarks; if (!d) return null;
+  const meas = GEO.measureProfile(d.pts, { W: d.W, H: d.H, expectedFacing: prof && prof.facing ? prof.facing : null }), F = meas.frame;
+  let headFrac = null; const P = d.pts;
+  if (F && GEO.isPt(P.Tr) && GEO.isPt(P.Me)) headFrac = Math.abs((P.Me.x - P.Tr.x) * F.down.x + (P.Me.y - P.Tr.y) * F.down.y) / d.H;
+  const q = GEO.assessQuality({ naturalW: photoMeta && photoMeta.nw, naturalH: photoMeta && photoMeta.nh, lapVar: photoMeta && photoMeta.lap, yawDeg: prof ? prof.yaw : null, tiltDeg: F ? F.tiltDeg : (prof ? prof.tilt : null), headFrac });
+  const rep = GEO.buildReport({ meas, quality: q, confirmed: !!d.confirmed, scoringEnabled: expOn, sex: gender === 'female' ? 'f' : 'm' });
+  return { d, meas, q, rep };
+}
+const AX = [-10, 80];
+function ruler(v, ci) {
+  const p = x => (x - AX[0]) / (AX[1] - AX[0]) * 100, c = x => clamp(p(x), 0, 100);
+  let h = '<div class="ruler">';
+  for (let t = AX[0]; t <= AX[1]; t += 10) h += `<s style="left:${p(t).toFixed(1)}%"></s>`;
+  if (ci) h += `<b class="ruler-band" style="left:${c(ci[0]).toFixed(1)}%;width:${(c(ci[1]) - c(ci[0])).toFixed(1)}%"></b>`;
+  if (v >= AX[0] && v <= AX[1]) h += `<i style="left:${p(v).toFixed(1)}%"></i>`;
+  return h + `</div><div class="ruler-lbl"><span>${nf(AX[0])}°</span><span>${v >= AX[0] && v <= AX[1] ? '' : L('value is off this scale', 'القيمة خارج هذا المقياس')}</span><span>${nf(AX[1])}°</span></div>`;
+}
+const SRC_TXT = { manual: ['manual', 'يدوي'], 'mediapipe-approx': ['MediaPipe estimate, unadjusted', 'تقدير MediaPipe بدون تعديل'], 'mediapipe-adjusted': ['MediaPipe estimate, adjusted', 'تقدير MediaPipe بعد التعديل'] };
+const TIER_C = ['#5ecbff', '#6ee7b7', '#b8e986', '#e6e6e6', '#ff9a4c', '#ff5555'];
+const tierName = (i, fem) => i === null ? '—' : [fem ? 'Stacy' : 'Chad', fem ? 'Stacylite' : 'Chadlite', fem ? 'HTB' : 'HTN', fem ? 'MTB' : 'MTN', fem ? 'LTB' : 'LTN', 'Sub5'][i];
+
+function expCard(a) {
+  const rep = a.rep, m = a.meas, sc = rep.scoring, fem = gender === 'female';
+  const banner = `<div class="exp-banner">${L('EXPERIMENTAL · NOT VALIDATED', 'تجريبي · غير مُتحقَّق منه')}</div>`;
+  const btn = `<button type="button" class="btn-ghost" id="expToggle" style="margin-top:12px">${expOn ? L('Hide experimental score', 'إخفاء التقييم التجريبي') : L('Show experimental score anyway', 'عرض التقييم التجريبي')}</button>`;
+  const why = L('The anchor tables behind this score are provisional starting values with no cited independent reference data, and the male/female split is an unsourced assumption. It scores profile appearance only and says nothing about jaw rotation.', 'جداول المرجع خلف هذا التقييم قيم أولية مؤقتة بلا بيانات مرجعية مستقلة موثّقة، وتقسيم ذكر/أنثى افتراض بلا مصدر. هو يقيّم مظهر الملف الجانبي فقط ولا يقول شيئاً عن دوران الفك.');
+  if (!sc.enabled) return `<div class="s3-card">${banner}<div class="s3-h">${L('Profile score (disabled)', 'تقييم الملف الجانبي (معطّل)')}</div><p class="s3-p">${why}</p>${btn}</div>`;
+  if (sc.blocked) return `<div class="s3-card">${banner}<div class="s3-h">${L('Profile score (withheld)', 'تقييم الملف الجانبي (محجوب)')}</div><p class="s3-p">${L('No score is shown because ', 'لا يظهر تقييم لأن ')}${L(...BLOCK[sc.blockReason])}.</p>${btn}</div>`;
+  const sel = sc.byTable[sc.selected], oth = sc.byTable[sc.selected === 'm' ? 'f' : 'm'];
+  const FL = { jaw: ['Jaw (MPA + gonial)', 'الفك (MPA + جونيال)'], max: ['Maxilla (upper jaw)', 'الفك العلوي'], chin: ['Chin projection', 'بروز الذقن'], fore: ['Forehead slope', 'ميل الجبهة'] };
+  const FV = { jaw: `${m.mpa === null ? '—' : f1(m.mpa) + '°'} MPA · ${m.gon === null ? '—' : f1(m.gon) + '°'} ${L('gonial', 'جونيال')}`, max: m.mx === null ? '—' : `${sgn(m.mx)}% ${L('vs Or line', 'مقابل خط Or')}`, chin: m.chin === null ? '—' : `${sgn(m.chin)}% ${L('vs Sn line', 'مقابل خط Sn')}`, fore: m.fore === null ? '—' : `${f1(m.fore)}° ${L('back from vertical', 'ميل للخلف عن العمودي')}` };
+  const rows = sel.feats.map(f => `<div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.07)"><div style="display:flex;justify-content:space-between;gap:10px;font-size:13px"><span>${L(...FL[f.k])}</span><b>${f.score === null ? '—' : f1(f.score) + ' / 10'}</b></div><div style="font-size:11px;opacity:.7;margin-top:2px">${FV[f.k]} · ${L('weight', 'الوزن')} ${nf(Math.round(f.w * 100))}%${f.range ? ` · ${L('score range under placement error', 'مدى التقييم مع خطأ الوضع')} ${f1(f.range[0])}–${f1(f.range[1])}` : ''}</div>${f.score === null ? `<div style="font-size:11px;color:#ff9a4c;margin-top:3px">${f.reason && f.reason.includes(': ') ? f.reason.split(': ')[0] + ': ' + L(...(SCR[f.reason.split(': ')[1]] || [f.reason, f.reason])) : L(...(SCR[f.reason] || [String(f.reason), String(f.reason)]))}</div>` : ''}</div>`).join('');
+  const T1 = sel.total === null ? null : tierName(sel.tier, fem);
+  const head = sel.total === null
+    ? `<p class="s3-p"><b>${L('No total score:', 'لا يوجد تقييم كلي:')}</b> ${L('at least one feature is outside its provisional table, so no total is invented.', 'ميزة واحدة على الأقل خارج جدولها المؤقت، لذلك لا يُختلق تقييم كلي.')}</p>`
+    : `<div class="tier-row" style="grid-template-columns:1fr"><div class="tier-box" style="--c:${TIER_C[sel.tier]}"><span class="tier-cap">${L('Experimental PSL', 'PSL تجريبي')} · ${sc.selected === 'f' ? L('female table', 'جدول الإناث') : L('male table', 'جدول الذكور')}</span><b class="tier-name">${T1}</b><span class="tier-score">${f1(sel.total)} / 10${sel.capped ? ' · ' + L('capped by weakest feature', 'مقيّد بأضعف ميزة') : ''}</span></div></div>`;
+  const sens = oth.total !== null && sel.total !== null ? `<p class="s3-p">${L('Sensitivity to the unsourced sex-specific assumption: the other table gives', 'حساسية الافتراض الخاص بالجنس: الجدول الآخر يعطي')} <b>${f1(oth.total)} / 10</b> (${sgn(oth.total - sel.total)}).</p>` : '';
+  return `<div class="s3-card">${banner}<div class="s3-h">${L('Profile score (experimental)', 'تقييم الملف الجانبي (تجريبي)')}</div>${head}${rows}${sens}<p class="s3-disc" style="margin-top:10px">${why}</p>${btn}</div>`;
+}
+
+function renderS3() {
+  s3 = analyze();
+  const msg = $('s3Msg'); msg.className = 'msg-bar'; msg.textContent = '';
+  if (!s3) { $('s3Rating').innerHTML = ''; $('s3ReviewWrap').style.display = 'none'; drawS3(); return; }
+  const { rep, meas: m, q, d } = s3, st = ST[rep.status], fem = gender === 'female';
+  if (rep.status === 'inconclusive') { msg.className = 'msg-bar error'; msg.textContent = L('Inconclusive: ', 'غير حاسم: ') + (rep.reasons[0] ? reasonTxt(rep.reasons[0]) : ''); }
+  const reasonList = rep.reasons.length ? `<ul class="rs-list">${rep.reasons.map(r => `<li class="${r.kind === 'quality' && r.f.level === 'poor' ? 'bad' : ''}">${reasonTxt(r)}</li>`).join('')}</ul>` : `<p class="s3-p">${L('No automatic warnings. Angles are still approximate, so read them with the range shown.', 'لا تحذيرات تلقائية. الزوايا تبقى تقريبية، فاقرأها مع النطاق الموضح.')}</p>`;
+  const statusCard = `<div class="s3-card s3-rate"><div class="s3-h">${L('Measurement status', 'حالة القياس')}</div><div class="rot-name" style="color:${st.c};text-shadow:0 0 18px ${st.c}66">${L(...st.t)}</div>${reasonList}</div>`;
+  const R = rep.rotation, mpaTxt = R.mpaDeg === null ? '—' : sgn(R.mpaDeg) + '°', gonTxt = R.gonialDeg === null ? '—' : f1(R.gonialDeg) + '°';
+  const u = m.uncertainty;
+  const rotCard = `<div class="s3-card s3-rate"><div class="s3-h">${L('Jaw rotation', 'دوران الفك')}</div>
+    <div class="rot-name" style="color:#e6e6e6">${L('Not classified', 'غير مصنَّف')}</div>
+    <div class="rot-sub">${L('No validated photo-based method', 'لا توجد طريقة مُتحقَّق منها بالصورة')}</div>
+    <p class="desc">${L('This tool does not label jaw rotation (forward / neutral / downward) from a photo. The angles below are raw landmark measurements, shown so you can judge them yourself. They are independent of the experimental profile score.', 'هذه الأداة لا تصنّف دوران الفك (أمامي / محايد / للأسفل) من الصورة. الزوايا أدناه قياسات خام للنقاط لتحكم عليها بنفسك، وهي مستقلة عن تقييم الملف التجريبي.')}</p>
+    ${R.mpaDeg !== null ? ruler(R.mpaDeg, R.mpaCI) : ''}
     <div class="stats">
-      <div><b>${m.fma > 0 ? '+' : m.fma < 0 ? '−' : ''}${f1(Math.abs(m.fma))}°</b><span>${L('MPA · ideal', 'MPA · المثالي')} ${nf(m.ideal.mpa[0])}–${nf(m.ideal.mpa[1])}°</span></div>
-      <div><b>${f1(m.gon)}°</b><span>${L('Gonial · ideal', 'الجونيال · المثالي')} ${nf(m.ideal.gon[0])}–${nf(m.ideal.gon[1])}°</span></div>
-      ${m.chin === null ? '' : `<div><b>${m.chin > 0 ? '+' : m.chin < 0 ? '−' : ''}${f1(Math.abs(m.chin))}%</b><span>${L('Chin vs Sn (of lower face)', 'الذقن مقابل Sn (من الوجه السفلي)')}</span></div>`}
+      <div><b>${mpaTxt}</b><span>MPA · ${R.mpaDeg === null ? L('not measurable', 'غير قابلة للقياس') : ciTxt(R.mpaCI)}</span></div>
+      <div><b>${gonTxt}</b><span>${L('Gonial', 'الجونيال')} · ${R.gonialDeg === null ? L('not measurable', 'غير قابلة للقياس') : ciTxt(R.gonialCI)}</span></div>
+      <div><b>${m.frame ? (m.frame.facing === 'left' ? L('left', 'اليسار') : L('right', 'اليمين')) : '—'}</b><span>${L('Facing (from Po→Or)', 'الاتجاه (من Po→Or)')}</span></div>
     </div>
-    <p class="s3-disc">${L('This reads one flat photo. A real measurement comes from a lateral cephalometric X-ray read by an orthodontist. Lens distance, head position and soft tissue can shift these angles by a few degrees.', 'هذه قراءة لصورة واحدة مسطحة. القياس الحقيقي يأتي من أشعة سيفالومترية جانبية يقرأها طبيب تقويم. بعد العدسة ووضع الرأس والأنسجة الرخوة قد تغيّر الزوايا بضع درجات.')}</p>
+    <p class="s3-disc">${u ? L(`The range assumes each point is off by about ${nf(u.sigmaPx.toFixed(1))} px (1σ, 1.5% of the Po–Me distance). That error size is an assumption, not a measured property of this tool.`, `يفترض النطاق أن كل نقطة منحرفة بحوالي ${nf(u.sigmaPx.toFixed(1))} بكسل (١σ، ١٫٥٪ من مسافة Po–Me). حجم الخطأ هذا افتراض وليس خاصية مقاسة للأداة.`) : ''} ${L('MPA is positive when Go→Me slopes downward toward the front, relative to the Po→Or line.', 'MPA موجبة عندما يميل Go→Me للأسفل نحو الأمام بالنسبة لخط Po→Or.')}</p>
   </div>`;
+  const bad = {}, warn = {}; m.issues.forEach(i => (i.ids || []).forEach(id => { (i.sev === 'error' ? bad : warn)[id] = 1; }));
+  const ptRows = PT.map(pm => { const p = d.pts[pm.id], fin = GEO.isPt(p); return `<tr><td><b>${pm.id}</b></td><td>${fin ? nf(p.x.toFixed(1)) + ', ' + nf(p.y.toFixed(1)) : '—'}</td><td>${p && p.src ? L(...SRC_TXT[p.src]) : '—'}</td><td class="${bad[pm.id] ? 'bad' : warn[pm.id] ? 'warn' : 'ok'}">${bad[pm.id] ? '✗ ' + L('invalid', 'غير صالحة') : warn[pm.id] ? '! ' + L('check', 'راجع') : '✓'}</td></tr>`; }).join('');
+  const lmCard = `<div class="s3-card"><div class="s3-h">${L('Landmarks used', 'النقاط المستخدمة')}</div><div style="overflow-x:auto"><table class="lm-tbl"><tr><th>${L('Point', 'النقطة')}</th><th>${L('x, y (photo px)', 'x, y (بكسل الصورة)')}</th><th>${L('Source', 'المصدر')}</th><th>${L('Valid', 'الصحة')}</th></tr>${ptRows}</table></div>
+    ${m.issues.length ? `<ul class="rs-list">${m.issues.map(i => `<li class="${i.sev === 'error' ? 'bad' : ''}">${issueTxt(i)}</li>`).join('')}</ul>` : ''}
+    <p class="s3-disc">${L('MediaPipe only suggests approximate starting spots for Po, Or and Sn from generic ear/eye/nose landmarks. It does not detect Go, Me, Ra or Pg, and its generic mesh is not a cephalometric landmark detector, so those points are always yours.', 'يقترح MediaPipe فقط مواضع بدء تقريبية لـ Po وOr وSn من نقاط الأذن/العين/الأنف العامة. لا يكتشف Go وMe وRa وPg، وشبكته العامة ليست كاشف نقاط سيفالومترية، لذا هذه النقاط دائماً من وضعك.')}</p></div>`;
+  const qcRows = q.findings.map(f => `<li class="${f.level === 'poor' ? 'bad' : ''}">${f.level === 'ok' ? '' : ''}${qcTxt(f)}</li>`).join('');
+  const qCard = `<div class="s3-card"><div class="s3-h">${L('Photo quality checks', 'فحوصات جودة الصورة')} · ${q.level === 'ok' ? L('no flags', 'بلا ملاحظات') : q.level === 'caution' ? L('caution', 'تنبيه') : L('poor', 'ضعيفة')}</div><ul class="rs-list">${qcRows}</ul><p class="s3-disc">${L('These checks are heuristic and unvalidated; passing them does not make the angles accurate.', 'هذه الفحوصات تقديرية وغير مُتحقَّق منها؛ اجتيازها لا يجعل الزوايا دقيقة.')}</p></div>`;
+  $('s3Rating').innerHTML = statusCard + rotCard + lmCard + qCard + expCard(s3);
+  const sc = rep.scoring, sel = sc.enabled && !sc.blocked ? sc.byTable[sc.selected] : null;
+  s3.say = [
+    L(`I measured your side-profile photo. ${R.mpaDeg === null ? 'The mandibular plane angle could not be measured.' : `The mandibular plane angle is ${f1(R.mpaDeg)} degrees`}${R.gonialDeg === null ? '' : ` and the gonial angle is ${f1(R.gonialDeg)} degrees`}. Status: ${st.t[0].toLowerCase()}.`, `قست صورة جانب وجهك. ${R.mpaDeg === null ? 'تعذّر قياس زاوية المستوى الفكي.' : `زاوية المستوى الفكي ${f1(R.mpaDeg)} درجة`}${R.gonialDeg === null ? '' : ` والزاوية الجونيالية ${f1(R.gonialDeg)} درجة`}. الحالة: ${st.t[1]}.`),
+    L('I do not label jaw rotation from a photo, because no validated method exists here.', 'لا أصنّف دوران الفك من الصورة لأنه لا توجد هنا طريقة مُتحقَّق منها.'),
+    rep.reasons.length ? L('Main caveat: ', 'أهم تحفظ: ') + reasonTxt(rep.reasons[0]) : '',
+    sel && sel.total !== null ? L(`The experimental profile score is ${f1(sel.total)} out of 10, from unvalidated tables.`, `تقييم الملف التجريبي ${f1(sel.total)} من ١٠ من جداول غير مُتحقَّق منها.`) : '',
+    L('This is one flat photo, not an X-ray.', 'هذه صورة واحدة مسطحة وليست أشعة.')
+  ].filter(Boolean).join(' ');
+  s3.bad = false;
   $('s3ReviewWrap').style.display = 'flex'; drawS3();
 }
+$('s3Rating').addEventListener('click', e => { if (e.target.closest('#expToggle')) { expOn = !expOn; renderS3(); } });
 function drawS3() {
   const cv = $('s3Canvas'), d = window.sideLandmarks;
-  if (!d || !s3 || s3.bad) { cv.style.display = 'none'; return; }
-  cv.style.display = 'block';
+  if (!d || !s3 || !s3.meas.frame) { cv.style.display = 'none'; return; }
+  const m = s3.meas, F = m.frame; cv.style.display = 'block';
   const cw = Math.min(innerWidth - 34, 720), k = cw / d.W, ch = Math.round(d.H * k), dpr = devicePixelRatio || 1;
   cv.style.width = cw + 'px'; cv.style.height = ch + 'px'; cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
   const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
   c.drawImage(d.img, 0, 0, cw, ch); c.fillStyle = 'rgba(0,0,0,.3)'; c.fillRect(0, 0, cw, ch);
-  const p = id => ({ x: d.pts[id].x * k, y: d.pts[id].y * k }), big = cw + ch, Po = p('Po'), Or = p('Or'), Ra = p('Ra'), Go = p('Go'), Me = p('Me');
+  const p = id => ({ x: d.pts[id].x * k, y: d.pts[id].y * k }), big = cw + ch, has = id => GEO.isPt(d.pts[id]);
+  const un = v => { const l = Math.hypot(v.x, v.y); return { x: v.x / l, y: v.y / l }; };
   const ext = (a, v, col, w, dash) => { c.strokeStyle = col; c.lineWidth = w; c.setLineDash(dash || []); c.beginPath(); c.moveTo(a.x - v.x * big, a.y - v.y * big); c.lineTo(a.x + v.x * big, a.y + v.y * big); c.stroke(); c.setLineDash([]); };
-  ext(Po, s3.u, 'rgba(255,255,255,.6)', 1.2, [6, 5]);          // Frankfort plane
-  ext(Go, s3.u, 'rgba(255,255,255,.35)', 1, [2, 4]);          // parallel to it, through gonion
-  ext(Go, s3.w, '#ff3c5a', 1.6);                              // jaw plane
-  c.strokeStyle = '#5ecbff'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(Ra.x, Ra.y); c.lineTo(Go.x, Go.y); c.stroke();   // ramus
-  const ang = o => Math.atan2(o.y, o.x);
-  const arc = (a1, a2, r, col, txt) => {
+  const Po = p('Po'), Or = p('Or'), Go = p('Go'), u = F.u, perp = { x: -u.y, y: u.x };
+  ext(Po, u, 'rgba(255,255,255,.6)', 1.2, [6, 5]); ext(Go, u, 'rgba(255,255,255,.35)', 1, [2, 4]);
+  const ang = o => Math.atan2(o.y, o.x), arc = (a1, a2, r, col, txt) => {
     let df = a2 - a1; while (df > Math.PI) df -= 2 * Math.PI; while (df < -Math.PI) df += 2 * Math.PI;
     c.strokeStyle = col; c.lineWidth = 1.8; c.beginPath(); c.arc(Go.x, Go.y, r, a1, a1 + df, df < 0); c.stroke();
     const mA = a1 + df / 2; c.textAlign = 'center'; label(c, txt, Go.x + Math.cos(mA) * (r + 22), Go.y + Math.sin(mA) * (r + 22), col, 1);
   };
-  arc(ang(s3.u), ang(s3.w), cw * .17, '#ffc933', 'MPA ' + f1(s3.fma) + '°');
-  arc(ang(s3.a), ang(s3.w), cw * .08, '#5ecbff', f1(s3.gon) + '°');
-  const perp = { x: -s3.u.y, y: s3.u.x }, G = p('G'), Tr = p('Tr');
-  ext(p('Sn'), perp, 'rgba(255,60,90,.7)', 1.2, [3, 4]);        // line through Sn, perpendicular to Frankfort (chin test)
-  ext(Or, perp, 'rgba(255,201,51,.7)', 1.2, [3, 4]);            // line through Or, perpendicular to Frankfort (maxilla test)
-  ext(G, perp, 'rgba(255,255,255,.3)', 1, [2, 4]);              // vertical through glabella
-  c.strokeStyle = '#b58cff'; c.lineWidth = 1.8; c.beginPath(); c.moveTo(G.x, G.y); c.lineTo(Tr.x, Tr.y); c.stroke();   // forehead line
-  c.textAlign = 'left'; label(c, f1(s3.fore) + '\u00b0', Tr.x + 10, Tr.y + 14, '#b58cff', 1);
-  [['Po', Po], ['Or', Or], ['Ra', Ra], ['Go', Go], ['Me', Me], ['Sn', p('Sn')], ['Pg', p('Pg')], ['G', G], ['Tr', Tr]].forEach(([id, q]) => {
-    c.fillStyle = '#fff'; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1; c.beginPath(); c.arc(q.x, q.y, 2.5, 0, 7); c.fill(); c.stroke();
-    c.textAlign = 'left'; label(c, id, q.x + 7, q.y - 8, '#fff', 1);
-  });
+  if (m.mpa !== null) { const w = un({ x: p('Me').x - Go.x, y: p('Me').y - Go.y }); ext(Go, w, '#ff3c5a', 1.6); arc(ang(u), ang(w), cw * .17, '#ffc933', 'MPA ' + f1(m.mpa) + '°'); if (m.gon !== null) { const a = un({ x: p('Ra').x - Go.x, y: p('Ra').y - Go.y }); c.strokeStyle = '#5ecbff'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(p('Ra').x, p('Ra').y); c.lineTo(Go.x, Go.y); c.stroke(); arc(ang(a), ang(w), cw * .08, '#5ecbff', f1(m.gon) + '°'); } }
+  if (has('Sn')) ext(p('Sn'), perp, 'rgba(255,60,90,.7)', 1.2, [3, 4]);
+  ext(Or, perp, 'rgba(255,201,51,.7)', 1.2, [3, 4]);
+  if (has('G')) ext(p('G'), perp, 'rgba(255,255,255,.3)', 1, [2, 4]);
+  if (m.fore !== null) { const G = p('G'), Tr = p('Tr'); c.strokeStyle = '#b58cff'; c.lineWidth = 1.8; c.beginPath(); c.moveTo(G.x, G.y); c.lineTo(Tr.x, Tr.y); c.stroke(); c.textAlign = 'left'; label(c, f1(m.fore) + '\u00b0', Tr.x + 10, Tr.y + 14, '#b58cff', 1); }
+  PT.forEach(pm => { if (!has(pm.id)) return; const q = p(pm.id); c.fillStyle = '#fff'; c.strokeStyle = 'rgba(0,0,0,.85)'; c.lineWidth = 1; c.beginPath(); c.arc(q.x, q.y, 2.5, 0, 7); c.fill(); c.stroke(); c.textAlign = 'left'; label(c, pm.id, q.x + 7, q.y - 8, '#fff', 1); });
+}
+function renderCheck(n, total) {
+  const box = $('lmCheck'), P = {}; PT.forEach(m => { P[m.id] = s2.pts[m.id].seen ? s2.pts[m.id] : null; });
+  const all = n === total, meas = all ? GEO.measureProfile(P, { W: s2.W, H: s2.H, mc: false, expectedFacing: prof && prof.facing ? prof.facing : null }) : null;
+  const errs = meas ? meas.issues.filter(i => i.sev === 'error') : [], warns = meas ? meas.issues.filter(i => i.sev === 'warn') : [];
+  const approx = PT.filter(m => s2.pts[m.id].src === 'mediapipe-approx');
+  s2.needsAck = all && !errs.length && (warns.length > 0 || approx.length > 0);
+  const bad = {}; errs.forEach(i => (i.ids || []).forEach(id => { bad[id] = 1; }));
+  const rows = PT.map(m => { const p = s2.pts[m.id]; return `<tr><td><b>${m.id}</b></td><td>${p.seen ? nf(p.x.toFixed(1)) + ', ' + nf(p.y.toFixed(1)) : '—'}</td><td>${p.seen ? L(...SRC_TXT[p.src || 'manual']) : L('not placed', 'لم توضع')}</td><td class="${bad[m.id] ? 'bad' : p.seen ? 'ok' : ''}">${bad[m.id] ? '✗' : p.seen ? '✓' : ''}</td></tr>`; }).join('');
+  let h = `<table class="lm-tbl"><tr><th>${L('Point', 'النقطة')}</th><th>${L('x, y (photo px)', 'x, y (بكسل الصورة)')}</th><th>${L('Source', 'المصدر')}</th><th></th></tr>${rows}</table>`;
+  if (errs.length) h += `<ul class="rs-list">${errs.map(i => `<li class="bad">${issueTxt(i)}</li>`).join('')}</ul>`;
+  else if (warns.length) h += `<ul class="rs-list">${warns.map(i => `<li>${issueTxt(i)}</li>`).join('')}</ul>`;
+  if (s2.needsAck) h += `<label class="lm-ack"><input type="checkbox" id="lmAck"${s2.ack ? ' checked' : ''}> <span>${approx.length ? L('I checked the MediaPipe-estimated point(s) (' + approx.map(m => m.id).join(', ') + ') against the photo, and every point sits where I intend.', 'تحققت من النقاط المقدَّرة بواسطة MediaPipe (' + approx.map(m => m.id).join('، ') + ') مقابل الصورة وكل نقطة في مكانها المقصود.') : L('I checked the flagged points against the photo and confirm this placement.', 'تحققت من النقاط المُنبَّه عليها مقابل الصورة وأؤكد هذا الوضع.')}</span></label>`;
+  box.innerHTML = h;
+  $('s2Confirm').disabled = !(all && !errs.length && (!s2.needsAck || s2.ack));
 }
 const closeReview = () => $('s3Modal').classList.remove('open');
 $('s3Review').addEventListener('click', () => { drawS3(); $('s3Modal').classList.add('open'); $('s3Modal').scrollTop = 0; });
